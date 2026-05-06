@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pepe Conductores — La app de transporte argentina</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --negro: #0c0c0c;
+  --blanco: #f7f4ee;
+  --amarillo: #f5d800;
+  --naranja: #ff4d00;
+  --gris: #161616;
+  --gris2: #222;
+  --texto-apagado: rgba(247,244,238,0.5);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--negro); color: var(--blanco); font-family: 'Barlow', sans-serif; overflow-x: hidden; }
+
+/* NAV */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 1rem 5%;
+  background: rgba(12,12,12,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(245,216,0,0.1);
+  gap: 1rem;
+}
+.logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--amarillo); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.logo span { color: rgba(247,244,238,0.4); font-size: 0.9rem; font-family: 'Barlow', sans-serif; font-weight: 300; }
+
+.tabs-nav { display: flex; gap: 3px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 4px; border: 1px solid rgba(255,255,255,0.07); }
+.tab-nav-btn { padding: 0.5rem 1.1rem; border-radius: 6px; border: none; background: transparent; color: var(--texto-apagado); cursor: pointer; font-size: 0.82rem; font-family: 'Barlow', sans-serif; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+.tab-nav-btn.active { background: var(--amarillo); color: var(--negro); font-weight: 700; }
+.tab-nav-btn:hover:not(.active) { color: var(--blanco); }
+
+.btn-nav { background: var(--amarillo); color: var(--negro); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer; font-family: 'Barlow', sans-serif; transition: background 0.2s; white-space: nowrap; }
+.btn-nav:hover { background: #ffe100; }
+.btn-nav-user { background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.3); color: var(--amarillo); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; white-space: nowrap; display: none; gap: 0.5rem; align-items: center; }
+.btn-nav-user:hover { background: rgba(245,216,0,0.2); }
+
+/* MODAL OVERLAY */
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay.open { display: flex; }
+
+/* LOGIN MODAL */
+.login-modal { background: var(--gris); border: 1px solid rgba(245,216,0,0.15); border-radius: 20px; width: 100%; max-width: 420px; padding: 2.5rem; position: relative; animation: modalIn 0.3s ease; }
+@keyframes modalIn { from { opacity:0; transform: translateY(20px) scale(0.97); } to { opacity:1; transform: none; } }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.06); border: none; color: var(--texto-apagado); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.modal-close:hover { background: rgba(255,255,255,0.12); color: var(--blanco); }
+.modal-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--amarillo); margin-bottom: 0.3rem; }
+.modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.4rem; }
+.modal-sub { font-size: 0.85rem; color: var(--texto-apagado); margin-bottom: 2rem; }
+.modal-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 4px; margin-bottom: 1.8rem; border: 1px solid rgba(255,255,255,0.07); }
+.modal-tab { flex: 1; padding: 0.55rem; border-radius: 6px; border: none; background: transparent; color: var(--texto-apagado); cursor: pointer; font-size: 0.82rem; font-family: 'Barlow', sans-serif; font-weight: 600; transition: all 0.2s; }
+.modal-tab.active { background: var(--amarillo); color: var(--negro); }
+.modal-form { display: none; }
+.modal-form.active { display: block; }
+.mfg { margin-bottom: 1rem; }
+.mfg label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; color: var(--texto-apagado); margin-bottom: 6px; text-transform: uppercase; }
+.mfg input, .mfg select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.8rem 1rem; color: var(--blanco); font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+.mfg input:focus, .mfg select:focus { border-color: var(--amarillo); }
+.mfg select option { background: var(--gris2); }
+.modal-btn { width: 100%; background: var(--amarillo); color: var(--negro); border: none; border-radius: 8px; padding: 0.9rem; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: 'Barlow', sans-serif; margin-top: 0.5rem; transition: background 0.2s, transform 0.15s; }
+.modal-btn:hover { background: #ffe100; transform: translateY(-1px); }
+.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.modal-error { background: rgba(255,77,0,0.1); border: 1px solid rgba(255,77,0,0.3); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.83rem; color: #ff7755; margin-bottom: 1rem; display: none; }
+.modal-error.show { display: block; }
+.modal-success { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.83rem; color: #2ecc71; margin-bottom: 1rem; display: none; }
+.modal-success.show { display: block; }
+
+/* PANEL USUARIO */
+.panel-modal { background: var(--gris); border: 1px solid rgba(245,216,0,0.1); border-radius: 20px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; position: relative; animation: modalIn 0.3s ease; }
+.panel-header { padding: 2rem 2rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.panel-user-info { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.panel-avatar { width: 52px; height: 52px; border-radius: 12px; background: rgba(245,216,0,0.15); border: 2px solid rgba(245,216,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+.panel-user-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; }
+.panel-user-email { font-size: 0.78rem; color: var(--texto-apagado); margin-top: 2px; }
+.panel-user-rol { display: inline-block; font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amarillo); background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.2); border-radius: 100px; padding: 3px 10px; margin-top: 4px; }
+.rol-switch-btn { font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: var(--texto-apagado); cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.rol-switch-btn.active { background: var(--amarillo); color: var(--negro); border-color: var(--amarillo); }
+.panel-tabs { display: flex; gap: 2px; overflow-x: auto; }
+.panel-tab { padding: 0.7rem 1.2rem; border: none; background: transparent; color: var(--texto-apagado); cursor: pointer; font-size: 0.82rem; font-family: 'Barlow', sans-serif; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+.panel-tab.active { color: var(--amarillo); border-bottom-color: var(--amarillo); }
+.panel-tab:hover:not(.active) { color: var(--blanco); }
+.panel-body { padding: 2rem; }
+.panel-section { display: none; }
+.panel-section.active { display: block; }
+.panel-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: var(--amarillo); margin-bottom: 1.2rem; letter-spacing: 1px; }
+
+/* PANEL — datos */
+.datos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.dato-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem 1.2rem; }
+.dato-label { font-size: 0.68rem; color: var(--texto-apagado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.dato-val { font-size: 0.95rem; font-weight: 600; }
+
+/* PANEL — viajes */
+.viaje-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+.viaje-ruta { font-size: 0.88rem; font-weight: 600; }
+.viaje-meta { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 3px; }
+.viaje-precio { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--amarillo); }
+.viaje-empty { text-align: center; padding: 2rem; color: var(--texto-apagado); font-size: 0.88rem; }
+
+/* PANEL — pagos */
+.pago-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+.pago-desc { font-size: 0.88rem; font-weight: 600; }
+.pago-fecha { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 3px; }
+.pago-monto { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 800; }
+.pago-monto.credito { color: #2ecc71; }
+.pago-monto.debito { color: var(--naranja); }
+
+/* PANEL — config */
+.config-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.config-item:last-child { border-bottom: none; }
+.config-label { font-size: 0.9rem; font-weight: 500; }
+.config-sub { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 2px; }
+.toggle { width: 42px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 100px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; border: none; }
+.toggle.on { background: var(--amarillo); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle.on::after { transform: translateX(18px); }
+.btn-danger { background: rgba(255,77,0,0.1); border: 1px solid rgba(255,77,0,0.3); color: var(--naranja); padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.btn-danger:hover { background: rgba(255,77,0,0.2); }
+.panel-logout { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--texto-apagado); border-radius: 8px; padding: 0.8rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'Barlow', sans-serif; margin-top: 1.5rem; transition: all 0.2s; }
+.panel-logout:hover { border-color: var(--naranja); color: var(--naranja); }
+
+/* VERIFICACIÓN */
+.verif-estado-box { display: flex; align-items: center; gap: 1rem; background: rgba(245,216,0,0.05); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1rem 1.2rem; }
+.verif-steps { display: flex; flex-direction: column; gap: 0.8rem; }
+.verif-step { display: flex; align-items: flex-start; gap: 1rem; }
+.verif-step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(245,216,0,0.15); border: 1px solid rgba(245,216,0,0.3); color: var(--amarillo); font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.verif-step-title { font-size: 0.88rem; font-weight: 600; }
+.verif-step-sub { font-size: 0.78rem; color: var(--texto-apagado); margin-top: 2px; line-height: 1.5; }
+.upload-box { background: rgba(255,255,255,0.03); border: 2px dashed rgba(255,255,255,0.12); border-radius: 10px; padding: 1.2rem; cursor: pointer; transition: border-color 0.2s; text-align: center; }
+.upload-box:hover { border-color: rgba(245,216,0,0.4); }
+.upload-preview { font-size: 0.85rem; color: var(--texto-apagado); }
+.upload-preview img { max-height: 120px; border-radius: 8px; margin-top: 0.5rem; }
+.verif-msg { font-size: 0.83rem; padding: 0.6rem 0; line-height: 1.6; }
+.verif-msg.error { color: #ff7755; }
+.verif-msg.ok { color: #2ecc71; }
+
+/* PÁGINAS */
+.page { display: none; padding-top: 72px; min-height: 100vh; }
+.page.active { display: block; }
+
+/* HERO */
+.hero { min-height: calc(100vh - 72px); display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; padding: 4rem 5%; position: relative; overflow: hidden; }
+.hero-bg { position: absolute; inset:0; background: radial-gradient(ellipse 60% 60% at 70% 40%, rgba(245,216,0,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(255,77,0,0.05) 0%, transparent 70%); }
+.diagonal-strip { position: absolute; top: 0; right: 0; bottom: 0; width: 48%; background: var(--gris); clip-path: polygon(8% 0, 100% 0, 100% 100%, 0% 100%); z-index: 0; }
+.hero-content { position: relative; z-index: 2; }
+
+.eyebrow { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--amarillo); margin-bottom: 1.5rem; }
+.eyebrow-dot { width:6px; height:6px; background:var(--amarillo); border-radius:50%; animation: blink 1.8s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(4rem, 7vw, 7rem); font-weight: 900; line-height: 0.93; letter-spacing: -0.5px; text-transform: uppercase; }
+h1 .am { color: var(--amarillo); }
+h1 .out { -webkit-text-stroke: 2px rgba(247,244,238,0.25); color: transparent; }
+
+.hero-desc { margin: 2rem 0 2.5rem; font-size: 1.05rem; color: var(--texto-apagado); line-height: 1.7; max-width: 430px; font-weight: 300; }
+.hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.btn-main { background: var(--amarillo); color: var(--negro); padding: 0.9rem 2rem; border-radius: 6px; font-weight: 700; font-size: 0.95rem; text-decoration: none; border: none; cursor: pointer; font-family: 'Barlow', sans-serif; transition: transform 0.25s, box-shadow 0.25s; }
+.btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(245,216,0,0.35); }
+.btn-outline { border: 1.5px solid rgba(247,244,238,0.2); color: var(--blanco); padding: 0.9rem 2rem; border-radius: 6px; font-weight: 500; font-size: 0.95rem; text-decoration: none; cursor: pointer; background: transparent; font-family: 'Barlow', sans-serif; transition: border-color 0.2s; }
+.btn-outline:hover { border-color: var(--amarillo); }
+
+.hero-stats { display: flex; gap: 2.5rem; margin-top: 3rem; padding-top: 2.5rem; border-top: 1px solid rgba(247,244,238,0.07); }
+.stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 2.4rem; font-weight: 800; color: var(--amarillo); line-height: 1; }
+.stat-label { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 4px; }
+
+.hero-visual { position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; }
+.app-card { background: var(--gris2); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; width: 270px; padding: 1.5rem; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+.app-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+.app-card-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.1rem; color: var(--amarillo); }
+.live-badge { background: rgba(255,77,0,0.15); border: 1px solid rgba(255,77,0,0.3); color: var(--naranja); font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; padding: 3px 8px; border-radius: 100px; display: flex; align-items: center; gap: 4px; }
+.live-dot { width: 5px; height: 5px; background: var(--naranja); border-radius: 50%; animation: blink 1s infinite; }
+.map-box { background: #1a1e2a; border-radius: 12px; height: 140px; position: relative; overflow: hidden; margin-bottom: 1rem; }
+.map-lines { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 22px 22px; }
+.route-line { position: absolute; top: 30px; left: 40px; right: 40px; bottom: 30px; border: 1.5px dashed rgba(245,216,0,0.3); border-radius: 50%; }
+.pin { position: absolute; width: 10px; height: 10px; border-radius: 50%; }
+.pin-start { background: var(--amarillo); top: 28%; left: 28%; }
+.pin-end { background: var(--naranja); bottom: 25%; right: 28%; }
+.car-dot { position: absolute; top: 44%; left: 46%; width: 18px; height: 18px; background: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; animation: moveCar 5s ease-in-out infinite; }
+@keyframes moveCar { 0%,100%{transform:translate(0,0)} 50%{transform:translate(15px,-10px)} }
+.trip-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
+.trip-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 0.7rem; }
+.trip-item-label { font-size: 0.62rem; color: var(--texto-apagado); margin-bottom: 3px; }
+.trip-item-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; }
+.trip-item-val.y { color: var(--amarillo); }
+.confirm-btn { width: 100%; background: var(--amarillo); color: var(--negro); border: none; border-radius: 8px; padding: 0.75rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.float { position: absolute; background: var(--gris); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.72rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4); white-space: nowrap; }
+.float-1 { top: -15px; right: -50px; animation: fa 3s ease-in-out infinite; }
+.float-2 { bottom: 30px; left: -60px; animation: fa 3.5s 1s ease-in-out infinite; }
+.float-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--amarillo); }
+.float-lbl { color: var(--texto-apagado); font-size: 0.65rem; margin-top: 2px; }
+@keyframes fa { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+
+/* SECCIÓN */
+.section { padding: 4rem 5%; }
+.section-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--amarillo); margin-bottom: 1rem; }
+.section-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 900; text-transform: uppercase; line-height: 1; margin-bottom: 1rem; }
+.section-sub { color: var(--texto-apagado); font-weight: 300; max-width: 560px; line-height: 1.7; margin-bottom: 2.5rem; font-size: 1rem; }
+
+/* COMPARATIVA */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 860px; }
+.compare-card { border-radius: 16px; padding: 2rem; border: 1px solid rgba(255,255,255,0.07); position: relative; overflow: hidden; }
+.compare-card.theirs { background: var(--gris); }
+.compare-card.ours { background: linear-gradient(135deg, #1a1700 0%, #1f1c00 100%); border-color: rgba(245,216,0,0.25); }
+.compare-card.ours::after { content: ''; position: absolute; top:0; left:0; right:0; height: 2px; background: var(--amarillo); }
+.compare-badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; margin-bottom: 1.2rem; display: inline-block; }
+.compare-badge.bad { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); }
+.compare-badge.good { background: rgba(245,216,0,0.15); color: var(--amarillo); }
+.compare-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
+.compare-title.muted { color: rgba(255,255,255,0.3); }
+.compare-row { display: flex; align-items: flex-start; gap: 0.7rem; margin-bottom: 0.9rem; font-size: 0.88rem; color: var(--texto-apagado); }
+.compare-row.gr { color: var(--blanco); }
+.ix { color: #ff4444; font-size: 0.9rem; margin-top: 2px; flex-shrink: 0; }
+.ic { color: var(--amarillo); font-size: 0.9rem; margin-top: 2px; flex-shrink: 0; }
+.big-diff { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.07); font-size: 0.72rem; color: var(--texto-apagado); text-transform: uppercase; letter-spacing: 1px; }
+.big-diff .amount { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; display: block; margin-top: 4px; }
+.bad-a { color: rgba(255,68,68,0.7); }
+.good-a { color: var(--amarillo); }
+
+/* FEATURES */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 2rem; }
+.feat-card { background: var(--gris); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 1.8rem; transition: border-color 0.3s, transform 0.3s; }
+.feat-card:hover { border-color: rgba(245,216,0,0.2); transform: translateY(-4px); }
+.feat-icon { font-size: 1.4rem; margin-bottom: 1rem; width: 44px; height: 44px; background: rgba(245,216,0,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.feat-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; }
+.feat-desc { font-size: 0.85rem; color: var(--texto-apagado); line-height: 1.6; font-weight: 300; }
+
+/* TARIFAS */
+.tarifa-box { background: var(--gris); border: 1px solid rgba(245,216,0,0.15); border-radius: 20px; padding: 2.5rem; max-width: 700px; position: relative; overflow: hidden; }
+.tarifa-box::before { content: ''; position: absolute; top:0; left:0; right:0; height: 3px; background: var(--amarillo); }
+.tarifa-row { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tarifa-row:last-child { border-bottom: none; }
+.tarifa-nombre { font-size: 0.95rem; color: var(--texto-apagado); }
+.tarifa-valor { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--amarillo); }
+.tarifa-nota { font-size: 0.72rem; color: rgba(247,244,238,0.3); margin-top: 1.5rem; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
+
+/* SEGURIDAD */
+.security-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+.security-card { background: var(--gris); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 1.8rem; display: flex; align-items: flex-start; gap: 1rem; transition: border-color 0.3s; }
+.security-card:hover { border-color: rgba(245,216,0,0.2); }
+.security-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(245,216,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.security-text-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 5px; }
+.security-text-desc { font-size: 0.83rem; color: var(--texto-apagado); line-height: 1.6; }
+
+/* REGISTRO */
+.registro-selector { display: flex; gap: 1rem; margin-bottom: 2.5rem; }
+.tipo-btn { flex: 1; padding: 1.5rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.08); background: var(--gris); cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Barlow', sans-serif; }
+.tipo-btn:hover { border-color: rgba(245,216,0,0.3); }
+.tipo-btn.active { border-color: var(--amarillo); background: rgba(245,216,0,0.06); }
+.tipo-btn-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+.tipo-btn-label { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; color: var(--blanco); }
+.tipo-btn-sub { font-size: 0.78rem; color: var(--texto-apagado); margin-top: 3px; }
+.form-container { display: none; }
+.form-container.active { display: block; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px; color: var(--texto-apagado); margin-bottom: 6px; text-transform: uppercase; }
+.form-group input, .form-group select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.75rem 1rem; color: var(--blanco); font-family: 'Barlow', sans-serif; font-size: 0.9rem; transition: border-color 0.2s; outline: none; }
+.form-group input:focus, .form-group select:focus { border-color: var(--amarillo); }
+.form-group select option { background: var(--gris2); }
+
+.req-box { background: rgba(245,216,0,0.05); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.req-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--amarillo); margin-bottom: 1rem; letter-spacing: 1px; }
+.req-item { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.7rem; font-size: 0.85rem; color: var(--texto-apagado); line-height: 1.5; }
+.req-item:last-child { margin-bottom: 0; }
+.req-check { color: var(--amarillo); flex-shrink: 0; margin-top: 2px; }
+.form-submit { width: 100%; background: var(--amarillo); color: var(--negro); border: none; border-radius: 6px; padding: 1rem; font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s, transform 0.15s; }
+.form-submit:hover { background: #ffe100; transform: translateY(-1px); }
+
+/* BANNER */
+.banner { background: linear-gradient(135deg, #121000 0%, #0c0c0c 100%); border: 1px solid rgba(245,216,0,0.1); border-radius: 20px; padding: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-top: 3rem; }
+.metric-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.metric-item { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+.metric-label { font-size: 0.82rem; color: var(--texto-apagado); }
+.metric-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--amarillo); }
+
+/* CTA BOTTOM */
+.cta-bottom { background: var(--gris); border-top: 1px solid rgba(245,216,0,0.08); padding: 3rem 5%; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+.cta-bottom-text { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 800; text-transform: uppercase; }
+.cta-bottom-text span { color: var(--amarillo); }
+.cta-bottom-btns { display: flex; gap: 1rem; }
+
+/* DIVIDER */
+.divider { height: 1px; background: rgba(255,255,255,0.06); margin: 3rem 0; }
+
+/* SERVICIOS */
+.services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+.service-card { background: var(--gris); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.8rem 1.5rem; text-align: center; transition: border-color 0.3s, transform 0.3s, background 0.3s; position: relative; overflow: hidden; cursor: default; }
+.service-card:hover { border-color: rgba(245,216,0,0.35); transform: translateY(-5px); background: linear-gradient(160deg, #1a1700 0%, #161616 100%); }
+.service-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--amarillo); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
+.service-card:hover::after { transform: scaleX(1); }
+.service-emoji { font-size: 2.2rem; margin-bottom: 1rem; display: block; line-height: 1; }
+.service-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.15rem; font-weight: 800; text-transform: uppercase; color: var(--blanco); margin-bottom: 0.5rem; }
+.service-desc { font-size: 0.8rem; color: var(--texto-apagado); line-height: 1.6; font-weight: 300; }
+.service-tag { display: inline-block; margin-top: 0.9rem; font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amarillo); background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.2); border-radius: 100px; padding: 3px 10px; }
+
+/* FOOTER */
+footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footer-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--amarillo); }
+.footer-copy { font-size: 0.78rem; color: rgba(247,244,238,0.25); }
+.footer-wa { color: var(--amarillo); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .diagonal-strip, .float-1, .float-2 { display: none; }
+  .hero-visual { margin-top: 3rem; }
+  .compare-grid, .features-grid, .security-grid, .form-grid, .banner { grid-template-columns: 1fr; }
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .tabs-nav { display: none; }
+  .mobile-tabs-bar { display: flex !important; }
+}
+.mobile-tabs-bar { display: none; overflow-x: auto; gap: 4px; padding: 0.5rem 5%; background: var(--gris); border-bottom: 1px solid rgba(255,255,255,0.06); position: fixed; top: 62px; left:0; right:0; z-index:99; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home',null)">PEPE <span>CONDUCTORES</span></div>
+  <div class="tabs-nav">
+    <button class="tab-nav-btn active" onclick="showPage('home',this)">🏠 Inicio</button>
+    <button class="tab-nav-btn" onclick="showPage('conductor',this)">🚗 Conductores</button>
+    <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
+    <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
+    <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Registro</button>
+  </div>
+  <div style="display:flex;gap:0.6rem;align-items:center;">
+    <button class="btn-nav" id="btn-login-nav" onclick="openLogin()">Iniciar sesión</button>
+    <button class="btn-nav-user" id="btn-user-nav" onclick="openPanel()">
+      <span>👤</span><span id="nav-user-name">Mi cuenta</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE TABS -->
+<div class="mobile-tabs-bar">
+  <button class="tab-nav-btn active" onclick="showPage('home',this)">🏠 Inicio</button>
+  <button class="tab-nav-btn" onclick="showPage('conductor',this)">🚗 Conductores</button>
+  <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
+  <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
+  <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Registro</button>
+</div>
+
+<!-- ═══════ INICIO ═══════ -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="diagonal-strip"></div>
+    <div class="hero-content">
+      <div class="eyebrow"><span class="eyebrow-dot"></span>La app argentina de transporte</div>
+      <h1>Viajá<br><span class="am">sin</span><br><span class="out">sorpresas</span></h1>
+      <p class="hero-desc">Tarifa fija. Sin comisiones abusivas. Conductores profesionales verificados. Pepe Conductores conecta pasajeros y conductores de manera justa y transparente.</p>
+      <div class="hero-ctas">
+        <button class="btn-main" onclick="showPage('registro',null)">Quiero registrarme</button>
+        <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num">$200</div><div class="stat-label">Costo fijo por solicitud</div></div>
+        <div><div class="stat-num">$1.100</div><div class="stat-label">Tarifa por kilómetro</div></div>
+        <div><div class="stat-num">0%</div><div class="stat-label">Comisión al conductor</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="float float-1"><div class="float-val">$1.300</div><div class="float-lbl">Primer km total</div></div>
+      <div class="app-card">
+        <div class="app-card-header"><div class="app-card-logo">PEPE</div><div class="live-badge"><span class="live-dot"></span>EN VIVO</div></div>
+        <div class="map-box"><div class="map-lines"></div><div class="route-line"></div><div class="pin pin-start"></div><div class="pin pin-end"></div><div class="car-dot">🚗</div></div>
+        <div class="trip-info">
+          <div class="trip-item"><div class="trip-item-label">Distancia</div><div class="trip-item-val">3.2 km</div></div>
+          <div class="trip-item"><div class="trip-item-label">Costo total</div><div class="trip-item-val y">$3.720</div></div>
+          <div class="trip-item"><div class="trip-item-label">ETA</div><div class="trip-item-val">4 min</div></div>
+          <div class="trip-item"><div class="trip-item-label">Solicitud</div><div class="trip-item-val y">$200</div></div>
+        </div>
+        <button class="confirm-btn">Confirmar viaje</button>
+      </div>
+      <div class="float float-2"><div class="float-val">✓ Verificado</div><div class="float-lbl">Conductor habilitado</div></div>
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <div class="section">
+    <div class="section-label">Nuestros servicios</div>
+    <h2 class="section-title">Un servicio para<br>cada necesidad</h2>
+    <p class="section-sub">Desde traslados personales hasta logística y servicios especializados. Pepe Conductores cubre todo con conductores profesionales verificados.</p>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <span class="service-emoji">🚖</span>
+        <div class="service-name">Taxi / Remis</div>
+        <div class="service-desc">Traslados urbanos e interurbanos con tarifa fija por kilómetro. Sin sorpresas ni precios dinámicos.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">🏍️</span>
+        <div class="service-name">Moto</div>
+        <div class="service-desc">Traslados rápidos y envíos express en moto para llegar antes y pagar menos.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+
+      <div class="service-card">
+        <span class="service-emoji">📦</span>
+        <div class="service-name">Cadetería</div>
+        <div class="service-desc">Envío de paquetes y documentación con seguimiento en tiempo real y entrega garantizada.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">🚑</span>
+        <div class="service-name">Ambulancia</div>
+        <div class="service-desc">Traslados sanitarios no urgentes con vehículos habilitados y conductores capacitados.</div>
+        <span class="service-tag">Servicio especial</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">🚛</span>
+        <div class="service-name">Transporte pesado</div>
+        <div class="service-desc">Carga y logística de gran volumen con choferes profesionales y vehículos habilitados para el traslado.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">🚐</span>
+        <div class="service-name">Taxiflet</div>
+        <div class="service-desc">Para mudanzas o cuando necesitás trasladar cosas que no entran en un auto. Más espacio, mismo precio justo.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">🔑</span>
+        <div class="service-name">Alquiler de vehículo</div>
+        <div class="service-desc">Alquilá un vehículo sin conductor para usarlo cuando y como quieras. Total libertad y autonomía.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">👨‍✈️</span>
+        <div class="service-name">Conductor designado</div>
+        <div class="service-desc">Un conductor profesional verificado al volante de tu propio vehículo.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+      <div class="service-card">
+        <span class="service-emoji">⛏️</span>
+        <div class="service-name">Transporte de áridos</div>
+        <div class="service-desc">Traslado de materiales de construcción: arena, piedra, ripio y más, con camiones adecuados.</div>
+        <span class="service-tag">Disponible</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-bottom">
+    <div class="cta-bottom-text">El transporte que <span>Argentina</span> se merece</div>
+    <div class="cta-bottom-btns">
+      <button class="btn-main" onclick="showPage('registro',null)">Registrarme ahora</button>
+      <a href="https://wa.me/5493875157437" target="_blank" class="btn-outline">💬 WhatsApp</a>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">PEPE CONDUCTORES</div>
+    <div class="footer-copy">© 2026 Pepe Conductores. Todos los derechos reservados.</div>
+    <a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a>
+  </footer>
+</div>
+
+<!-- ═══════ CONDUCTORES ═══════ -->
+<div id="page-conductor" class="page">
+  <div class="section">
+    <div class="section-label">Para conductores</div>
+    <h2 class="section-title">Trabajá para vos,<br>no para la app</h2>
+    <p class="section-sub">Cansado de que otras apps se queden con hasta el 40% de cada viaje? Con Pepe pagás una tarifa fija por solicitud y el resto es tuyo.</p>
+    <div class="compare-grid">
+      <div class="compare-card theirs">
+        <span class="compare-badge bad">Otras apps</span>
+        <div class="compare-title muted">El modelo de siempre</div>
+        <div class="compare-row"><span class="ix">✕</span> Comisión del 15% al 40% por viaje</div>
+        <div class="compare-row"><span class="ix">✕</span> Tarifa dinámica: sube y baja sin aviso</div>
+        <div class="compare-row"><span class="ix">✕</span> Conductor desprotegido ante pasajeros</div>
+        <div class="compare-row"><span class="ix">✕</span> Descuentos que no acordaste</div>
+        <div class="compare-row"><span class="ix">✕</span> Soporte difícil de contactar</div>
+        <div class="big-diff">En un viaje de $3.000 te descuentan<br><span class="amount bad-a">–$900 a –$1.200</span></div>
+      </div>
+      <div class="compare-card ours">
+        <span class="compare-badge good">Pepe Conductores</span>
+        <div class="compare-title">La diferencia real</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Por solicitud $200 que paga el solicitante</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Tarifa fija por km, sin precio dinámico</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Podés cancelar por mal comportamiento</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Registrá viajes y ganancias en tiempo real</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Billetera virtual propia en la app</div>
+        <div class="big-diff">En ese mismo viaje de $3.000 el usuario paga<br><span class="amount good-a">solo $200</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Tarifas</div>
+    <h2 class="section-title">Claro y sin letra chica</h2>
+    <div class="tarifa-box">
+      <div class="tarifa-row"><span class="tarifa-nombre">💡 Costo de solicitud (lo paga el pasajero)</span><span class="tarifa-valor">$200</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">📍 Tarifa por kilómetro</span><span class="tarifa-valor">$1.100</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor">$1.300</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">💰 Comisión de la app al conductor</span><span class="tarifa-valor" style="color:#4cff91;">$0</span></div>
+      <div class="tarifa-nota">⚠️ Todos los valores están sujetos a cambios derivados del precio del litro de combustible. El primer kilómetro no puede fraccionarse.</div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Funcionalidades</div>
+    <h2 class="section-title">Todo lo que necesitás</h2>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">💼</div><div class="feat-title">Billetera virtual</div><div class="feat-desc">Control de ganancias en tiempo real desde la app.</div></div>
+      <div class="feat-card"><div class="feat-icon">🛡️</div><div class="feat-title">Cancelación protegida</div><div class="feat-desc">Si el pasajero fuma, bebe o consume en el vehículo, podés terminar el viaje sin penalización.</div></div>
+      <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Registro de viajes</div><div class="feat-desc">Historial detallado de cada viaje con cobro, comisión y estadísticas de tu turno.</div></div>
+      <div class="feat-card"><div class="feat-icon">⭐</div><div class="feat-title">Calificá pasajeros</div><div class="feat-desc">Sistema de "Me gustó / No me gustó". Podés bloquear usuarios problemáticos.</div></div>
+      <div class="feat-card"><div class="feat-icon">🔔</div><div class="feat-title">Alertas de documentación</div><div class="feat-desc">La app te avisa antes de que venzan tu seguro, VTV, carnet y habilitación.</div></div>
+      <div class="feat-card"><div class="feat-icon">🗓️</div><div class="feat-title">Horario flexible</div><div class="feat-desc">Activá y desactivá tu disponibilidad cuando quieras. Vos mandás.</div></div>
+    </div>
+    <div class="banner">
+      <div>
+        <div class="section-label">¿Sos conductor profesional?</div>
+        <h3 class="section-title" style="font-size:2.2rem;">Sumate desde<br>el primer día</h3>
+        <p class="section-sub" style="margin-bottom:1.5rem;">Pepe Conductores busca choferes de taxi, remis, moto y más.</p>
+        <button class="btn-main" onclick="showPage('registro',null)">Quiero ser conductor</button>
+      </div>
+      <div class="metric-list">
+        <div class="metric-item"><span class="metric-label">Comisión por viaje</span><span class="metric-val">$0 — Ninguna</span></div>
+        <div class="metric-item"><span class="metric-label">Tarifa dinámica</span><span class="metric-val">No existe</span></div>
+        <div class="metric-item"><span class="metric-label">Plataformas</span><span class="metric-val">iOS + Android</span></div>
+        <div class="metric-item"><span class="metric-label">Horario</span><span class="metric-val">100% flexible</span></div>
+        <div class="metric-item"><span class="metric-label">Lanzamiento</span><span class="metric-val">Dic. 2026</span></div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+</div>
+
+<!-- ═══════ PASAJEROS ═══════ -->
+<div id="page-pasajero" class="page">
+  <div class="section">
+    <div class="section-label">Para pasajeros</div>
+    <h2 class="section-title">Viajá cuando querés,<br>al precio que acordás</h2>
+    <p class="section-sub">Conocés el costo exacto antes de confirmar. Elegís el tipo de vehículo y conductor. Sin sorpresas, sin tarifas dinámicas.</p>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">🗺️</div><div class="feat-title">Costo antes de salir</div><div class="feat-desc">El pasajero ve el costo estimado antes de confirmar. Sin sorpresas de ningún lado. Puede agregar paradas si lo desea, siempre y cuando el conductor esté de acuerdo.</div></div>
+      <div class="feat-card"><div class="feat-icon">👤</div><div class="feat-title">Elegí tu conductor</div><div class="feat-desc">Podés elegir tipo de vehículo (grande o chico), con o sin baúl, y el género del conductor.</div></div>
+      <div class="feat-card"><div class="feat-icon">📍</div><div class="feat-title">Recorrido visible</div><div class="feat-desc">Podés ver el recorrido que hará el auto para llevarte a destino en tiempo real.</div></div>
+      <div class="feat-card"><div class="feat-icon">💬</div><div class="feat-title">Comunicación directa</div><div class="feat-desc">Mensajes y llamadas disponibles antes de iniciar el viaje para coordinar con el conductor.</div></div>
+      <div class="feat-card"><div class="feat-icon">🚫</div><div class="feat-title">Cancelación por mala conducta</div><div class="feat-desc">Podés cancelar el viaje por mala conducta del conductor especificando siempre el motivo.</div></div>
+      <div class="feat-card"><div class="feat-icon">📦</div><div class="feat-title">Objetos perdidos</div><div class="feat-desc">Contacto directo con atención al cliente a través de la app en caso de pérdida de algún objeto.</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Tarifas para el pasajero</div>
+    <h2 class="section-title">Precio fijo, siempre</h2>
+    <div class="tarifa-box">
+      <div class="tarifa-row"><span class="tarifa-nombre">💡 Solicitud del vehículo</span><span class="tarifa-valor">$200</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">📍 Por cada kilómetro</span><span class="tarifa-valor">$1.100</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor">$1.300</span></div>
+      <div class="tarifa-nota">⚠️ No existe tarifa dinámica en Pepe Conductores. El precio no sube por lluvia, hora pico ni alta demanda. Todos los valores están sujetos a cambios derivados del precio del combustible.</div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">¿Cómo funciona?</div>
+    <h2 class="section-title">Simple en 5 pasos</h2>
+    <div class="features-grid" style="grid-template-columns:repeat(5,1fr);">
+      <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">01</div><div class="feat-title">Descargá la app</div><div class="feat-desc">Registrate con tu DNI vinculado a tu único teléfono.</div></div>
+      <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">02</div><div class="feat-title">Ingresá destino</div><div class="feat-desc">Ves el recorrido y el costo exacto antes de confirmar.</div></div>
+      <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">03</div><div class="feat-title">Elegí vehículo</div><div class="feat-desc">Tipo de auto, baúl y preferencia de género del conductor.</div></div>
+      <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">04</div><div class="feat-title">Viajá seguro</div><div class="feat-desc">Conductor verificado y recorrido visible en todo momento.</div></div>
+      <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">05</div><div class="feat-title">Registro único</div><div class="feat-desc">Cada usuario tiene un registro imposible de duplicar para mayor seguridad de todos.</div></div>
+    </div>
+  </div>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+</div>
+
+<!-- ═══════ SEGURIDAD ═══════ -->
+<div id="page-seguridad" class="page">
+  <div class="section">
+    <div class="section-label">Seguridad</div>
+    <h2 class="section-title">Tu seguridad<br>no es opcional</h2>
+    <p class="section-sub">Cada usuario verificado. Cada conductor habilitado. Cada viaje registrado. La transparencia es la base de Pepe Conductores.</p>
+    <div class="security-grid">
+      <div class="security-card"><div class="security-icon">🪪</div><div><div class="security-text-title">Registro por DNI único</div><div class="security-text-desc">Cuenta vinculada a un solo teléfono. Nadie puede usar tu cuenta desde otro dispositivo. Imposible de duplicar.</div></div></div>
+      <div class="security-card"><div class="security-icon">🔒</div><div><div class="security-text-title">Cifrado de datos</div><div class="security-text-desc">Tu información personal está protegida con cifrado en toda la plataforma. Tus datos solo te pertenecen a vos.</div></div></div>
+      <div class="security-card"><div class="security-icon">📋</div><div><div class="security-text-title">Antecedentes verificados</div><div class="security-text-desc">Cada conductor pasa por verificación de antecedentes penales nacionales y provinciales antes de operar.</div></div></div>
+      <div class="security-card"><div class="security-icon">📸</div><div><div class="security-text-title">Foto de validación</div><div class="security-text-desc">Foto tipo carnet obligatoria para conductores y pasajeros. En versiones futuras, foto instantánea al solicitar el viaje.</div></div></div>
+      <div class="security-card"><div class="security-icon">🚗</div><div><div class="security-text-title">Revisión vehicular cada 6 meses</div><div class="security-text-desc">Inspección ocular obligatoria para garantizar que el vehículo está en condiciones óptimas de seguridad.</div></div></div>
+      <div class="security-card"><div class="security-icon">📄</div><div><div class="security-text-title">Documentación al día</div><div class="security-text-desc">La app controla vencimientos de seguro, VTV, carnet, cédula y habilitación. Si vence, el conductor queda bloqueado hasta regularizar.</div></div></div>
+      <div class="security-card"><div class="security-icon">🚨</div><div><div class="security-text-title">Cancelación por mala conducta</div><div class="security-text-desc">Conductores y pasajeros pueden cancelar el viaje ante situaciones de riesgo, especificando siempre el motivo.</div></div></div>
+      <div class="security-card"><div class="security-icon">🏛️</div><div><div class="security-text-title">Cumplimiento normativo</div><div class="security-text-desc">Solo conductores con categoría profesional habilitada. Cumplimiento de todas las regulaciones provinciales y municipales vigentes.</div></div></div>
+    </div>
+  </div>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+</div>
+
+<!-- ═══════ REGISTRO ═══════ -->
+<div id="page-registro" class="page">
+  <div class="section">
+    <div class="section-label">Registrate</div>
+    <h2 class="section-title">Completá tus datos y sé parte<br>de esta revolución en el transporte</h2>
+    <p class="section-sub">Seleccioná si sos conductor o pasajero para ver los requisitos y completar tu registro.</p>
+
+    <div class="registro-selector">
+      <div class="tipo-btn active" id="btn-conductor" onclick="switchTipo('conductor')">
+        <span class="tipo-btn-icon">🚗</span>
+        <div class="tipo-btn-label">Soy conductor</div>
+        <div class="tipo-btn-sub">Taxi, remis, moto y más</div>
+      </div>
+      <div class="tipo-btn" id="btn-pasajero" onclick="switchTipo('pasajero')">
+        <span class="tipo-btn-icon">👤</span>
+        <div class="tipo-btn-label">Soy pasajero</div>
+        <div class="tipo-btn-sub">Quiero usar el servicio</div>
+      </div>
+    </div>
+
+    <!-- FORM CONDUCTOR -->
+    <div class="form-container active" id="form-conductor">
+      <div class="form-grid">
+        <div>
+          <div class="req-box">
+            <div class="req-title">📋 Requisitos para conductores</div>
+            <div class="req-item"><span class="req-check">✓</span> Carnet de conducir D1 jurisdiccional o interjurisdiccional vigente (indicar fecha de vencimiento en el formulario)</div>
+            <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
+            <div class="req-item"><span class="req-check">✓</span> Foto tipo carnet reciente</div>
+            <div class="req-item"><span class="req-check">✓</span> Antecedentes penales nacionales al día</div>
+          </div>
+          <div class="form-group"><label>Nombre completo</label><input type="text" placeholder="Juan Pérez"></div>
+          <div class="form-group"><label>Número de DNI</label><input type="text" placeholder="30.123.456"></div>
+          <div class="form-group"><label>Teléfono</label><input type="tel" placeholder="+54 9 387 000-0000"></div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Tipo de vehículo</label>
+            <select>
+              <option>Taxi / Remis</option>
+              <option>Moto</option>
+              <option>Camioneta</option>
+              <option>Cadetería</option>
+              <option>Ambulancia</option>
+              <option>Transporte pesado</option>
+              <option>Taxiflet</option>
+              <option>Transporte de áridos</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tipo de carnet</label>
+            <select><option>D1 Jurisdiccional</option><option>D1 Interjurisdiccional</option></select>
+          </div>
+          <div class="form-group"><label>Vencimiento del carnet</label><input type="date"></div>
+          <div class="form-group">
+            <label>Provincia</label>
+            <select><option>Salta</option><option>Buenos Aires</option><option>Córdoba</option><option>Tucumán</option><option>Otra</option></select>
+          </div>
+          <button class="form-submit" onclick="handleSubmit(this)">Enviar solicitud como conductor ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM PASAJERO -->
+    <div class="form-container" id="form-pasajero">
+      <div class="form-grid">
+        <div>
+          <div class="req-box">
+            <div class="req-title">📋 Requisitos para pasajeros</div>
+            <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
+            <div class="req-item"><span class="req-check">✓</span> Foto selfie tipo carnet: sin gorra, sin anteojos, sin nada que cubra la cara. El rostro debe verse completo y con buena iluminación.</div>
+          </div>
+          <div class="form-group"><label>Nombre completo</label><input type="text" placeholder="María García"></div>
+          <div class="form-group"><label>Número de DNI</label><input type="text" placeholder="35.678.901"></div>
+          <div class="form-group"><label>Teléfono</label><input type="tel" placeholder="+54 9 387 000-0000"></div>
+        </div>
+        <div>
+          <div class="form-group"><label>Ciudad</label><input type="text" placeholder="Salta Capital"></div>
+          <div class="form-group">
+            <label>Provincia</label>
+            <select><option>Salta</option><option>Buenos Aires</option><option>Córdoba</option><option>Tucumán</option><option>Otra</option></select>
+          </div>
+          <div class="form-group">
+            <label>¿Cómo nos conociste?</label>
+            <select><option>Redes sociales</option><option>Un amigo / conocido</option><option>Medios de comunicación</option><option>Conductor de Pepe</option></select>
+          </div>
+          <button class="form-submit" onclick="handleSubmit(this)">Enviar solicitud como pasajero ✓</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+</div>
+
+<!-- ═══════ MODAL LOGIN ═══════ -->
+<div class="modal-overlay" id="modal-login">
+  <div class="login-modal">
+    <button class="modal-close" onclick="closeLogin()">✕</button>
+    <div class="modal-logo">PEPE</div>
+    <div class="modal-title">Bienvenido</div>
+    <p class="modal-sub">Accedé a tu cuenta o registrate gratis</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchLoginTab('login', this)">Iniciar sesión</button>
+      <button class="modal-tab" onclick="switchLoginTab('register', this)">Registrarme</button>
+    </div>
+    <div id="modal-error" class="modal-error"></div>
+    <div id="modal-success" class="modal-success"></div>
+
+    <!-- LOGIN -->
+    <div class="modal-form active" id="mf-login">
+      <div class="mfg"><label>Email</label><input type="email" id="login-email" placeholder="tu@email.com"></div>
+      <div class="mfg"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="modal-btn" id="btn-login-submit" onclick="doLogin()">Ingresar →</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div class="modal-form" id="mf-register">
+      <div class="mfg"><label>Nombre completo</label><input type="text" id="reg-nombre" placeholder="Juan Pérez"></div>
+      <div class="mfg"><label>Email</label><input type="email" id="reg-email" placeholder="tu@email.com"></div>
+      <div class="mfg"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
+      <p style="font-size:0.78rem;color:var(--texto-apagado);margin-bottom:1rem;line-height:1.6;">Con una sola cuenta podés usar Pepe tanto como pasajero como conductor.</p>
+      <button class="modal-btn" id="btn-reg-submit" onclick="doRegister()">Crear cuenta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL PANEL USUARIO ═══════ -->
+<div class="modal-overlay" id="modal-panel">
+  <div class="panel-modal">
+    <button class="modal-close" onclick="closePanel()" style="position:absolute;top:1rem;right:1rem;">✕</button>
+    <div class="panel-header">
+      <div class="panel-user-info">
+        <div class="panel-avatar" id="panel-avatar">👤</div>
+        <div>
+          <div class="panel-user-name" id="panel-nombre">—</div>
+          <div class="panel-user-email" id="panel-email">—</div>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="rol-switch-btn active" id="rol-pasajero" onclick="switchRol('pasajero')">👤 Pasajero</button>
+            <button class="rol-switch-btn" id="rol-conductor" onclick="switchRol('conductor')">🚗 Conductor</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-tabs">
+        <button class="panel-tab active" onclick="switchPanel('datos', this)">📋 Mis datos</button>
+        <button class="panel-tab" onclick="switchPanel('viajes', this)">🗺️ Viajes</button>
+        <button class="panel-tab" onclick="switchPanel('pagos', this)">💳 Pagos</button>
+        <button class="panel-tab" onclick="switchPanel('config', this)">⚙️ Configuración</button>
+        <button class="panel-tab" onclick="switchPanel('extra1', this)">🔜 Próximamente</button>
+        <button class="panel-tab" onclick="switchPanel('verificacion', this)">🪪 Verificación</button>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <!-- DATOS -->
+      <div class="panel-section active" id="ps-datos">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+          <div class="panel-section-title" style="margin-bottom:0;">Mis datos personales</div>
+          <button id="btn-editar-datos" onclick="toggleEditDatos()" style="background:transparent;border:1.5px solid rgba(245,216,0,0.35);color:var(--amarillo);padding:0.4rem 1rem;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;">✏️ Editar</button>
+          <button id="btn-guardar-datos" onclick="guardarDatos()" style="display:none;background:var(--amarillo);border:none;color:var(--negro);padding:0.4rem 1rem;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;">✓ Guardar</button>
+        </div>
+
+        <!-- VISTA -->
+        <div class="datos-grid" id="datos-vista">
+          <div class="dato-item"><div class="dato-label">Nombre completo</div><div class="dato-val" id="d-nombre">—</div></div>
+          <div class="dato-item"><div class="dato-label">Apodo / Como te llamamos</div><div class="dato-val" id="d-apodo">—</div></div>
+          <div class="dato-item"><div class="dato-label">DNI</div><div class="dato-val" id="d-dni">—</div></div>
+          <div class="dato-item"><div class="dato-label">Teléfono</div><div class="dato-val" id="d-tel">—</div></div>
+          <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email">—</div></div>
+          <div class="dato-item"><div class="dato-label">Miembro desde</div><div class="dato-val" id="d-fecha">—</div></div>
+          <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" style="color:#2ecc71;">✓ Activo</div></div>
+          <div class="dato-item"><div class="dato-label">Verificación</div><div class="dato-val" id="d-verificado">—</div></div>
+          <div class="dato-item"><div class="dato-label">Roles habilitados</div><div class="dato-val" style="color:var(--amarillo);">👤 Pasajero + 🚗 Conductor</div></div>
+        </div>
+
+        <!-- EDICIÓN -->
+        <div class="datos-grid" id="datos-edicion" style="display:none;">
+          <div class="dato-item"><div class="dato-label">Nombre completo</div><input id="e-nombre" type="text" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;"></div>
+          <div class="dato-item"><div class="dato-label">Apodo / Como te llamamos</div><input id="e-apodo" type="text" placeholder="Ej: Pepe, Caro, El Ruso..." style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;"></div>
+          <div class="dato-item"><div class="dato-label">DNI</div><input id="e-dni" type="text" placeholder="00.000.000" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;"></div>
+          <div class="dato-item"><div class="dato-label">Teléfono</div><input id="e-tel" type="tel" placeholder="+54 9 387 000-0000" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;"></div>
+          <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email-edit" style="font-size:0.82rem;color:var(--texto-apagado);margin-top:4px;">—</div><div style="font-size:0.68rem;color:rgba(255,255,255,0.2);margin-top:3px;">El email no se puede modificar</div></div>
+        </div>
+        <div id="datos-msg" style="font-size:0.82rem;margin-top:1rem;display:none;"></div>
+      </div>
+
+      <!-- VIAJES -->
+      <div class="panel-section" id="ps-viajes">
+        <div class="panel-section-title">Historial de viajes</div>
+        <div class="viaje-empty">🗺️ Tus viajes aparecerán aquí una vez que uses la app.<br><br>Disponible desde Diciembre 2026.</div>
+      </div>
+
+      <!-- PAGOS -->
+      <div class="panel-section" id="ps-pagos">
+        <div class="panel-section-title">Historial de pagos</div>
+        <div class="viaje-empty">💳 Tus movimientos aparecerán aquí.<br><br>Disponible desde Diciembre 2026.</div>
+      </div>
+
+      <!-- CONFIG -->
+      <div class="panel-section" id="ps-config">
+        <div class="panel-section-title">Configuración</div>
+        <div class="config-item">
+          <div><div class="config-label">Notificaciones push</div><div class="config-sub">Recibí alertas de viajes y novedades</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="config-item">
+          <div><div class="config-label">Notificaciones por email</div><div class="config-sub">Resumen semanal de actividad</div></div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="config-item">
+          <div><div class="config-label">Modo oscuro</div><div class="config-sub">Siempre activado en Pepe</div></div>
+          <button class="toggle on" disabled></button>
+        </div>
+        <div class="config-item">
+          <div><div class="config-label">Compartir ubicación</div><div class="config-sub">Necesario para solicitar viajes</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div style="margin-top:1.5rem;">
+          <button class="btn-danger" onclick="confirmDelete()">🗑️ Eliminar mi cuenta</button>
+        </div>
+      </div>
+
+      <!-- PRÓXIMAMENTE -->
+      <div class="panel-section" id="ps-extra1">
+        <div class="panel-section-title">Próximamente</div>
+        <div class="viaje-empty" style="padding:3rem 1rem;">
+          🚀 Esta sección está en desarrollo.<br><br>
+          Nuevas funcionalidades llegarán con el lanzamiento de la app en Diciembre 2026.
+        </div>
+      </div>
+
+      <!-- VERIFICACIÓN -->
+      <div class="panel-section" id="ps-verificacion">
+        <div class="panel-section-title">Verificación de identidad</div>
+        <div class="verif-intro">
+          <div class="verif-estado-box">
+            <div style="font-size:2rem;">🪪</div>
+            <div>
+              <div style="font-weight:600;font-size:0.95rem;">Estado de verificación</div>
+              <div id="verif-badge" style="color:var(--texto-apagado);font-size:0.85rem;margin-top:3px;">⚠ Sin verificar</div>
+            </div>
+          </div>
+          <p style="font-size:0.85rem;color:var(--texto-apagado);line-height:1.7;margin:1.2rem 0;">Para usar todos los servicios de Pepe Conductores necesitamos verificar tu identidad. Es un proceso rápido y tus datos están protegidos con cifrado.</p>
+          <div class="verif-steps">
+            <div class="verif-step"><span class="verif-step-num">1</span><div><div class="verif-step-title">Foto del DNI</div><div class="verif-step-sub">Frente y dorso en una sola imagen, con buena iluminación.</div></div></div>
+            <div class="verif-step"><span class="verif-step-num">2</span><div><div class="verif-step-title">Selfie de validación</div><div class="verif-step-sub">Sin gorra, sin anteojos, rostro completo visible.</div></div></div>
+            <div class="verif-step"><span class="verif-step-num">3</span><div><div class="verif-step-title">Revisión manual</div><div class="verif-step-sub">Nuestro equipo valida los documentos en 24-48 hs.</div></div></div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;">
+          <div class="mfg">
+            <label>📄 Foto del DNI (frente y dorso)</label>
+            <div class="upload-box" onclick="document.getElementById('upload-dni').click()">
+              <input type="file" id="upload-dni" accept="image/*" style="display:none" onchange="previewFile(this,'prev-dni')">
+              <div id="prev-dni" class="upload-preview">📎 Tocar para seleccionar imagen</div>
+            </div>
+          </div>
+          <div class="mfg">
+            <label>🤳 Selfie de validación</label>
+            <div class="upload-box" onclick="document.getElementById('upload-selfie').click()">
+              <input type="file" id="upload-selfie" accept="image/*" capture="user" style="display:none" onchange="previewFile(this,'prev-selfie')">
+              <div id="prev-selfie" class="upload-preview">📎 Tocar para seleccionar imagen</div>
+            </div>
+          </div>
+          <div id="verif-status" class="verif-msg"></div>
+          <button class="modal-btn" id="btn-verificar" onclick="doVerificacion()">Enviar verificación →</button>
+        </div>
+      </div>
+
+      <button class="panel-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+    authDomain: "pepe-conductores.firebaseapp.com",
+    projectId: "pepe-conductores",
+    storageBucket: "pepe-conductores.firebasestorage.app",
+    messagingSenderId: "443201366396",
+    appId: "1:443201366396:web:bca7754157145474fb9cf9",
+    measurementId: "G-FBZTSZLSW9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // ── Estado auth (solo para reload de página) ──
+  let _primeraVez = true;
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window._currentUid = user.uid;
+      window._currentAuth = auth;
+      window._currentDb = db;
+      window._currentDoc = doc;
+      window._currentUpdateDoc = updateDoc;
+      window._currentUpdateProfile = updateProfile;
+      await cargarYMostrarPanel(user, _primeraVez ? false : false);
+      _primeraVez = false;
+    } else {
+      _primeraVez = false;
+      window._currentUid = null;
+      window._currentAuth = null;
+      window._currentUpdateProfile = null;
+      document.getElementById('btn-login-nav').style.display = 'block';
+      document.getElementById('btn-user-nav').style.display = 'none';
+      const limpiar = ['panel-nombre','panel-email','d-nombre','d-apodo','d-email','d-email-edit','d-dni','d-tel','d-rol','d-fecha','d-verificado'];
+      limpiar.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '—'; });
+      document.getElementById('panel-avatar').textContent = '👤';
+      document.getElementById('nav-user-name').textContent = 'Mi cuenta';
+      ['e-nombre','e-apodo','e-dni','e-tel'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    }
+  });
+
+  // ── Login ──
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const btn = document.getElementById('btn-login-submit');
+    clearMsgs();
+    if (!email || !pass) return showError('Completá todos los campos.');
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      btn.disabled = false; btn.textContent = 'Ingresar →';
+      closeLogin();
+      await cargarYMostrarPanel(cred.user);
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Ingresar →';
+      showError(firebaseError(e.code));
+    }
+  };
+
+  // ── Cargar datos y abrir panel ──
+  async function cargarYMostrarPanel(user, abrirPanel = true) {
+    let nombre = user.displayName || user.email.split('@')[0];
+    let rol = 'pasajero';
+    let dni = '—';
+    let tel = '—';
+    let apodo = '—';
+    try {
+      const snap = await getDoc(doc(db, "usuarios", user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        nombre = data.nombre || nombre;
+        rol = data.rol || rol;
+        dni = data.dni || '—';
+        tel = data.tel || '—';
+        apodo = data.apodo || '—';
+      }
+    } catch(e) {}
+
+    const fecha = user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
+    const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
+
+    document.getElementById('btn-login-nav').style.display = 'none';
+    document.getElementById('btn-user-nav').style.display = 'flex';
+    document.getElementById('nav-user-name').textContent = (apodo !== '—' ? apodo : nombre.split(' ')[0]);
+    document.getElementById('panel-nombre').textContent = nombre;
+    document.getElementById('panel-email').textContent = user.email;
+    document.getElementById('panel-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+    document.getElementById('panel-avatar').textContent = rol === 'conductor' ? '🚗' : '👤';
+    document.getElementById('d-nombre').textContent = nombre;
+    document.getElementById('d-apodo').textContent = apodo;
+    document.getElementById('d-email').textContent = user.email;
+    document.getElementById('d-email-edit').textContent = user.email;
+    document.getElementById('d-dni').textContent = dni;
+    document.getElementById('d-tel').textContent = tel;
+    document.getElementById('d-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+    document.getElementById('d-fecha').textContent = fecha;
+    document.getElementById('d-verificado').textContent = verificado;
+    document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
+    document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
+    document.getElementById('e-dni').value = dni !== '—' ? dni : '';
+    document.getElementById('e-tel').value = tel !== '—' ? tel : '';
+
+    window._currentUid = user.uid;
+    window._currentAuth = auth;
+    window._currentDb = db;
+    window._currentDoc = doc;
+    window._currentUpdateDoc = updateDoc;
+    window._currentUpdateProfile = updateProfile;
+
+    if (abrirPanel) openPanel();
+  }
+
+  // ── Registro ──
+  window.doRegister = async function() {
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+    const btn = document.getElementById('btn-reg-submit');
+    clearMsgs();
+    if (!nombre || !email || !pass) return showError('Completá todos los campos.');
+    if (pass.length < 6) return showError('La contraseña debe tener al menos 6 caracteres.');
+    btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: nombre });
+      try {
+        await setDoc(doc(db, "usuarios", cred.user.uid), { nombre, email, roles: ['pasajero', 'conductor'], modoActivo: 'pasajero', creadoEn: new Date().toISOString() });
+      } catch(e) {}
+      showSuccess('¡Cuenta creada! Bienvenido a Pepe Conductores 🎉');
+      setTimeout(async () => { btn.disabled = false; btn.textContent = 'Crear cuenta →'; closeLogin(); await cargarYMostrarPanel(cred.user); }, 1800);
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Crear cuenta →';
+      showError(firebaseError(e.code));
+    }
+  };
+
+  // ── Logout ──
+  window.doLogout = async function() {
+    await signOut(auth);
+    closePanel();
+  };
+
+  // ── Eliminar cuenta ──
+  window.confirmDelete = function() {
+    if (confirm('¿Seguro que querés eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      auth.currentUser?.delete().then(() => closePanel()).catch(() => alert('Para eliminar la cuenta necesitás volver a iniciar sesión primero.'));
+    }
+  };
+
+  // ── Verificación de identidad ──
+  window.doVerificacion = async function() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const dniFile = document.getElementById('upload-dni').files[0];
+    const selfieFile = document.getElementById('upload-selfie').files[0];
+    const btn = document.getElementById('btn-verificar');
+    const statusEl = document.getElementById('verif-status');
+
+    if (!dniFile || !selfieFile) {
+      statusEl.textContent = '⚠ Tenés que subir ambas fotos.';
+      statusEl.className = 'verif-msg error';
+      return;
+    }
+    if (dniFile.size > 5 * 1024 * 1024 || selfieFile.size > 5 * 1024 * 1024) {
+      statusEl.textContent = '⚠ Cada archivo debe pesar menos de 5MB.';
+      statusEl.className = 'verif-msg error';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Subiendo...';
+    statusEl.textContent = '';
+
+    try {
+      const dniRef = ref(storage, `verificaciones/${user.uid}/dni`);
+      const selfieRef = ref(storage, `verificaciones/${user.uid}/selfie`);
+      await uploadBytes(dniRef, dniFile);
+      await uploadBytes(selfieRef, selfieFile);
+      try {
+        await updateDoc(doc(db, "usuarios", user.uid), { verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
+      } catch(e) {}
+      btn.textContent = '✓ Enviado';
+      statusEl.textContent = '✅ Documentos enviados correctamente. Los revisaremos en 24-48 hs y te notificaremos.';
+      statusEl.className = 'verif-msg ok';
+      document.getElementById('verif-badge').textContent = '⏳ En revisión';
+      document.getElementById('verif-badge').style.color = '#f5d800';
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Enviar verificación';
+      statusEl.textContent = '❌ Error al subir. Intentá de nuevo.';
+      statusEl.className = 'verif-msg error';
+    }
+  };
+
+  function firebaseError(code) {
+    const msgs = {
+      'auth/user-not-found': 'No existe una cuenta con ese email.',
+      'auth/wrong-password': 'Contraseña incorrecta.',
+      'auth/email-already-in-use': 'Ese email ya está registrado.',
+      'auth/invalid-email': 'El email no es válido.',
+      'auth/weak-password': 'La contraseña es muy débil.',
+      'auth/invalid-credential': 'Email o contraseña incorrectos.',
+      'auth/too-many-requests': 'Demasiados intentos. Intentá más tarde.',
+    };
+    return msgs[code] || 'Ocurrió un error. Intentá de nuevo.';
+  }
+
+  function showError(msg) { const el = document.getElementById('modal-error'); el.textContent = msg; el.classList.add('show'); }
+  function showSuccess(msg) { const el = document.getElementById('modal-success'); el.textContent = msg; el.classList.add('show'); }
+  function clearMsgs() { document.getElementById('modal-error').classList.remove('show'); document.getElementById('modal-success').classList.remove('show'); }
+</script>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchTipo(tipo) {
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+  document.getElementById('btn-' + tipo).classList.add('active');
+  document.getElementById('form-' + tipo).classList.add('active');
+}
+
+function handleSubmit(btn) {
+  btn.textContent = '¡Registrado! Te contactamos pronto 🎉';
+  btn.style.background = '#2ecc71';
+  btn.style.color = '#fff';
+  btn.disabled = true;
+}
+
+// ── Modal login ──
+function openLogin() { document.getElementById('modal-login').classList.add('open'); }
+function closeLogin() { document.getElementById('modal-login').classList.remove('open'); }
+function switchLoginTab(tab, btn) {
+  document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.modal-form').forEach(f => f.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mf-' + tab).classList.add('active');
+  document.getElementById('modal-error').classList.remove('show');
+  document.getElementById('modal-success').classList.remove('show');
+}
+
+// ── Modal panel ──
+function openPanel() {
+  // Verificar sesión con pequeño delay para que Firebase termine de cargar
+  setTimeout(function() {
+    if (!window._currentUid) {
+      openLogin();
+      return;
+    }
+    document.getElementById('modal-panel').classList.add('open');
+  }, 100);
+}
+function closePanel() { document.getElementById('modal-panel').classList.remove('open'); }
+function switchPanel(section, btn) {
+  document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ps-' + section).classList.add('active');
+}
+
+function switchRol(rol) {
+  document.querySelectorAll('.rol-switch-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('rol-' + rol).classList.add('active');
+  document.getElementById('panel-avatar').textContent = rol === 'conductor' ? '🚗' : '👤';
+}
+
+// ── Editar / Guardar datos ──
+function toggleEditDatos() {
+  if (!window._currentUid) {
+    openLogin();
+    return;
+  }
+  document.getElementById('datos-vista').style.display = 'none';
+  document.getElementById('datos-edicion').style.display = '';
+  document.getElementById('btn-editar-datos').style.display = 'none';
+  document.getElementById('btn-guardar-datos').style.display = '';
+  document.getElementById('datos-msg').style.display = 'none';
+}
+
+async function guardarDatos() {
+  const nombre = document.getElementById('e-nombre').value.trim();
+  const apodo  = document.getElementById('e-apodo').value.trim();
+  const dni    = document.getElementById('e-dni').value.trim();
+  const tel    = document.getElementById('e-tel').value.trim();
+  const msg    = document.getElementById('datos-msg');
+
+  if (!nombre) {
+    msg.textContent = '⚠ El nombre no puede estar vacío.';
+    msg.style.color = '#ff7755';
+    msg.style.display = 'block';
+    return;
+  }
+
+  if (!window._currentUid) {
+    msg.textContent = '⚠ No hay sesión activa. Volvé a iniciar sesión.';
+    msg.style.color = '#ff7755';
+    msg.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('btn-guardar-datos');
+
+  // ── Actualizar UI inmediatamente sin esperar Firebase ──
+  document.getElementById('d-nombre').textContent = nombre;
+  document.getElementById('d-apodo').textContent = apodo || '—';
+  document.getElementById('d-dni').textContent = dni || '—';
+  document.getElementById('d-tel').textContent = tel || '—';
+  document.getElementById('panel-nombre').textContent = nombre;
+  document.getElementById('nav-user-name').textContent = apodo || nombre.split(' ')[0];
+
+  document.getElementById('datos-vista').style.display = '';
+  document.getElementById('datos-edicion').style.display = 'none';
+  document.getElementById('btn-editar-datos').style.display = '';
+  btn.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '✓ Guardar';
+
+  msg.textContent = '✅ Datos guardados correctamente.';
+  msg.style.color = '#2ecc71';
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+  // ── Guardar en Firebase en segundo plano (sin bloquear UI) ──
+  try {
+    if (window._currentAuth?.currentUser && window._currentUpdateProfile) {
+      window._currentUpdateProfile(window._currentAuth.currentUser, { displayName: nombre });
+    }
+    if (window._currentDb && window._currentDoc) {
+      const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      setDoc(
+        window._currentDoc(window._currentDb, "usuarios", window._currentUid),
+        { nombre, apodo, dni, tel },
+        { merge: true }
+      );
+    }
+  } catch(e) {
+    console.warn('Error guardando en Firebase:', e.message);
+  }
+}
+
+// Cerrar modales con click fuera
+document.getElementById('modal-login').addEventListener('click', function(e) { if(e.target === this) closeLogin(); });
+document.getElementById('modal-panel').addEventListener('click', function(e) { if(e.target === this) closePanel(); });
+</script>
+</body>
+</html>
