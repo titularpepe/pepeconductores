@@ -892,6 +892,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       window._currentAuth = auth;
       window._currentDb = db;
       window._currentDoc = doc;
+      window._currentSetDoc = setDoc;
       window._currentUpdateDoc = updateDoc;
       window._currentUpdateProfile = updateProfile;
       await cargarYMostrarPanel(user, _primeraVez ? false : false);
@@ -977,6 +978,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     window._currentAuth = auth;
     window._currentDb = db;
     window._currentDoc = doc;
+    window._currentSetDoc = setDoc;
     window._currentUpdateDoc = updateDoc;
     window._currentUpdateProfile = updateProfile;
 
@@ -1197,14 +1199,13 @@ async function guardarDatos() {
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 3000);
 
-  // ── Guardar en Firebase en segundo plano (sin bloquear UI) ──
+  // ── Guardar en Firebase en segundo plano ──
   try {
     if (window._currentAuth?.currentUser && window._currentUpdateProfile) {
-      window._currentUpdateProfile(window._currentAuth.currentUser, { displayName: nombre });
+      await window._currentUpdateProfile(window._currentAuth.currentUser, { displayName: nombre });
     }
-    if (window._currentDb && window._currentDoc) {
-      const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      setDoc(
+    if (window._currentDb && window._currentDoc && window._currentSetDoc) {
+      await window._currentSetDoc(
         window._currentDoc(window._currentDb, "usuarios", window._currentUid),
         { nombre, apodo, dni, tel },
         { merge: true }
