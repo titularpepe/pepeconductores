@@ -1221,30 +1221,26 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     if (err) err.style.display = 'none';
     try {
       const provider = new GoogleAuthProvider();
-      if (esMobile) {
-        // En móvil usar redirect (más compatible)
-        await signInWithRedirect(auth, provider);
-      } else {
-        // En desktop usar popup
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        await setDoc(doc(db, "usuarios", user.uid), {
-          nombre: user.displayName || '',
-          email: user.email,
-          foto: user.photoURL || '',
-          rol: 'pasajero',
-          fechaRegistro: new Date().toISOString()
-        }, { merge: true });
-        closeLogin();
-        await cargarYMostrarPanel(user, true);
-        const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-        if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
-          const bienvenida = document.getElementById('modal-bienvenida');
-          const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-          if (bienvenida && bienvenidaNombre) {
-            bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
-            setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
-          }
+      provider.setCustomParameters({ prompt: 'select_account' });
+      // Usar popup en todos los casos - más confiable
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      await setDoc(doc(db, "usuarios", user.uid), {
+        nombre: user.displayName || '',
+        email: user.email,
+        foto: user.photoURL || '',
+        rol: 'pasajero',
+        fechaRegistro: new Date().toISOString()
+      }, { merge: true });
+      closeLogin();
+      await cargarYMostrarPanel(user, true);
+      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
+        const bienvenida = document.getElementById('modal-bienvenida');
+        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+        if (bienvenida && bienvenidaNombre) {
+          bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
+          setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
         }
       }
     } catch(e) {
@@ -1255,29 +1251,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     }
   };
 
-  // ── Manejar resultado del redirect (móvil) ──
-  getRedirectResult(auth).then(async (result) => {
-    if (result && result.user) {
-      const user = result.user;
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nombre: user.displayName || '',
-        email: user.email,
-        foto: user.photoURL || '',
-        rol: 'pasajero',
-        fechaRegistro: new Date().toISOString()
-      }, { merge: true });
-      await cargarYMostrarPanel(user, true);
-      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
-        const bienvenida = document.getElementById('modal-bienvenida');
-        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-        if (bienvenida && bienvenidaNombre) {
-          bienvenidaNombre.textContent = '¡Bienvenido, ' + (user.displayName || 'usuario') + '! Tu cuenta fue creada con Google.';
-          setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
-        }
-      }
-    }
-  }).catch((e) => console.warn('Redirect result error:', e.message));
+
 
   // ── Cookies ──
   window.aceptarCookies = function(tipo) {
