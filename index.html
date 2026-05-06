@@ -1042,15 +1042,17 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const app = initializeApp(firebaseConfig);
 
   // ── Mostrar banner cookies si no aceptó ──
-  if (!localStorage.getItem('pepe_cookies')) {
-    setTimeout(() => {
-      const cb = document.getElementById('cookies-banner');
-      if (cb) {
+  // Banner cookies - mostrar siempre para debug, luego agregar condición
+  setTimeout(() => {
+    const cb = document.getElementById('cookies-banner');
+    if (cb) {
+      if (!localStorage.getItem('pepe_cookies')) {
         cb.style.display = 'flex';
         cb.style.flexWrap = 'wrap';
+        cb.style.alignItems = 'center';
       }
-    }, 1500);
-  }
+    }
+  }, 500);
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -1491,7 +1493,4 @@ async function guardarDatos() {
 
 // Cerrar modales con click fuera
 document.getElementById('modal-login').addEventListener('click', function(e) { if(e.target === this) closeLogin(); });
-document.getElementById('modal-panel').addEventListener('click', function(e) { if(e.target === this) closePanel(); });
-</script>
-</body>
-</html>
+document.getElementById('modal-pa
