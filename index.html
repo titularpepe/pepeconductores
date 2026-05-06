@@ -1185,7 +1185,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   window.doRegister = async function() {
     if (!localStorage.getItem('pepe_terminos')) {
       window._pendingAfterTerminos = window.doRegister;
-      document.getElementById('modal-terminos').classList.add('open');
+      const mt = document.getElementById('modal-terminos');
+      if (mt) { mt.classList.add('open'); mt.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
       return;
     }
     const nombre = document.getElementById('reg-nombre').value.trim();
@@ -1242,7 +1243,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
           const bienvenidaNombre = document.getElementById('bienvenida-nombre');
           if (bienvenida && bienvenidaNombre) {
             bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
-            setTimeout(() => bienvenida.classList.add('open'), 800);
+            setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
           }
         }
       }
@@ -1272,7 +1273,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         const bienvenidaNombre = document.getElementById('bienvenida-nombre');
         if (bienvenida && bienvenidaNombre) {
           bienvenidaNombre.textContent = '¡Bienvenido, ' + (user.displayName || 'usuario') + '! Tu cuenta fue creada con Google.';
-          setTimeout(() => bienvenida.classList.add('open'), 800);
+          setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
         }
       }
     }
@@ -1286,11 +1287,15 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // ── Términos ──
   window.cerrarTerminos = function() {
-    document.getElementById('modal-terminos').classList.remove('open');
+    const mt = document.getElementById('modal-terminos');
+    if (mt) { mt.classList.remove('open'); mt.style.display = ''; }
+    document.body.style.overflow = '';
   };
   window.aceptarTerminos = function() {
     localStorage.setItem('pepe_terminos', 'aceptado');
-    document.getElementById('modal-terminos').classList.remove('open');
+    const mt = document.getElementById('modal-terminos');
+    if (mt) { mt.classList.remove('open'); mt.style.display = ''; }
+    document.body.style.overflow = '';
     const next = window._pendingAfterTerminos;
     if (next) { window._pendingAfterTerminos = null; next(); }
   };
