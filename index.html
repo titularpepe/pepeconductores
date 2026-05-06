@@ -1150,7 +1150,14 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     window._currentUpdateDoc = updateDoc;
     window._currentUpdateProfile = updateProfile;
 
-    if (abrirPanel) openPanel();
+    if (abrirPanel) {
+      const mp = document.getElementById('modal-panel');
+      if (mp) {
+        mp.classList.add('open');
+        mp.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
   }
 
   // ── Registro ──
@@ -1429,16 +1436,34 @@ function switchLoginTab(tab, btn) {
 
 // ── Modal panel ──
 function openPanel() {
-  // Verificar sesión con pequeño delay para que Firebase termine de cargar
-  setTimeout(function() {
-    if (!window._currentUid) {
-      openLogin();
-      return;
-    }
-    document.getElementById('modal-panel').classList.add('open');
-  }, 100);
+  const m = document.getElementById('modal-panel');
+  if (!m) return;
+  if (window._currentUid) {
+    m.classList.add('open');
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  } else {
+    // Esperar hasta 3 segundos que Firebase cargue
+    let intentos = 0;
+    const check = setInterval(function() {
+      intentos++;
+      if (window._currentUid) {
+        clearInterval(check);
+        m.classList.add('open');
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      } else if (intentos >= 15) {
+        clearInterval(check);
+        openLogin();
+      }
+    }, 200);
+  }
 }
-function closePanel() { document.getElementById('modal-panel').classList.remove('open'); }
+function closePanel() {
+  const m = document.getElementById('modal-panel');
+  if (m) { m.classList.remove('open'); m.style.display = ''; }
+  document.body.style.overflow = '';
+}
 function switchPanel(section, btn) {
   document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'));
