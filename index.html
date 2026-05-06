@@ -565,6 +565,12 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">04</div><div class="feat-title">Viajá seguro</div><div class="feat-desc">Conductor verificado y recorrido visible en todo momento.</div></div>
       <div class="feat-card" style="text-align:center;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:3rem;color:rgba(245,216,0,0.12);font-weight:900;line-height:1;margin-bottom:0.5rem;">05</div><div class="feat-title">Registro único</div><div class="feat-desc">Cada usuario tiene un registro imposible de duplicar para mayor seguridad de todos.</div></div>
     </div>
+
+    <div class="divider"></div>
+    <div class="section-label">¿El viaje no es para vos?</div>
+    <h2 class="section-title">Pedí un viaje<br>para otra persona</h2>
+    <p class="section-sub">Podés solicitar un viaje para un familiar o conocido. El conductor verá el nombre y DNI del pasajero real para mayor seguridad de todos.</p>
+    <button class="btn-main" onclick="solicitarParaTercero()">👥 Pedir viaje para otra persona</button>
   </div>
   <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
@@ -873,6 +879,148 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <button class="panel-logout" onclick="doLogout()">Cerrar sesión</button>
     </div>
   </div>
+
+<!-- BANNER COOKIES -->
+<div id="cookies-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+  <div style="display:flex; align-items:flex-start; gap:0.8rem; flex:1; min-width:260px;">
+    <span style="font-size:1.2rem; flex-shrink:0;">🍪</span>
+    <div>
+      <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:3px;">Usamos cookies</div>
+      <div style="font-size:0.78rem; color:rgba(247,244,238,0.5); line-height:1.6;">Utilizamos cookies esenciales para autenticación, seguridad y funcionamiento del servicio. No usamos cookies publicitarias ni compartimos tu información con terceros.</div>
+    </div>
+  </div>
+  <div style="display:flex; gap:0.6rem; flex-shrink:0;">
+    <button onclick="aceptarCookies('esencial')" style="background:transparent; border:1px solid rgba(247,244,238,0.2); color:rgba(247,244,238,0.6); border-radius:6px; padding:0.5rem 1rem; font-size:0.78rem; cursor:pointer; font-family:'Barlow',sans-serif;">Solo esenciales</button>
+    <button onclick="aceptarCookies('todo')" style="background:#f5d800; border:none; color:#0c0c0c; border-radius:6px; padding:0.5rem 1.2rem; font-size:0.78rem; font-weight:700; cursor:pointer; font-family:'Barlow',sans-serif;">Aceptar todo</button>
+  </div>
+</div>
+
+<!-- MODAL TÉRMINOS Y CONDICIONES -->
+<div class="modal-overlay" id="modal-terminos">
+  <div style="background:#161616; border:1px solid rgba(245,216,0,0.15); border-radius:20px; width:100%; max-width:520px; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; position:relative; animation:modalIn 0.3s ease;">
+    <button class="modal-close" onclick="cerrarTerminos()">✕</button>
+    <div style="background:#0c0c0c; padding:1.5rem; text-align:center; flex-shrink:0;">
+      <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; color:#f5d800;">PEPE <span style="color:rgba(255,255,255,0.4); font-size:0.9rem; font-family:'Barlow',sans-serif; font-weight:300;">CONDUCTORES</span></div>
+      <div style="color:rgba(255,255,255,0.5); font-size:0.78rem; margin-top:4px;">Términos y condiciones de uso — v1.0 Mayo 2026</div>
+    </div>
+    <div style="overflow-y:auto; padding:1.5rem; flex:1;">
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">1. Registro e identidad</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Cada usuario se registra con su DNI real y un único número de teléfono. No está permitido crear múltiples cuentas ni compartir el acceso con terceros. La cuenta es personal e intransferible.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">2. Uso del servicio</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Pepe Conductores conecta pasajeros con conductores profesionales habilitados. Queda prohibido el transporte de sustancias ilegales, armas y animales sin jaula. El incumplimiento puede resultar en suspensión inmediata.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">3. Privacidad y datos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Tus datos personales son utilizados exclusivamente para el funcionamiento del servicio. No se venden ni comparten con terceros. Todos los datos están cifrados y protegidos.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">4. Tarifas y pagos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">El costo del servicio por cada solicitud de viaje es fijo y será informado en la app al momento de la solicitud, pudiendo estar sujeto a cambios. La tarifa por kilómetro varía según el tipo de vehículo, la distancia y las condiciones del servicio. Todos los valores serán informados antes de confirmar el viaje. No existe tarifa dinámica por demanda.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">5. Comportamiento y respeto</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Queda prohibido fumar, consumir alcohol o drogas dentro del vehículo. El conductor tiene derecho a cancelar el viaje ante comportamientos inadecuados. El pasajero puede reportar al conductor si no cumple las normas. El abuso del sistema de reportes también será sancionado.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">6. Deudas y sanciones</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">El usuario que no abone un viaje quedará bloqueado hasta regularizar su deuda en las oficinas físicas. Los falsos reportes o el uso indebido pueden derivar en suspensión temporal o permanente.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">7. Capacidad del vehículo</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Queda prohibido superar la cantidad máxima de pasajeros permitida por tipo de vehículo. El conductor tiene derecho a cancelar si se excede la capacidad. Esta norma es de cumplimiento obligatorio por razones de seguridad vial.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">8. Ubicación en tiempo real</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Al solicitar o aceptar un viaje, conductor y pasajero comparten su ubicación en tiempo real dentro de la app. Esta información se usa exclusivamente para la gestión del viaje y se deja de compartir al finalizar el mismo.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.2rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">9. Viajes compartidos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Pepe Conductores permite viajes compartidos entre pasajeros con destinos cercanos, siempre con consentimiento previo de todos. El conductor puede aceptar o rechazar esta modalidad. El costo se distribuirá entre los pasajeros según lo informado antes de confirmar.</p>
+      </div>
+      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+
+      <div style="margin-bottom:1.5rem;">
+        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">10. Aceptación</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Al registrarte en Pepe Conductores aceptás estos términos en su totalidad. Nos reservamos el derecho de modificarlos con previo aviso. El uso continuado del servicio implica la aceptación de los cambios.</p>
+      </div>
+
+    </div>
+    <div style="padding:1rem 1.5rem; border-top:1px solid rgba(255,255,255,0.06); background:#0c0c0c; flex-shrink:0;">
+      <button onclick="aceptarTerminos()" style="width:100%; background:#f5d800; color:#0c0c0c; border:none; border-radius:8px; padding:0.9rem; font-family:'Barlow',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer;">✓ Leí y acepto los términos y condiciones</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BIENVENIDA GOOGLE -->
+<div class="modal-overlay" id="modal-bienvenida">
+  <div style="background:#161616; border:1px solid rgba(245,216,0,0.2); border-radius:20px; width:100%; max-width:420px; padding:2rem; position:relative; animation:modalIn 0.3s ease;">
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎉</div>
+      <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.8rem; font-weight:900; text-transform:uppercase; color:#f5d800;">¡Bienvenido!</div>
+      <p id="bienvenida-nombre" style="font-size:0.88rem; color:rgba(247,244,238,0.6); margin-top:0.4rem;">Tu cuenta fue creada con Google.</p>
+    </div>
+    <p style="font-size:0.82rem; color:rgba(247,244,238,0.5); text-align:center; margin-bottom:1.5rem; line-height:1.6;">Para completar tu registro completá estos datos. Podés hacerlo ahora o más tarde desde tu perfil.</p>
+    <div style="margin-bottom:0.8rem;">
+      <label style="font-size:0.75rem; font-weight:600; letter-spacing:0.5px; color:rgba(247,244,238,0.4); text-transform:uppercase; display:block; margin-bottom:5px;">DNI</label>
+      <input type="text" id="bienvenida-dni" placeholder="30.123.456" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.75rem 1rem; color:#f7f4ee; font-family:'Barlow',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+    <div style="margin-bottom:1.2rem;">
+      <label style="font-size:0.75rem; font-weight:600; letter-spacing:0.5px; color:rgba(247,244,238,0.4); text-transform:uppercase; display:block; margin-bottom:5px;">Teléfono</label>
+      <input type="tel" id="bienvenida-tel" placeholder="+54 9 387 000-0000" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.75rem 1rem; color:#f7f4ee; font-family:'Barlow',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+    <button onclick="guardarBienvenida()" style="width:100%; background:#f5d800; color:#0c0c0c; border:none; border-radius:8px; padding:0.9rem; font-family:'Barlow',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer; margin-bottom:0.6rem;">Completar registro →</button>
+    <button onclick="document.getElementById('modal-bienvenida').classList.remove('open')" style="width:100%; background:transparent; color:rgba(247,244,238,0.4); border:none; font-family:'Barlow',sans-serif; font-size:0.82rem; cursor:pointer; padding:0.5rem;">Completar más tarde</button>
+  </div>
+</div>
+
+<!-- MODAL SOLICITAR VIAJE PARA TERCERO -->
+<div class="modal-overlay" id="modal-tercero">
+  <div style="background:#161616; border:1px solid rgba(245,216,0,0.15); border-radius:20px; width:100%; max-width:420px; padding:2rem; position:relative; animation:modalIn 0.3s ease;">
+    <button class="modal-close" onclick="document.getElementById('modal-tercero').classList.remove('open')">✕</button>
+    <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:900; text-transform:uppercase; color:#f5d800; margin-bottom:0.3rem;">Viaje para otra persona</div>
+    <p style="font-size:0.82rem; color:rgba(247,244,238,0.5); margin-bottom:1.5rem;">Completá los datos del pasajero. Vos sos el responsable del viaje y el pago.</p>
+
+    <div style="margin-bottom:0.8rem;">
+      <label style="font-size:0.75rem; font-weight:600; letter-spacing:0.5px; color:rgba(247,244,238,0.4); text-transform:uppercase; display:block; margin-bottom:5px;">Nombre completo del pasajero</label>
+      <input type="text" id="tercero-nombre" placeholder="María García" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.75rem 1rem; color:#f7f4ee; font-family:'Barlow',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+    <div style="margin-bottom:0.8rem;">
+      <label style="font-size:0.75rem; font-weight:600; letter-spacing:0.5px; color:rgba(247,244,238,0.4); text-transform:uppercase; display:block; margin-bottom:5px;">DNI del pasajero</label>
+      <input type="text" id="tercero-dni" placeholder="35.678.901" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.75rem 1rem; color:#f7f4ee; font-family:'Barlow',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+    <div style="margin-bottom:1.2rem;">
+      <label style="font-size:0.75rem; font-weight:600; letter-spacing:0.5px; color:rgba(247,244,238,0.4); text-transform:uppercase; display:block; margin-bottom:5px;">Teléfono de contacto (opcional)</label>
+      <input type="tel" id="tercero-tel" placeholder="+54 9 387 000-0000" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.75rem 1rem; color:#f7f4ee; font-family:'Barlow',sans-serif; font-size:0.9rem; outline:none;">
+    </div>
+    <div style="background:rgba(245,216,0,0.05); border:1px solid rgba(245,216,0,0.15); border-radius:8px; padding:0.8rem; margin-bottom:1.2rem; display:flex; gap:0.6rem; align-items:flex-start;">
+      <span style="font-size:1rem; flex-shrink:0;">⚠️</span>
+      <span style="font-size:0.78rem; color:rgba(247,244,238,0.55); line-height:1.6;">El conductor verá el nombre y DNI del pasajero. El solicitante es responsable del viaje y del pago.</span>
+    </div>
+    <div id="tercero-msg" style="display:none; font-size:0.82rem; margin-bottom:0.8rem; padding:0.7rem; border-radius:6px; background:rgba(46,204,113,0.1); color:#2ecc71;"></div>
+    <button onclick="confirmarTercero()" style="width:100%; background:#f5d800; color:#0c0c0c; border:none; border-radius:8px; padding:0.9rem; font-family:'Barlow',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer;">Confirmar y continuar →</button>
+  </div>
+</div>
+
 </div>
 
 <script type="module">
@@ -892,6 +1040,13 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   };
 
   const app = initializeApp(firebaseConfig);
+
+  // ── Mostrar banner cookies si no aceptó ──
+  if (!localStorage.getItem('pepe_cookies')) {
+    const cb = document.getElementById('cookies-banner');
+    if (cb) cb.style.display = 'flex';
+  }
+
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
@@ -999,6 +1154,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // ── Registro ──
   window.doRegister = async function() {
+    if (!localStorage.getItem('pepe_terminos')) {
+      window._pendingAfterTerminos = window.doRegister;
+      document.getElementById('modal-terminos').classList.add('open');
+      return;
+    }
     const nombre = document.getElementById('reg-nombre').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const pass = document.getElementById('reg-pass').value;
@@ -1039,12 +1199,83 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }, { merge: true });
       closeLogin();
       await cargarYMostrarPanel(user, true);
+      // Mostrar bienvenida si es usuario nuevo
+      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+      if (!userDoc.exists() || !userDoc.data().dni) {
+        const bienvenida = document.getElementById('modal-bienvenida');
+        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+        if (bienvenida && bienvenidaNombre) {
+          bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
+          setTimeout(() => bienvenida.classList.add('open'), 800);
+        }
+      }
     } catch(e) {
       if (err) {
         err.textContent = '❌ ' + (e.message || 'Error al iniciar con Google');
         err.style.display = 'block';
       }
     }
+  };
+
+  // ── Cookies ──
+  window.aceptarCookies = function(tipo) {
+    localStorage.setItem('pepe_cookies', tipo);
+    document.getElementById('cookies-banner').style.display = 'none';
+  };
+
+  // ── Términos ──
+  window.cerrarTerminos = function() {
+    document.getElementById('modal-terminos').classList.remove('open');
+  };
+  window.aceptarTerminos = function() {
+    localStorage.setItem('pepe_terminos', 'aceptado');
+    document.getElementById('modal-terminos').classList.remove('open');
+    const next = window._pendingAfterTerminos;
+    if (next) { window._pendingAfterTerminos = null; next(); }
+  };
+  window.verTerminos = function() {
+    document.getElementById('modal-terminos').classList.add('open');
+  };
+
+  // ── Bienvenida Google ──
+  window.guardarBienvenida = async function() {
+    const dni = document.getElementById('bienvenida-dni').value.trim();
+    const tel = document.getElementById('bienvenida-tel').value.trim();
+    if (window._currentUid && window._currentSetDoc && window._currentDoc && window._currentDb) {
+      await window._currentSetDoc(
+        window._currentDoc(window._currentDb, 'usuarios', window._currentUid),
+        { dni, tel },
+        { merge: true }
+      );
+    }
+    document.getElementById('modal-bienvenida').classList.remove('open');
+  };
+
+  // ── Viaje para tercero ──
+  window.solicitarParaTercero = function() {
+    document.getElementById('modal-tercero').classList.add('open');
+  };
+  window.confirmarTercero = function() {
+    const nombre = document.getElementById('tercero-nombre').value.trim();
+    const dni = document.getElementById('tercero-dni').value.trim();
+    const tel = document.getElementById('tercero-tel').value.trim();
+    if (!nombre || !dni) {
+      const msg = document.getElementById('tercero-msg');
+      msg.textContent = '⚠ Nombre y DNI son obligatorios.';
+      msg.style.background = 'rgba(255,77,0,0.1)';
+      msg.style.color = '#ff4d00';
+      msg.style.display = 'block';
+      return;
+    }
+    window._terceroPasajero = { nombre, dni, tel };
+    const msg = document.getElementById('tercero-msg');
+    msg.textContent = '✅ Datos guardados. El conductor verá el nombre y DNI del pasajero.';
+    msg.style.background = 'rgba(46,204,113,0.1)';
+    msg.style.color = '#2ecc71';
+    msg.style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('modal-tercero').classList.remove('open');
+    }, 2000);
   };
 
   window.doLogout = async function() {
