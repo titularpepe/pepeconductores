@@ -1147,7 +1147,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('nav-user-name').textContent = (apodo !== '—' ? apodo : nombre.split(' ')[0]);
     document.getElementById('panel-nombre').textContent = nombre;
     document.getElementById('panel-email').textContent = user.email;
-    // panel-rol eliminado - no existe en el DOM
+    document.getElementById('panel-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
     document.getElementById('panel-avatar').textContent = rol === 'conductor' ? '🚗' : '👤';
     document.getElementById('d-nombre').textContent = nombre;
     document.getElementById('d-apodo').textContent = apodo;
@@ -1155,7 +1155,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('d-email-edit').textContent = user.email;
     document.getElementById('d-dni').textContent = dni;
     document.getElementById('d-tel').textContent = tel;
-    // d-rol eliminado - no existe en el DOM
+    document.getElementById('d-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
     document.getElementById('d-fecha').textContent = fecha;
     document.getElementById('d-verificado').textContent = verificado;
     document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
@@ -1185,8 +1185,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   window.doRegister = async function() {
     if (!localStorage.getItem('pepe_terminos')) {
       window._pendingAfterTerminos = window.doRegister;
-      const mt = document.getElementById('modal-terminos');
-      if (mt) { mt.classList.add('open'); mt.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+      document.getElementById('modal-terminos').classList.add('open');
       return;
     }
     const nombre = document.getElementById('reg-nombre').value.trim();
@@ -1221,26 +1220,30 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     if (err) err.style.display = 'none';
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      // Usar popup en todos los casos - más confiable
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nombre: user.displayName || '',
-        email: user.email,
-        foto: user.photoURL || '',
-        rol: 'pasajero',
-        fechaRegistro: new Date().toISOString()
-      }, { merge: true });
-      closeLogin();
-      await cargarYMostrarPanel(user, true);
-      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
-        const bienvenida = document.getElementById('modal-bienvenida');
-        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-        if (bienvenida && bienvenidaNombre) {
-          bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
-          setTimeout(() => { bienvenida.classList.add('open'); bienvenida.style.display = 'flex'; }, 800);
+      if (esMobile) {
+        // En móvil usar redirect (más compatible)
+        await signInWithRedirect(auth, provider);
+      } else {
+        // En desktop usar popup
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        await setDoc(doc(db, "usuarios", user.uid), {
+          nombre: user.displayName || '',
+          email: user.email,
+          foto: user.photoURL || '',
+          rol: 'pasajero',
+          fechaRegistro: new Date().toISOString()
+        }, { merge: true });
+        closeLogin();
+        await cargarYMostrarPanel(user, true);
+        const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+        if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
+          const bienvenida = document.getElementById('modal-bienvenida');
+          const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+          if (bienvenida && bienvenidaNombre) {
+            bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
+            setTimeout(() => bienvenida.classList.add('open'), 800);
+          }
         }
       }
     } catch(e) {
@@ -1251,7 +1254,29 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     }
   };
 
-
+  // ── Manejar resultado del redirect (móvil) ──
+  getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+      const user = result.user;
+      await setDoc(doc(db, "usuarios", user.uid), {
+        nombre: user.displayName || '',
+        email: user.email,
+        foto: user.photoURL || '',
+        rol: 'pasajero',
+        fechaRegistro: new Date().toISOString()
+      }, { merge: true });
+      await cargarYMostrarPanel(user, true);
+      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
+        const bienvenida = document.getElementById('modal-bienvenida');
+        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+        if (bienvenida && bienvenidaNombre) {
+          bienvenidaNombre.textContent = '¡Bienvenido, ' + (user.displayName || 'usuario') + '! Tu cuenta fue creada con Google.';
+          setTimeout(() => bienvenida.classList.add('open'), 800);
+        }
+      }
+    }
+  }).catch((e) => console.warn('Redirect result error:', e.message));
 
   // ── Cookies ──
   window.aceptarCookies = function(tipo) {
@@ -1261,15 +1286,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // ── Términos ──
   window.cerrarTerminos = function() {
-    const mt = document.getElementById('modal-terminos');
-    if (mt) { mt.classList.remove('open'); mt.style.display = ''; }
-    document.body.style.overflow = '';
+    document.getElementById('modal-terminos').classList.remove('open');
   };
   window.aceptarTerminos = function() {
     localStorage.setItem('pepe_terminos', 'aceptado');
-    const mt = document.getElementById('modal-terminos');
-    if (mt) { mt.classList.remove('open'); mt.style.display = ''; }
-    document.body.style.overflow = '';
+    document.getElementById('modal-terminos').classList.remove('open');
     const next = window._pendingAfterTerminos;
     if (next) { window._pendingAfterTerminos = null; next(); }
   };
@@ -1281,14 +1302,39 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   window.guardarBienvenida = async function() {
     const dni = document.getElementById('bienvenida-dni').value.trim();
     const tel = document.getElementById('bienvenida-tel').value.trim();
-    if (window._currentUid && window._currentSetDoc && window._currentDoc && window._currentDb) {
-      await window._currentSetDoc(
-        window._currentDoc(window._currentDb, 'usuarios', window._currentUid),
-        { dni, tel },
-        { merge: true }
-      );
+    const btn = document.querySelector('#modal-bienvenida button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+    try {
+      if (window._currentUid && window._currentSetDoc && window._currentDoc && window._currentDb) {
+        await window._currentSetDoc(
+          window._currentDoc(window._currentDb, 'usuarios', window._currentUid),
+          { dni, tel },
+          { merge: true }
+        );
+        // Actualizar vista del panel con los datos nuevos
+        if (dni) { const el = document.getElementById('d-dni'); if(el) el.textContent = dni; }
+        if (tel) { const el = document.getElementById('d-tel'); if(el) el.textContent = tel; }
+        if (dni) { const el = document.getElementById('e-dni'); if(el) el.value = dni; }
+        if (tel) { const el = document.getElementById('e-tel'); if(el) el.value = tel; }
+      }
+    } catch(e) {
+      console.warn('Error guardando bienvenida:', e.message);
     }
-    document.getElementById('modal-bienvenida').classList.remove('open');
+
+    // Cerrar modal bienvenida
+    const mb = document.getElementById('modal-bienvenida');
+    if (mb) { mb.classList.remove('open'); mb.style.display = ''; }
+
+    // Abrir panel de usuario después de cerrar
+    setTimeout(() => {
+      const mp = document.getElementById('modal-panel');
+      if (mp && window._currentUid) {
+        mp.classList.add('open');
+        mp.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }, 300);
   };
 
   // ── Viaje para tercero ──
