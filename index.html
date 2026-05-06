@@ -1023,11 +1023,32 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script>
+  // Compat aliases para que el resto del código funcione igual
+  const initializeApp = (config) => firebase.initializeApp(config);
+  const getAuth = () => firebase.auth();
+  const getFirestore = () => firebase.firestore();
+  const getStorage = () => firebase.storage();
+  const createUserWithEmailAndPassword = (auth, email, pass) => auth.createUserWithEmailAndPassword(email, pass);
+  const signInWithEmailAndPassword = (auth, email, pass) => auth.signInWithEmailAndPassword(email, pass);
+  const signInWithPopup = (auth, provider) => auth.signInWithPopup(provider);
+  const signInWithRedirect = (auth, provider) => auth.signInWithRedirect(provider);
+  const getRedirectResult = (auth) => auth.getRedirectResult();
+  const GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+  const signOut = (auth) => auth.signOut();
+  const onAuthStateChanged = (auth, cb) => auth.onAuthStateChanged(cb);
+  const updateProfile = (user, data) => user.updateProfile(data);
+  const doc = (db, col, id) => db.collection(col).doc(id);
+  const setDoc = (ref, data, opts) => opts && opts.merge ? ref.set(data, {merge: true}) : ref.set(data);
+  const getDoc = (ref) => ref.get();
+  const updateDoc = (ref, data) => ref.update(data);
+  const ref = (storage, path) => storage.ref(path);
+  const uploadBytes = (ref, file) => ref.put(file);
+  const getDownloadURL = (ref) => ref.getDownloadURL();
 
   const firebaseConfig = {
     apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
@@ -1108,7 +1129,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     let apodo = '—';
     try {
       const snap = await getDoc(doc(db, "usuarios", user.uid));
-      if (snap.exists()) {
+      if (snap.exists) {
         const data = snap.data();
         nombre = data.nombre || nombre;
         rol = data.rol || rol;
@@ -1118,7 +1139,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }
     } catch(e) {}
 
-    const fecha = user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
+    const fecha = (user.metadata && user.metadata.creationTime ? user.metadata.creationTime : null) ? new Date((user.metadata && user.metadata.creationTime ? user.metadata.creationTime : null)).toLocaleDateString('es-AR') : '—';
     const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
 
     document.getElementById('btn-login-nav').style.display = 'none';
@@ -1216,7 +1237,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         closeLogin();
         await cargarYMostrarPanel(user, true);
         const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-        if (!userDoc.exists() || !userDoc.data().dni) {
+        if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
           const bienvenida = document.getElementById('modal-bienvenida');
           const bienvenidaNombre = document.getElementById('bienvenida-nombre');
           if (bienvenida && bienvenidaNombre) {
@@ -1246,7 +1267,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }, { merge: true });
       await cargarYMostrarPanel(user, true);
       const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists() || !userDoc.data().dni) {
+      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
         const bienvenida = document.getElementById('modal-bienvenida');
         const bienvenidaNombre = document.getElementById('bienvenida-nombre');
         if (bienvenida && bienvenidaNombre) {
