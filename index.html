@@ -1147,7 +1147,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('nav-user-name').textContent = (apodo !== '—' ? apodo : nombre.split(' ')[0]);
     document.getElementById('panel-nombre').textContent = nombre;
     document.getElementById('panel-email').textContent = user.email;
-    document.getElementById('panel-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+    // panel-rol eliminado - no existe en el DOM
     document.getElementById('panel-avatar').textContent = rol === 'conductor' ? '🚗' : '👤';
     document.getElementById('d-nombre').textContent = nombre;
     document.getElementById('d-apodo').textContent = apodo;
@@ -1155,7 +1155,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('d-email-edit').textContent = user.email;
     document.getElementById('d-dni').textContent = dni;
     document.getElementById('d-tel').textContent = tel;
-    document.getElementById('d-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+    // d-rol eliminado - no existe en el DOM
     document.getElementById('d-fecha').textContent = fecha;
     document.getElementById('d-verificado').textContent = verificado;
     document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
