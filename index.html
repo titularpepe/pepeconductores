@@ -43,8 +43,8 @@ nav {
 .btn-nav-user:hover { background: rgba(245,216,0,0.2); }
 
 /* MODAL OVERLAY */
-.modal-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem; }
-.modal-overlay.open { display: flex; }
+.modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; z-index: 10000; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 1rem; -webkit-overflow-scrolling: touch; }
+.modal-overlay.open { display: flex !important; }
 
 /* LOGIN MODAL */
 .login-modal { background: var(--gris); border: 1px solid rgba(245,216,0,0.15); border-radius: 20px; width: 100%; max-width: 420px; padding: 2.5rem; position: relative; animation: modalIn 0.3s ease; }
@@ -881,7 +881,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   </div>
 
 <!-- BANNER COOKIES -->
-<div id="cookies-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<div id="cookies-banner" style="position:fixed; bottom:0; left:0; right:0; z-index:500; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
   <div style="display:flex; align-items:flex-start; gap:0.8rem; flex:1; min-width:260px;">
     <span style="font-size:1.2rem; flex-shrink:0;">🍪</span>
     <div>
@@ -1025,7 +1025,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -1042,17 +1042,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const app = initializeApp(firebaseConfig);
 
   // ── Mostrar banner cookies si no aceptó ──
-  // Banner cookies - mostrar siempre para debug, luego agregar condición
-  setTimeout(() => {
-    const cb = document.getElementById('cookies-banner');
-    if (cb) {
-      if (!localStorage.getItem('pepe_cookies')) {
-        cb.style.display = 'flex';
-        cb.style.flexWrap = 'wrap';
-        cb.style.alignItems = 'center';
-      }
-    }
-  }, 500);
+  // Banner cookies: visible por defecto, ocultar si ya aceptó
+  const cb = document.getElementById('cookies-banner');
+  if (cb && localStorage.getItem('pepe_cookies')) {
+    cb.style.display = 'none';
+  }
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -1190,30 +1184,38 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // ── Logout ──
   // ── Login con Google ──
+  // ── Detectar si es móvil ──
+  const esMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+
   window.doGoogleLogin = async function() {
     const err = document.getElementById('modal-error');
     if (err) err.style.display = 'none';
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nombre: user.displayName || '',
-        email: user.email,
-        foto: user.photoURL || '',
-        rol: 'pasajero',
-        fechaRegistro: new Date().toISOString()
-      }, { merge: true });
-      closeLogin();
-      await cargarYMostrarPanel(user, true);
-      // Mostrar bienvenida si es usuario nuevo
-      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists() || !userDoc.data().dni) {
-        const bienvenida = document.getElementById('modal-bienvenida');
-        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-        if (bienvenida && bienvenidaNombre) {
-          bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
-          setTimeout(() => bienvenida.classList.add('open'), 800);
+      if (esMobile) {
+        // En móvil usar redirect (más compatible)
+        await signInWithRedirect(auth, provider);
+      } else {
+        // En desktop usar popup
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        await setDoc(doc(db, "usuarios", user.uid), {
+          nombre: user.displayName || '',
+          email: user.email,
+          foto: user.photoURL || '',
+          rol: 'pasajero',
+          fechaRegistro: new Date().toISOString()
+        }, { merge: true });
+        closeLogin();
+        await cargarYMostrarPanel(user, true);
+        const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+        if (!userDoc.exists() || !userDoc.data().dni) {
+          const bienvenida = document.getElementById('modal-bienvenida');
+          const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+          if (bienvenida && bienvenidaNombre) {
+            bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
+            setTimeout(() => bienvenida.classList.add('open'), 800);
+          }
         }
       }
     } catch(e) {
@@ -1223,6 +1225,30 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }
     }
   };
+
+  // ── Manejar resultado del redirect (móvil) ──
+  getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+      const user = result.user;
+      await setDoc(doc(db, "usuarios", user.uid), {
+        nombre: user.displayName || '',
+        email: user.email,
+        foto: user.photoURL || '',
+        rol: 'pasajero',
+        fechaRegistro: new Date().toISOString()
+      }, { merge: true });
+      await cargarYMostrarPanel(user, true);
+      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+      if (!userDoc.exists() || !userDoc.data().dni) {
+        const bienvenida = document.getElementById('modal-bienvenida');
+        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+        if (bienvenida && bienvenidaNombre) {
+          bienvenidaNombre.textContent = '¡Bienvenido, ' + (user.displayName || 'usuario') + '! Tu cuenta fue creada con Google.';
+          setTimeout(() => bienvenida.classList.add('open'), 800);
+        }
+      }
+    }
+  }).catch((e) => console.warn('Redirect result error:', e.message));
 
   // ── Cookies ──
   window.aceptarCookies = function(tipo) {
@@ -1382,8 +1408,16 @@ function handleSubmit(btn) {
 }
 
 // ── Modal login ──
-function openLogin() { document.getElementById('modal-login').classList.add('open'); }
-function closeLogin() { document.getElementById('modal-login').classList.remove('open'); }
+function openLogin() {
+  const m = document.getElementById('modal-login');
+  if (m) {
+    m.classList.add('open');
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeLogin() {
+  document.body.style.overflow = ''; document.getElementById('modal-login').classList.remove('open'); }
 function switchLoginTab(tab, btn) {
   document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.modal-form').forEach(f => f.classList.remove('active'));
@@ -1493,4 +1527,7 @@ async function guardarDatos() {
 
 // Cerrar modales con click fuera
 document.getElementById('modal-login').addEventListener('click', function(e) { if(e.target === this) closeLogin(); });
-document.getElementById('modal-pa
+document.getElementById('modal-panel').addEventListener('click', function(e) { if(e.target === this) closePanel(); });
+</script>
+</body>
+</html>
