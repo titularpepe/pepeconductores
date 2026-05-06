@@ -1025,12 +1025,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   // ── Login con Google ──
   window.doGoogleLogin = async function() {
     const err = document.getElementById('modal-error');
-    err.style.display = 'none';
+    if (err) err.style.display = 'none';
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      // Crear/actualizar documento en Firestore
       await setDoc(doc(db, "usuarios", user.uid), {
         nombre: user.displayName || '',
         email: user.email,
@@ -1041,8 +1040,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       closeLogin();
       await cargarYMostrarPanel(user, true);
     } catch(e) {
-      err.textContent = '❌ ' + (e.message || 'Error al iniciar con Google');
-      err.style.display = 'block';
+      if (err) {
+        err.textContent = '❌ ' + (e.message || 'Error al iniciar con Google');
+        err.style.display = 'block';
+      }
     }
   };
 
