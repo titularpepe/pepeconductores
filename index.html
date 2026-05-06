@@ -469,7 +469,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   <div class="section">
     <div class="section-label">Para conductores</div>
     <h2 class="section-title">Trabajá para vos,<br>no para la app</h2>
-    <p class="section-sub">Cansado de que otras apps se queden con hasta el 40% de cada viaje? Con Pepe pagás una tarifa fija por solicitud y el resto es tuyo.</p>
+    <p class="section-sub">¿Cansado de que otras apps se queden con hasta el 40% de cada viaje? Con Pepe pagás una tarifa fija por solicitud y el resto es tuyo.</p>
     <div class="compare-grid">
       <div class="compare-card theirs">
         <span class="compare-badge bad">Otras apps</span>
@@ -876,9 +876,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         </div>
       </div>
 
-      <button class="panel-logout" onclick="doLogout()">Cerrar sesión</button>
-    </div>
-  </div>
+  </div><!-- /panel-modal -->
+</div><!-- /modal-overlay modal-panel -->
 
 <!-- BANNER COOKIES -->
 <div id="cookies-banner" style="position:fixed; bottom:0; left:0; right:0; z-index:500; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
@@ -1084,7 +1083,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       window._currentSetDoc = setDoc;
       window._currentUpdateDoc = updateDoc;
       window._currentUpdateProfile = updateProfile;
-      await cargarYMostrarPanel(user, _primeraVez ? false : false);
+      await cargarYMostrarPanel(user, false);
       _primeraVez = false;
     } else {
       _primeraVez = false;
@@ -1129,7 +1128,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     let apodo = '—';
     try {
       const snap = await getDoc(doc(db, "usuarios", user.uid));
-      if (snap.exists) {
+      if (snap.exists()) {
         const data = snap.data();
         nombre = data.nombre || nombre;
         rol = data.rol || rol;
@@ -1139,7 +1138,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }
     } catch(e) {}
 
-    const fecha = (user.metadata && user.metadata.creationTime ? user.metadata.creationTime : null) ? new Date((user.metadata && user.metadata.creationTime ? user.metadata.creationTime : null)).toLocaleDateString('es-AR') : '—';
+    const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
     const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
 
     document.getElementById('btn-login-nav').style.display = 'none';
@@ -1147,7 +1146,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('nav-user-name').textContent = (apodo !== '—' ? apodo : nombre.split(' ')[0]);
     document.getElementById('panel-nombre').textContent = nombre;
     document.getElementById('panel-email').textContent = user.email;
-    document.getElementById('panel-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
+    const panelRol = document.getElementById('panel-rol'); if (panelRol) panelRol.textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
     document.getElementById('panel-avatar').textContent = rol === 'conductor' ? '🚗' : '👤';
     document.getElementById('d-nombre').textContent = nombre;
     document.getElementById('d-apodo').textContent = apodo;
@@ -1210,7 +1209,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     }
   };
 
-  // ── Logout ──
   // ── Login con Google ──
   // ── Detectar si es móvil ──
   const esMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
@@ -1237,7 +1235,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         closeLogin();
         await cargarYMostrarPanel(user, true);
         const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-        if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
+        if (!userDoc.exists() || !userDoc.data() || !userDoc.data().dni) {
           const bienvenida = document.getElementById('modal-bienvenida');
           const bienvenidaNombre = document.getElementById('bienvenida-nombre');
           if (bienvenida && bienvenidaNombre) {
@@ -1267,7 +1265,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }, { merge: true });
       await cargarYMostrarPanel(user, true);
       const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists || !userDoc.data() || !userDoc.data().dni) {
+      if (!userDoc.exists() || !userDoc.data() || !userDoc.data().dni) {
         const bienvenida = document.getElementById('modal-bienvenida');
         const bienvenidaNombre = document.getElementById('bienvenida-nombre');
         if (bienvenida && bienvenidaNombre) {
