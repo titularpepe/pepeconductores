@@ -881,7 +881,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   </div>
 
 <!-- BANNER COOKIES -->
-<div id="cookies-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<div id="cookies-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:9999; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
   <div style="display:flex; align-items:flex-start; gap:0.8rem; flex:1; min-width:260px;">
     <span style="font-size:1.2rem; flex-shrink:0;">🍪</span>
     <div>
@@ -1043,8 +1043,13 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // ── Mostrar banner cookies si no aceptó ──
   if (!localStorage.getItem('pepe_cookies')) {
-    const cb = document.getElementById('cookies-banner');
-    if (cb) cb.style.display = 'flex';
+    setTimeout(() => {
+      const cb = document.getElementById('cookies-banner');
+      if (cb) {
+        cb.style.display = 'flex';
+        cb.style.flexWrap = 'wrap';
+      }
+    }, 1500);
   }
 
   const auth = getAuth(app);
