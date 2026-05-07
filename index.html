@@ -1154,9 +1154,9 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     document.getElementById('d-email-edit').textContent = user.email;
     document.getElementById('d-dni').textContent = dni;
     document.getElementById('d-tel').textContent = tel;
-    document.getElementById('d-rol').textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
     document.getElementById('d-fecha').textContent = fecha;
     document.getElementById('d-verificado').textContent = verificado;
+    const dRol = document.getElementById('d-rol'); if (dRol) dRol.textContent = rol.charAt(0).toUpperCase() + rol.slice(1);
     document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
     document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
     document.getElementById('e-dni').value = dni !== '—' ? dni : '';
@@ -1468,7 +1468,13 @@ function openLogin() {
   }
 }
 function closeLogin() {
-  document.body.style.overflow = ''; document.getElementById('modal-login').classList.remove('open'); }
+  const m = document.getElementById('modal-login');
+  if (m) {
+    m.classList.remove('open');
+    m.style.display = '';
+  }
+  document.body.style.overflow = '';
+}
 function switchLoginTab(tab, btn) {
   document.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.modal-form').forEach(f => f.classList.remove('active'));
