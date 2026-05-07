@@ -330,7 +330,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('conductor',this)">🚗 Conductores</button>
     <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
-    <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Registro</button>
+    <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
     <button class="btn-nav" id="btn-login-nav" onclick="openLogin()">Iniciar sesión</button>
@@ -346,7 +346,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   <button class="tab-nav-btn" onclick="showPage('conductor',this)">🚗 Conductores</button>
   <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
   <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
-  <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Registro</button>
+  <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
 </div>
 
 <!-- ═══════ INICIO ═══════ -->
@@ -627,12 +627,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="req-item"><span class="req-check">✓</span> Seguro de chofer <strong style="color:var(--naranja);">OBLIGATORIO</strong></div>
         <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
       </div>
-      <div style="background:rgba(245,216,0,0.05); border:1px solid rgba(245,216,0,0.2); border-radius:12px; padding:1.5rem; margin-top:1.5rem; max-width:760px;">
-        <div style="font-family:'Barlow Condensed', sans-serif; font-size:1.1rem; font-weight:800; text-transform:uppercase; color:var(--amarillo); margin-bottom:0.6rem; letter-spacing:1px;">🚀 ¿Cómo me registro?</div>
-        <p style="font-size:0.9rem; color:var(--texto-apagado); line-height:1.7; margin-bottom:1rem;">El registro de conductores se realizará dentro de la app oficial de Pepe Conductores. Cuando lancemos en <strong style="color:var(--blanco);">Diciembre 2026</strong>, vas a poder cargar todos tus documentos directamente desde tu celular y nuestro equipo los validará en 24-48 hs.</p>
-        <p style="font-size:0.85rem; color:var(--texto-apagado); line-height:1.7;">Mientras tanto, si querés ser de los primeros conductores, escribinos por WhatsApp y te avisamos apenas esté disponible.</p>
-        <a href="https://wa.me/5493875157437?text=Hola%2C%20quiero%20ser%20conductor%20de%20Pepe" target="_blank" style="display:inline-block; margin-top:1rem; background:var(--amarillo); color:var(--negro); padding:0.8rem 1.5rem; border-radius:6px; font-weight:700; font-size:0.9rem; text-decoration:none;">💬 Escribir por WhatsApp</a>
-      </div>
     </div>
 
     <!-- REQUISITOS PASAJERO -->
@@ -643,12 +637,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="req-item"><span class="req-check">✓</span> Foto selfie a cara limpia: sin gafas, sin gorra, sin gorro. Buena iluminación y rostro completo visible</div>
         <div class="req-item"><span class="req-check">✓</span> Domicilio real (residencia actual)</div>
         <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
-      </div>
-      <div style="background:rgba(245,216,0,0.05); border:1px solid rgba(245,216,0,0.2); border-radius:12px; padding:1.5rem; margin-top:1.5rem; max-width:760px;">
-        <div style="font-family:'Barlow Condensed', sans-serif; font-size:1.1rem; font-weight:800; text-transform:uppercase; color:var(--amarillo); margin-bottom:0.6rem; letter-spacing:1px;">🚀 ¿Cómo me registro?</div>
-        <p style="font-size:0.9rem; color:var(--texto-apagado); line-height:1.7; margin-bottom:1rem;">El registro de pasajeros se realizará dentro de la app oficial de Pepe Conductores. Cuando lancemos en <strong style="color:var(--blanco);">Diciembre 2026</strong>, vas a poder crear tu cuenta y cargar tu DNI desde tu celular en pocos minutos.</p>
-        <p style="font-size:0.85rem; color:var(--texto-apagado); line-height:1.7;">Mientras tanto, si querés que te avisemos apenas esté disponible, escribinos por WhatsApp.</p>
-        <a href="https://wa.me/5493875157437?text=Hola%2C%20quiero%20usar%20Pepe%20como%20pasajero" target="_blank" style="display:inline-block; margin-top:1rem; background:var(--amarillo); color:var(--negro); padding:0.8rem 1.5rem; border-radius:6px; font-weight:700; font-size:0.9rem; text-decoration:none;">💬 Escribir por WhatsApp</a>
       </div>
     </div>
   </div>
@@ -841,6 +829,9 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         </div>
       </div>
 
+      <button class="panel-logout" onclick="doLogout()">Cerrar sesión</button>
+
+    </div><!-- /panel-body -->
   </div><!-- /panel-modal -->
 </div><!-- /modal-overlay modal-panel -->
 
