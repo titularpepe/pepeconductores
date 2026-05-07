@@ -598,9 +598,9 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 <!-- ═══════ REGISTRO ═══════ -->
 <div id="page-registro" class="page">
   <div class="section">
-    <div class="section-label">Registrate</div>
-    <h2 class="section-title">Completá tus datos y sé parte<br>de esta revolución en el transporte</h2>
-    <p class="section-sub">Seleccioná si sos conductor o pasajero para ver los requisitos y completar tu registro.</p>
+    <div class="section-label">Requisitos</div>
+    <h2 class="section-title">Conocé los requisitos<br>para ser parte de Pepe</h2>
+    <p class="section-sub">Seleccioná si querés ser conductor o pasajero para ver lo que vas a necesitar al momento del registro en la app.</p>
 
     <div class="registro-selector">
       <div class="tipo-btn active" id="btn-conductor" onclick="switchTipo('conductor')">
@@ -615,75 +615,40 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       </div>
     </div>
 
-    <!-- FORM CONDUCTOR -->
+    <!-- REQUISITOS CONDUCTOR -->
     <div class="form-container active" id="form-conductor">
-      <div class="form-grid">
-        <div>
-          <div class="req-box">
-            <div class="req-title">📋 Requisitos para conductores</div>
-            <div class="req-item"><span class="req-check">✓</span> Carnet de conducir D1 jurisdiccional o interjurisdiccional vigente (indicar fecha de vencimiento en el formulario)</div>
-            <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
-            <div class="req-item"><span class="req-check">✓</span> Foto tipo carnet reciente</div>
-            <div class="req-item"><span class="req-check">✓</span> Antecedentes penales nacionales al día</div>
-          </div>
-          <div class="form-group"><label>Nombre completo</label><input type="text" placeholder="Juan Pérez"></div>
-          <div class="form-group"><label>Número de DNI</label><input type="text" placeholder="30.123.456"></div>
-          <div class="form-group"><label>Teléfono</label><input type="tel" placeholder="+54 9 387 000-0000"></div>
-        </div>
-        <div>
-          <div class="form-group">
-            <label>Tipo de vehículo</label>
-            <select>
-              <option>Taxi / Remis</option>
-              <option>Moto</option>
-              <option>Camioneta</option>
-              <option>Cadetería</option>
-              <option>Ambulancia</option>
-              <option>Transporte pesado</option>
-              <option>Taxiflet</option>
-              <option>Transporte de áridos</option>
-              <option>Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Tipo de carnet</label>
-            <select><option>D1 Jurisdiccional</option><option>D1 Interjurisdiccional</option></select>
-          </div>
-          <div class="form-group"><label>Vencimiento del carnet</label><input type="date"></div>
-          <div class="form-group">
-            <label>Provincia</label>
-            <select><option>Salta</option><option>Buenos Aires</option><option>Córdoba</option><option>Tucumán</option><option>Otra</option></select>
-          </div>
-          <button class="form-submit" onclick="handleSubmit(this)">Enviar solicitud como conductor ✓</button>
-        </div>
+      <div class="req-box" style="max-width:760px;">
+        <div class="req-title">📋 Requisitos para conductores</div>
+        <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
+        <div class="req-item"><span class="req-check">✓</span> Antecedentes penales nacionales al día</div>
+        <div class="req-item"><span class="req-check">✓</span> Carnet de conducir categoría D1 (jurisdiccional o interjurisdiccional) — <strong style="color:var(--amarillo);">NO VENCIDO</strong></div>
+        <div class="req-item"><span class="req-check">✓</span> Datos del vehículo a manejar: patente, marca y color</div>
+        <div class="req-item"><span class="req-check">✓</span> Foto selfie a cara limpia: sin gafas, sin gorra, sin gorro</div>
+        <div class="req-item"><span class="req-check">✓</span> Seguro de chofer <strong style="color:var(--naranja);">OBLIGATORIO</strong></div>
+        <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
+      </div>
+      <div style="background:rgba(245,216,0,0.05); border:1px solid rgba(245,216,0,0.2); border-radius:12px; padding:1.5rem; margin-top:1.5rem; max-width:760px;">
+        <div style="font-family:'Barlow Condensed', sans-serif; font-size:1.1rem; font-weight:800; text-transform:uppercase; color:var(--amarillo); margin-bottom:0.6rem; letter-spacing:1px;">🚀 ¿Cómo me registro?</div>
+        <p style="font-size:0.9rem; color:var(--texto-apagado); line-height:1.7; margin-bottom:1rem;">El registro de conductores se realizará dentro de la app oficial de Pepe Conductores. Cuando lancemos en <strong style="color:var(--blanco);">Diciembre 2026</strong>, vas a poder cargar todos tus documentos directamente desde tu celular y nuestro equipo los validará en 24-48 hs.</p>
+        <p style="font-size:0.85rem; color:var(--texto-apagado); line-height:1.7;">Mientras tanto, si querés ser de los primeros conductores, escribinos por WhatsApp y te avisamos apenas esté disponible.</p>
+        <a href="https://wa.me/5493875157437?text=Hola%2C%20quiero%20ser%20conductor%20de%20Pepe" target="_blank" style="display:inline-block; margin-top:1rem; background:var(--amarillo); color:var(--negro); padding:0.8rem 1.5rem; border-radius:6px; font-weight:700; font-size:0.9rem; text-decoration:none;">💬 Escribir por WhatsApp</a>
       </div>
     </div>
 
-    <!-- FORM PASAJERO -->
+    <!-- REQUISITOS PASAJERO -->
     <div class="form-container" id="form-pasajero">
-      <div class="form-grid">
-        <div>
-          <div class="req-box">
-            <div class="req-title">📋 Requisitos para pasajeros</div>
-            <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
-            <div class="req-item"><span class="req-check">✓</span> Foto selfie tipo carnet: sin gorra, sin anteojos, sin nada que cubra la cara. El rostro debe verse completo y con buena iluminación.</div>
-          </div>
-          <div class="form-group"><label>Nombre completo</label><input type="text" placeholder="María García"></div>
-          <div class="form-group"><label>Número de DNI</label><input type="text" placeholder="35.678.901"></div>
-          <div class="form-group"><label>Teléfono</label><input type="tel" placeholder="+54 9 387 000-0000"></div>
-        </div>
-        <div>
-          <div class="form-group"><label>Ciudad</label><input type="text" placeholder="Salta Capital"></div>
-          <div class="form-group">
-            <label>Provincia</label>
-            <select><option>Salta</option><option>Buenos Aires</option><option>Córdoba</option><option>Tucumán</option><option>Otra</option></select>
-          </div>
-          <div class="form-group">
-            <label>¿Cómo nos conociste?</label>
-            <select><option>Redes sociales</option><option>Un amigo / conocido</option><option>Medios de comunicación</option><option>Conductor de Pepe</option></select>
-          </div>
-          <button class="form-submit" onclick="handleSubmit(this)">Enviar solicitud como pasajero ✓</button>
-        </div>
+      <div class="req-box" style="max-width:760px;">
+        <div class="req-title">📋 Requisitos para pasajeros</div>
+        <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
+        <div class="req-item"><span class="req-check">✓</span> Foto selfie a cara limpia: sin gafas, sin gorra, sin gorro. Buena iluminación y rostro completo visible</div>
+        <div class="req-item"><span class="req-check">✓</span> Domicilio real (residencia actual)</div>
+        <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
+      </div>
+      <div style="background:rgba(245,216,0,0.05); border:1px solid rgba(245,216,0,0.2); border-radius:12px; padding:1.5rem; margin-top:1.5rem; max-width:760px;">
+        <div style="font-family:'Barlow Condensed', sans-serif; font-size:1.1rem; font-weight:800; text-transform:uppercase; color:var(--amarillo); margin-bottom:0.6rem; letter-spacing:1px;">🚀 ¿Cómo me registro?</div>
+        <p style="font-size:0.9rem; color:var(--texto-apagado); line-height:1.7; margin-bottom:1rem;">El registro de pasajeros se realizará dentro de la app oficial de Pepe Conductores. Cuando lancemos en <strong style="color:var(--blanco);">Diciembre 2026</strong>, vas a poder crear tu cuenta y cargar tu DNI desde tu celular en pocos minutos.</p>
+        <p style="font-size:0.85rem; color:var(--texto-apagado); line-height:1.7;">Mientras tanto, si querés que te avisemos apenas esté disponible, escribinos por WhatsApp.</p>
+        <a href="https://wa.me/5493875157437?text=Hola%2C%20quiero%20usar%20Pepe%20como%20pasajero" target="_blank" style="display:inline-block; margin-top:1rem; background:var(--amarillo); color:var(--negro); padding:0.8rem 1.5rem; border-radius:6px; font-weight:700; font-size:0.9rem; text-decoration:none;">💬 Escribir por WhatsApp</a>
       </div>
     </div>
   </div>
