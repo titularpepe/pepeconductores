@@ -1554,8 +1554,40 @@ async function guardarDatos() {
   }
 
   const btn = document.getElementById('btn-guardar-datos');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  msg.style.display = 'none';
 
-  // ── Actualizar UI inmediatamente sin esperar Firebase ──
+  // ── Guardar en Firebase PRIMERO (esperar respuesta) ──
+  try {
+    if (!window._currentDb || !window._currentDoc || !window._currentSetDoc) {
+      throw new Error('Firebase no está listo. Recargá la página.');
+    }
+
+    await window._currentSetDoc(
+      window._currentDoc(window._currentDb, "usuarios", window._currentUid),
+      { nombre, apodo, dni, tel },
+      { merge: true }
+    );
+
+    // Actualizar el displayName en Auth (no es crítico si falla)
+    try {
+      if (window._currentAuth?.currentUser && window._currentUpdateProfile) {
+        await window._currentUpdateProfile(window._currentAuth.currentUser, { displayName: nombre });
+      }
+    } catch(e) { console.warn('No se pudo actualizar displayName:', e.message); }
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✓ Guardar';
+    msg.textContent = '❌ Error al guardar: ' + (e.message || 'desconocido');
+    msg.style.color = '#ff7755';
+    msg.style.display = 'block';
+    console.error('Error completo:', e);
+    return;
+  }
+
+  // ── Guardado exitoso: actualizar UI ──
   document.getElementById('d-nombre').textContent = nombre;
   document.getElementById('d-apodo').textContent = apodo || '—';
   document.getElementById('d-dni').textContent = dni || '—';
@@ -1574,22 +1606,6 @@ async function guardarDatos() {
   msg.style.color = '#2ecc71';
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 3000);
-
-  // ── Guardar en Firebase en segundo plano ──
-  try {
-    if (window._currentAuth?.currentUser && window._currentUpdateProfile) {
-      await window._currentUpdateProfile(window._currentAuth.currentUser, { displayName: nombre });
-    }
-    if (window._currentDb && window._currentDoc && window._currentSetDoc) {
-      await window._currentSetDoc(
-        window._currentDoc(window._currentDb, "usuarios", window._currentUid),
-        { nombre, apodo, dni, tel },
-        { merge: true }
-      );
-    }
-  } catch(e) {
-    console.warn('Error guardando en Firebase:', e.message);
-  }
 }
 
 // Cerrar modales con click fuera
