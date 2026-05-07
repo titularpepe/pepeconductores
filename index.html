@@ -880,7 +880,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 </div><!-- /modal-overlay modal-panel -->
 
 <!-- BANNER COOKIES -->
-<div id="cookies-banner" style="position:fixed; bottom:0; left:0; right:0; z-index:500; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<div id="cookies-banner" style="position:fixed; bottom:0; left:0; right:0; z-index:500; background:#0c0c0c; border-top:1px solid rgba(245,216,0,0.2); padding:1rem 5%; display:none; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
   <div style="display:flex; align-items:flex-start; gap:0.8rem; flex:1; min-width:260px;">
     <span style="font-size:1.2rem; flex-shrink:0;">🍪</span>
     <div>
@@ -1062,10 +1062,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const app = initializeApp(firebaseConfig);
 
   // ── Mostrar banner cookies si no aceptó ──
-  // Banner cookies: visible por defecto, ocultar si ya aceptó
+  // Banner cookies: oculto por defecto, mostrar si NO aceptó todavía
   const cb = document.getElementById('cookies-banner');
-  if (cb && localStorage.getItem('pepe_cookies')) {
-    cb.style.display = 'none';
+  if (cb && !localStorage.getItem('pepe_cookies')) {
+    cb.style.display = 'flex';
   }
 
   const auth = getAuth(app);
