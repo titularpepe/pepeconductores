@@ -1099,15 +1099,22 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     let apodo = '—';
     try {
       const snap = await getDoc(doc(db, "usuarios", user.uid));
-      if (snap.exists()) {
+      // Compatibilidad: en SDK v8 compat, exists es propiedad. En v9+, es método.
+      const existe = (typeof snap.exists === 'function') ? snap.exists() : snap.exists;
+      if (existe) {
         const data = snap.data();
+        console.log('Datos leídos de Firestore:', data);
         nombre = data.nombre || nombre;
-        rol = data.rol || rol;
+        rol = data.rol || data.modoActivo || rol;
         dni = data.dni || '—';
         tel = data.tel || '—';
         apodo = data.apodo || '—';
+      } else {
+        console.warn('No existe documento en Firestore para uid:', user.uid);
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error('Error leyendo Firestore:', e);
+    }
 
     const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
     const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
@@ -1206,7 +1213,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         closeLogin();
         await cargarYMostrarPanel(user, true);
         const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-        if (!userDoc.exists() || !userDoc.data() || !userDoc.data().dni) {
+        const _ex1 = (typeof userDoc.exists === 'function') ? userDoc.exists() : userDoc.exists;
+        if (!_ex1 || !userDoc.data() || !userDoc.data().dni) {
           const bienvenida = document.getElementById('modal-bienvenida');
           const bienvenidaNombre = document.getElementById('bienvenida-nombre');
           if (bienvenida && bienvenidaNombre) {
@@ -1236,7 +1244,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       }, { merge: true });
       await cargarYMostrarPanel(user, true);
       const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      if (!userDoc.exists() || !userDoc.data() || !userDoc.data().dni) {
+      const _ex2 = (typeof userDoc.exists === 'function') ? userDoc.exists() : userDoc.exists;
+      if (!_ex2 || !userDoc.data() || !userDoc.data().dni) {
         const bienvenida = document.getElementById('modal-bienvenida');
         const bienvenidaNombre = document.getElementById('bienvenida-nombre');
         if (bienvenida && bienvenidaNombre) {
