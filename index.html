@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' *.googleapis.com *.gstatic.com *.firebaseapp.com *.firebase.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src *.firebaseio.com *.googleapis.com *.firebase.com wss://*.firebaseio.com; img-src 'self' data: blob: *.googleapis.com *.gstatic.com; frame-src 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pepe Conductores — La app de transporte argentina</title>
+<meta name="description" content="Pepe Conductores: la app argentina de transporte. Tarifas fijas, sin comisiones abusivas, conductores verificados. Pedí tu viaje en Salta.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -125,6 +128,23 @@ nav {
 .btn-danger:hover { background: rgba(255,77,0,0.2); }
 .panel-logout { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--texto-apagado); border-radius: 8px; padding: 0.8rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'Barlow', sans-serif; margin-top: 1.5rem; transition: all 0.2s; }
 .panel-logout:hover { border-color: var(--naranja); color: var(--naranja); }
+
+/* PANEL — menores */
+.menor-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.menor-avatar { width: 40px; height: 40px; border-radius: 10px; background: rgba(245,216,0,0.12); border: 1px solid rgba(245,216,0,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.menor-info { flex: 1; }
+.menor-nombre { font-size: 0.92rem; font-weight: 700; }
+.menor-meta { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 2px; }
+.menor-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.btn-menor-edit { background: transparent; border: 1px solid rgba(245,216,0,0.3); color: var(--amarillo); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.btn-menor-edit:hover { background: rgba(245,216,0,0.1); }
+.btn-menor-del { background: transparent; border: 1px solid rgba(255,77,0,0.3); color: var(--naranja); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.btn-menor-del:hover { background: rgba(255,77,0,0.1); }
+.menor-form-box { background: rgba(245,216,0,0.04); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; display: none; }
+.menor-form-box.open { display: block; }
+.menor-legal-note { background: rgba(255,255,255,0.03); border-left: 3px solid rgba(245,216,0,0.4); border-radius: 0 8px 8px 0; padding: 0.8rem 1rem; font-size: 0.78rem; color: var(--texto-apagado); line-height: 1.6; margin-bottom: 1.2rem; }
+.btn-agregar-menor { display: flex; align-items: center; gap: 0.5rem; background: transparent; border: 1.5px dashed rgba(245,216,0,0.3); color: var(--amarillo); width: 100%; padding: 0.8rem; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; justify-content: center; transition: all 0.2s; margin-top: 0.5rem; }
+.btn-agregar-menor:hover { background: rgba(245,216,0,0.05); border-color: rgba(245,216,0,0.6); }
 
 /* VERIFICACIÓN */
 .verif-estado-box { display: flex; align-items: center; gap: 1rem; background: rgba(245,216,0,0.05); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1rem 1.2rem; }
@@ -459,7 +479,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   </div>
   <footer>
     <div class="footer-logo">PEPE CONDUCTORES</div>
-    <div class="footer-copy">© 2026 Pepe Conductores. Todos los derechos reservados.</div>
+    <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+      <div class="footer-copy">© 2026 Pepe Conductores. Todos los derechos reservados.</div>
+      <button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color 0.2s;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button>
+    </div>
     <a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a>
   </footer>
 </div>
@@ -529,7 +552,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       </div>
     </div>
   </div>
-  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
 
 <!-- ═══════ PASAJEROS ═══════ -->
@@ -572,7 +595,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <p class="section-sub">Podés solicitar un viaje para un familiar o conocido. El conductor verá el nombre y DNI del pasajero real para mayor seguridad de todos.</p>
     <button class="btn-main" onclick="solicitarParaTercero()">👥 Pedir viaje para otra persona</button>
   </div>
-  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
 
 <!-- ═══════ SEGURIDAD ═══════ -->
@@ -592,7 +615,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="security-card"><div class="security-icon">🏛️</div><div><div class="security-text-title">Cumplimiento normativo</div><div class="security-text-desc">Solo conductores con categoría profesional habilitada. Cumplimiento de todas las regulaciones provinciales y municipales vigentes.</div></div></div>
     </div>
   </div>
-  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
 
 <!-- ═══════ REGISTRO ═══════ -->
@@ -640,7 +663,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       </div>
     </div>
   </div>
-  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div class="footer-copy">© 2026 Pepe Conductores.</div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
+  <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
 
 <!-- ═══════ MODAL LOGIN ═══════ -->
@@ -652,7 +675,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <p class="modal-sub">Accedé a tu cuenta o registrate gratis</p>
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchLoginTab('login', this)">Iniciar sesión</button>
-      <button class="modal-tab" onclick="switchLoginTab('register', this)">Registrarme</button>
+      <button class="modal-tab" id="tab-register" onclick="clickTabRegistro(this)" style="position:relative;">
+        Registrarme
+        <span id="tab-register-lock" style="margin-left:5px;font-size:0.8rem;">🔒</span>
+      </button>
     </div>
     <div id="modal-error" class="modal-error"></div>
     <div id="modal-success" class="modal-success"></div>
@@ -682,6 +708,9 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="mfg"><label>Email</label><input type="email" id="reg-email" placeholder="tu@email.com"></div>
       <div class="mfg"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
       <p style="font-size:0.78rem;color:var(--texto-apagado);margin-bottom:1rem;line-height:1.6;">Con una sola cuenta podés usar Pepe tanto como pasajero como conductor.</p>
+      <div id="reg-terminos-aviso" style="background:rgba(255,77,0,0.08);border:1px solid rgba(255,77,0,0.25);border-radius:8px;padding:0.7rem 1rem;font-size:0.78rem;color:rgba(255,150,100,0.9);margin-bottom:1rem;line-height:1.6;display:none;">
+        ⚠ Para registrarte necesitás aceptar los <button onclick="verTerminos()" style="background:none;border:none;color:#f5d800;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:'Barlow',sans-serif;">Términos y Condiciones</button>.
+      </div>
       <button class="modal-btn" id="btn-reg-submit" onclick="doRegister()">Crear cuenta →</button>
     </div>
   </div>
@@ -710,6 +739,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <button class="panel-tab" onclick="switchPanel('config', this)">⚙️ Configuración</button>
         <button class="panel-tab" onclick="switchPanel('extra1', this)">🔜 Próximamente</button>
         <button class="panel-tab" onclick="switchPanel('verificacion', this)">🪪 Verificación</button>
+        <button class="panel-tab" onclick="switchPanel('menores', this)">👶 Mis hijos</button>
       </div>
     </div>
     <div class="panel-body">
@@ -829,6 +859,65 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         </div>
       </div>
 
+      <!-- MENORES / HIJOS -->
+      <div class="panel-section" id="ps-menores">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+          <div class="panel-section-title" style="margin-bottom:0;">👶 Mis hijos</div>
+          <span style="font-size:0.72rem;color:var(--texto-apagado);">Máx. 5 perfiles</span>
+        </div>
+
+        <div class="menor-legal-note">
+          ⚖️ Al agregar un perfil de menor, el adulto titular de la cuenta asume responsabilidad total por los viajes solicitados en su nombre. Los datos del menor son protegidos conforme a la Ley N° 25.326 y solo son visibles para el conductor durante el viaje.
+        </div>
+
+        <!-- Lista de menores -->
+        <div id="menores-lista"></div>
+
+        <!-- Formulario agregar/editar menor -->
+        <div class="menor-form-box" id="menor-form-box">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--amarillo);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px;" id="menor-form-titulo">Agregar hijo/a</div>
+          <input type="hidden" id="menor-edit-id" value="">
+          <div class="datos-grid" style="margin-bottom:1rem;">
+            <div class="dato-item">
+              <div class="dato-label">Nombre completo *</div>
+              <input id="m-nombre" type="text" placeholder="Ej: Valentina García" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;">
+            </div>
+            <div class="dato-item">
+              <div class="dato-label">Apodo (opcional)</div>
+              <input id="m-apodo" type="text" placeholder="Ej: Valen, Toto..." style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;">
+            </div>
+            <div class="dato-item">
+              <div class="dato-label">Fecha de nacimiento *</div>
+              <input id="m-fecha" type="date" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;">
+            </div>
+            <div class="dato-item">
+              <div class="dato-label">DNI (opcional)</div>
+              <input id="m-dni" type="text" placeholder="00.000.000" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;">
+            </div>
+            <div class="dato-item" style="grid-column:1/-1;">
+              <div class="dato-label">Relación *</div>
+              <select id="m-relacion" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(245,216,0,0.3);border-radius:6px;padding:0.5rem 0.8rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;outline:none;margin-top:4px;">
+                <option value="" style="background:#222;">Seleccioná...</option>
+                <option value="hijo" style="background:#222;">Hijo/a</option>
+                <option value="hijastro" style="background:#222;">Hijastro/a</option>
+                <option value="nieto" style="background:#222;">Nieto/a</option>
+                <option value="sobrino" style="background:#222;">Sobrino/a</option>
+                <option value="tutelado" style="background:#222;">Menor bajo tutela</option>
+              </select>
+            </div>
+          </div>
+          <div id="menor-form-msg" style="font-size:0.82rem;margin-bottom:0.8rem;display:none;"></div>
+          <div style="display:flex;gap:0.6rem;">
+            <button onclick="guardarMenor()" style="flex:1;background:var(--amarillo);border:none;color:var(--negro);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;">✓ Guardar perfil</button>
+            <button onclick="cancelarFormMenor()" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--texto-apagado);padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;">Cancelar</button>
+          </div>
+        </div>
+
+        <button class="btn-agregar-menor" id="btn-agregar-menor" onclick="abrirFormMenor()">
+          + Agregar hijo/a
+        </button>
+      </div>
+
       <button class="panel-logout" onclick="doLogout()">Cerrar sesión</button>
 
     </div><!-- /panel-body -->
@@ -852,76 +941,186 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
 <!-- MODAL TÉRMINOS Y CONDICIONES -->
 <div class="modal-overlay" id="modal-terminos">
-  <div style="background:#161616; border:1px solid rgba(245,216,0,0.15); border-radius:20px; width:100%; max-width:520px; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; position:relative; animation:modalIn 0.3s ease;">
+  <div style="background:#161616; border:1px solid rgba(245,216,0,0.15); border-radius:20px; width:100%; max-width:640px; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; position:relative; animation:modalIn 0.3s ease;">
     <button class="modal-close" onclick="cerrarTerminos()">✕</button>
-    <div style="background:#0c0c0c; padding:1.5rem; text-align:center; flex-shrink:0;">
-      <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; color:#f5d800;">PEPE <span style="color:rgba(255,255,255,0.4); font-size:0.9rem; font-family:'Barlow',sans-serif; font-weight:300;">CONDUCTORES</span></div>
-      <div style="color:rgba(255,255,255,0.5); font-size:0.78rem; margin-top:4px;">Términos y condiciones de uso — v1.0 Mayo 2026</div>
+
+    <!-- Header -->
+    <div style="background:#0c0c0c; padding:1.5rem 2rem; flex-shrink:0; border-bottom:1px solid rgba(245,216,0,0.1);">
+      <div style="font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; color:#f5d800;">PEPE <span style="color:rgba(255,255,255,0.35); font-size:0.9rem; font-family:'Barlow',sans-serif; font-weight:300;">CONDUCTORES</span></div>
+      <div style="color:rgba(255,255,255,0.45); font-size:0.78rem; margin-top:3px;">Términos y Condiciones de Uso — v1.0 · Mayo 2026 · República Argentina</div>
+      <!-- Índice rápido -->
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:1rem;">
+        <a href="#tc-1" onclick="scrollTC('tc-1')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">1. Definiciones</a>
+        <a href="#tc-2" onclick="scrollTC('tc-2')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">2. Registro</a>
+        <a href="#tc-3" onclick="scrollTC('tc-3')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">3. Verificación</a>
+        <a href="#tc-4" onclick="scrollTC('tc-4')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">4. Servicio</a>
+        <a href="#tc-5" onclick="scrollTC('tc-5')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">5. Tarifas</a>
+        <a href="#tc-6" onclick="scrollTC('tc-6')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">6. Viajes compartidos</a>
+        <a href="#tc-7" onclick="scrollTC('tc-7')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">7. Comportamiento</a>
+        <a href="#tc-8" onclick="scrollTC('tc-8')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">8. Ubicación</a>
+        <a href="#tc-9" onclick="scrollTC('tc-9')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">9. Menores</a>
+        <a href="#tc-10" onclick="scrollTC('tc-10')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">10. Obj. perdidos</a>
+        <a href="#tc-13" onclick="scrollTC('tc-13')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">13. Privacidad</a>
+        <a href="#tc-15" onclick="scrollTC('tc-15')" style="font-size:0.68rem; color:rgba(245,216,0,0.7); background:rgba(245,216,0,0.07); border:1px solid rgba(245,216,0,0.15); border-radius:20px; padding:3px 10px; text-decoration:none; cursor:pointer;">15. Seguros</a>
+      </div>
     </div>
-    <div style="overflow-y:auto; padding:1.5rem; flex:1;">
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">1. Registro e identidad</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Cada usuario se registra con su DNI real y un único número de teléfono. No está permitido crear múltiples cuentas ni compartir el acceso con terceros. La cuenta es personal e intransferible.</p>
-      </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+    <!-- Cuerpo scrolleable -->
+    <div style="overflow-y:auto; padding:1.5rem 2rem; flex:1; font-family:'Barlow',sans-serif;" id="tc-scroll-body">
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">2. Uso del servicio</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Pepe Conductores conecta pasajeros con conductores profesionales habilitados. Queda prohibido el transporte de sustancias ilegales, armas y animales sin jaula. El incumplimiento puede resultar en suspensión inmediata.</p>
-      </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <!-- Introducción -->
+      <p style="font-size:0.82rem; color:rgba(247,244,238,0.5); line-height:1.8; margin-bottom:1.5rem;">El presente documento establece los Términos y Condiciones de Uso que regulan el acceso y la utilización de la plataforma Pepe Conductores, sus servicios asociados y sitio web. Al registrarse o hacer uso de cualquier servicio, el usuario acepta plena e incondicionalmente estos Términos en su totalidad. Pepe Conductores actúa únicamente como intermediaria tecnológica y no presta directamente el servicio de transporte.</p>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.5rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">3. Privacidad y datos</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Tus datos personales son utilizados exclusivamente para el funcionamiento del servicio. No se venden ni comparten con terceros. Todos los datos están cifrados y protegidos.</p>
+      <!-- 1 -->
+      <div id="tc-1" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">1. Definiciones</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 5px;">• <strong style="color:rgba(247,244,238,0.8);">Plataforma:</strong> el sitio web y todos los servicios digitales operados bajo la marca Pepe Conductores.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 5px;">• <strong style="color:rgba(247,244,238,0.8);">Usuario:</strong> toda persona física mayor de 18 años registrada en la Plataforma, ya sea como Pasajero o Conductor.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 5px;">• <strong style="color:rgba(247,244,238,0.8);">Pasajero:</strong> el Usuario que solicita un servicio de transporte a través de la Plataforma.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 5px;">• <strong style="color:rgba(247,244,238,0.8);">Conductor:</strong> el Usuario habilitado que presta el servicio de transporte en vehículo propio.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">• <strong style="color:rgba(247,244,238,0.8);">Viaje:</strong> el servicio de traslado entre dos puntos geográficos coordinado a través de la Plataforma.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">4. Tarifas y pagos</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">El costo del servicio por cada solicitud de viaje es fijo y será informado en la app al momento de la solicitud, pudiendo estar sujeto a cambios. La tarifa por kilómetro varía según el tipo de vehículo, la distancia y las condiciones del servicio. Todos los valores serán informados antes de confirmar el viaje. No existe tarifa dinámica por demanda.</p>
+      <!-- 2 -->
+      <div id="tc-2" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">2. Registro y Cuenta de Usuario</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Para acceder a los servicios es obligatorio crear una Cuenta personal con nombre real, email válido y teléfono activo. Cada Usuario podrá crear una única Cuenta. Queda prohibido registrar múltiples cuentas o delegar el acceso a terceros. El Usuario es responsable de la confidencialidad de sus credenciales y de todas las acciones realizadas desde su Cuenta.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">La falsedad de los datos proporcionados habilita a Pepe Conductores a dar de baja la Cuenta de manera inmediata y sin previo aviso.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">5. Comportamiento y respeto</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Queda prohibido fumar, consumir alcohol o drogas dentro del vehículo. El conductor tiene derecho a cancelar el viaje ante comportamientos inadecuados. El pasajero puede reportar al conductor si no cumple las normas. El abuso del sistema de reportes también será sancionado.</p>
+      <!-- 3 -->
+      <div id="tc-3" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">3. Verificación de Identidad</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">El proceso de verificación incluye fotografía del DNI y selfie de validación. Los documentos son revisados manualmente en un plazo de 24 a 48 horas hábiles. Toda la información es tratada con estricta confidencialidad y almacenada con cifrado de seguridad.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">6. Deudas y sanciones</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">El usuario que no abone un viaje quedará bloqueado hasta regularizar su deuda en las oficinas físicas. Los falsos reportes o el uso indebido pueden derivar en suspensión temporal o permanente.</p>
+      <!-- 4 -->
+      <div id="tc-4" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">4. Condiciones del Servicio de Transporte</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Pepe Conductores actúa exclusivamente como plataforma de intermediación. No es parte del contrato de transporte ni asume responsabilidad por los actos u omisiones de ninguna de las partes durante el Viaje.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.8); line-height:1.8; margin:0 0 4px; font-weight:600;">Obligaciones del Pasajero:</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Proporcionar información precisa, respetar al Conductor, abonar el costo del Viaje, no transportar sustancias ilegales, armas ni animales sin jaula reglamentaria, y no exceder la capacidad del vehículo.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.8); line-height:1.8; margin:0 0 4px; font-weight:600;">Obligaciones del Conductor:</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Contar con licencia vigente y vehículo reglamentario, cumplir las normas de tránsito, no conducir bajo efectos de sustancias, tratar a los Pasajeros con respeto y profesionalismo.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">7. Capacidad del vehículo</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Queda prohibido superar la cantidad máxima de pasajeros permitida por tipo de vehículo. El conductor tiene derecho a cancelar si se excede la capacidad. Esta norma es de cumplimiento obligatorio por razones de seguridad vial.</p>
+      <!-- 5 -->
+      <div id="tc-5" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">5. Tarifas y Pagos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">El costo de cada Viaje es informado al Pasajero antes de confirmar. La tarifa es fija y no está sujeta a variación por demanda (sin tarifa dinámica). El Pasajero que no abone quedará suspendido hasta regularizar su deuda en las oficinas habilitadas. Pepe Conductores se reserva el derecho de modificar tarifas con previo aviso.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">8. Ubicación en tiempo real</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Al solicitar o aceptar un viaje, conductor y pasajero comparten su ubicación en tiempo real dentro de la app. Esta información se usa exclusivamente para la gestión del viaje y se deja de compartir al finalizar el mismo.</p>
+      <!-- 6 -->
+      <div id="tc-6" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">6. Viajes Compartidos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">La modalidad de viajes compartidos requiere el consentimiento previo de todos los pasajeros. El Conductor puede aceptar o rechazarla. El costo total se distribuye proporcionalmente entre los Pasajeros según lo informado antes de confirmar el Viaje.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.2rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">9. Viajes compartidos</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Pepe Conductores permite viajes compartidos entre pasajeros con destinos cercanos, siempre con consentimiento previo de todos. El conductor puede aceptar o rechazar esta modalidad. El costo se distribuirá entre los pasajeros según lo informado antes de confirmar.</p>
+      <!-- 7 -->
+      <div id="tc-7" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">7. Comportamiento, Cancelaciones y Sanciones</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Queda prohibido fumar, consumir alcohol o drogas en el vehículo, ejercer violencia verbal o física, realizar grabaciones sin consentimiento y utilizar la Plataforma con fines distintos al transporte lícito.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Las cancelaciones reiteradas o injustificadas pueden generar restricciones. El uso abusivo del sistema de reportes será sancionado con suspensión temporal o baja definitiva de la Cuenta.</p>
       </div>
-      <div style="height:1px; background:rgba(255,255,255,0.06); margin:1rem 0;"></div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
 
-      <div style="margin-bottom:1.5rem;">
-        <div style="font-size:0.88rem; font-weight:600; color:#f7f4ee; margin-bottom:6px;">10. Aceptación</div>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.7; margin:0;">Al registrarte en Pepe Conductores aceptás estos términos en su totalidad. Nos reservamos el derecho de modificarlos con previo aviso. El uso continuado del servicio implica la aceptación de los cambios.</p>
+      <!-- 8 -->
+      <div id="tc-8" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">8. Ubicación en Tiempo Real</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Al solicitar o aceptar un Viaje, Pasajero y Conductor comparten su ubicación en tiempo real. Esta información se usa exclusivamente para coordinar el Viaje y deja de compartirse al finalizar el mismo. El Usuario puede revocar el permiso de ubicación desde la configuración de su dispositivo, lo cual puede limitar el acceso a ciertos servicios.</p>
       </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 9 -->
+      <div id="tc-9" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">9. Menores de Edad y Perfiles Vinculados</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">El uso directo de la Plataforma está reservado a mayores de 18 años. Un adulto titular de cuenta puede crear perfiles vinculados para menores a su cargo (hijos, nietos, menores bajo tutela) y solicitar Viajes en su nombre.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Al agregar un perfil de menor, el adulto asume plena responsabilidad legal y civil por los Viajes solicitados en su nombre. Los datos del menor son protegidos conforme a la Ley N° 25.326 y son visibles para el Conductor únicamente durante el Viaje. Si un menor accede a la Plataforma con datos falsos, la responsabilidad recae exclusivamente sobre él o sus tutores legales.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 10 -->
+      <div id="tc-10" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">10. Objetos Olvidados o Perdidos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Pepe Conductores no se hace responsable bajo ninguna circunstancia por objetos, pertenencias, documentos, dinero o dispositivos que los Pasajeros olviden o extravíen durante o después de un Viaje.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">La custodia de las pertenencias personales es responsabilidad exclusiva del Pasajero. El Conductor queda expresamente exonerado de toda responsabilidad civil por pérdida, extravío, daño o sustracción de pertenencias. Cualquier acuerdo de recuperación entre Pasajero y Conductor es voluntario y ajeno a la Plataforma.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 11 -->
+      <div id="tc-11" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">11. Propiedad Intelectual</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Todos los contenidos, marcas, logotipos, diseños y software de la Plataforma son propiedad exclusiva de Pepe Conductores. Queda prohibida su reproducción, distribución o modificación sin autorización expresa y por escrito.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 12 -->
+      <div id="tc-12" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">12. Limitación de Responsabilidad</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Pepe Conductores no será responsable por daños, perjuicios o lesiones que sufran Usuarios o terceros como consecuencia del servicio de transporte, dado que actúa únicamente como intermediaria tecnológica.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">En ningún caso la responsabilidad de Pepe Conductores excederá el importe abonado por el Usuario en concepto del Viaje que originó el reclamo.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 13 -->
+      <div id="tc-13" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">13. Política de Privacidad</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">El tratamiento de datos personales se rige por la Ley N° 25.326. Recopilamos: datos de identificación (nombre, DNI), contacto (email, teléfono), verificación (foto DNI, selfie), ubicación en tiempo real durante los Viajes, datos de uso e historial.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Los datos son usados exclusivamente para operar la Plataforma. No se venden ni comparten con terceros, salvo requerimiento judicial. Los datos se conservan durante la vida activa de la Cuenta y hasta 5 años posteriores a la baja.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;"><strong style="color:rgba(247,244,238,0.8);">Derechos ARCO:</strong> El Usuario tiene derecho de Acceso, Rectificación, Cancelación y Oposición sobre sus datos personales, ejercibles gratuitamente a través de los canales de contacto habilitados.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Solo usamos cookies técnicas esenciales para autenticación y seguridad. No usamos cookies publicitarias ni compartimos información de navegación con terceros. LA AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA (AAIP) es el organismo de control competente en materia de protección de datos personales.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 14 -->
+      <div id="tc-14" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">14. Mayoría de Edad y Declaración Jurada</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Al registrarse, el Usuario declara bajo juramento ser mayor de 18 años, que sus datos son verídicos y que no está inhabilitado para celebrar contratos. La falsedad de estas declaraciones habilita la baja inmediata de la Cuenta y las acciones legales que correspondan.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 15 -->
+      <div id="tc-15" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">15. Habilitación Regulatoria y Seguros</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Los Conductores son trabajadores independientes. No existe relación laboral de ninguna naturaleza entre Pepe Conductores y los Conductores.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Todo Conductor debe contar obligatoriamente con: seguro de responsabilidad civil obligatorio (RCO) vigente conforme a la Ley N° 24.449, cobertura hacia terceros transportados, licencia de conducir habilitante vigente, y revisión técnica vehicular (RTO) al día. El incumplimiento habilita la suspensión inmediata de la Cuenta. Pepe Conductores no será responsable por daños ocasionados por falta de seguro o habilitación del Conductor.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 16 -->
+      <div id="tc-16" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">16. Modificaciones de los Términos</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Pepe Conductores puede modificar estos Términos con una antelación mínima de 15 días corridos notificada a través de la Plataforma. El uso continuado implica la aceptación de los nuevos Términos.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 17 -->
+      <div id="tc-17" style="margin-bottom:1.3rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">17. Ley Aplicable y Jurisdicción</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Estos Términos se rigen por las leyes de la República Argentina (Código Civil y Comercial, Ley N° 24.240 de Defensa del Consumidor y Ley N° 25.326 de Protección de Datos). Para toda controversia, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Provincia de Salta, con renuncia a cualquier otro fuero.</p>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.05);margin-bottom:1.3rem;"></div>
+
+      <!-- 18 -->
+      <div id="tc-18" style="margin-bottom:1.5rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">18. Aceptación</div>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Al registrarse en la Plataforma, el Usuario declara haber leído, comprendido y aceptado en su totalidad los presentes Términos y Condiciones. Dicha aceptación tiene carácter de declaración jurada y produce plenos efectos legales.</p>
+      </div>
+
+      <p style="text-align:center; font-size:0.75rem; color:rgba(247,244,238,0.2); margin-top:1rem;">— Pepe Conductores · Salta, República Argentina · Mayo 2026 —</p>
 
     </div>
+
+    <!-- Footer del modal -->
     <div style="padding:1rem 1.5rem; border-top:1px solid rgba(255,255,255,0.06); background:#0c0c0c; flex-shrink:0;">
-      <button onclick="aceptarTerminos()" style="width:100%; background:#f5d800; color:#0c0c0c; border:none; border-radius:8px; padding:0.9rem; font-family:'Barlow',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer;">✓ Leí y acepto los términos y condiciones</button>
+      <button onclick="aceptarTerminos()" style="width:100%; background:#f5d800; color:#0c0c0c; border:none; border-radius:8px; padding:0.9rem; font-family:'Barlow',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer; transition:background 0.2s;">✓ Leí y acepto los términos y condiciones</button>
     </div>
   </div>
 </div>
@@ -976,7 +1175,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   </div>
 </div>
 
-</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1109,6 +1307,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         dni = data.dni || '—';
         tel = data.tel || '—';
         apodo = data.apodo || '—';
+        // Cargar menores desde Firestore a localStorage
+        if (data.menores && Array.isArray(data.menores)) {
+          localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(data.menores));
+        }
       } else {
         console.warn('No existe documento en Firestore para uid:', user.uid);
       }
@@ -1162,7 +1364,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   window.doRegister = async function() {
     if (!localStorage.getItem('pepe_terminos')) {
       window._pendingAfterTerminos = window.doRegister;
-      document.getElementById('modal-terminos').classList.add('open');
+      verTerminos();
       return;
     }
     const nombre = document.getElementById('reg-nombre').value.trim();
@@ -1178,9 +1380,16 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       await updateProfile(cred.user, { displayName: nombre });
       try {
         await setDoc(doc(db, "usuarios", cred.user.uid), { nombre, email, roles: ['pasajero', 'conductor'], modoActivo: 'pasajero', creadoEn: new Date().toISOString() });
-      } catch(e) {}
+      } catch(e) {
+        console.error('No se pudo crear el documento en Firestore:', e);
+        showError('Cuenta creada pero hubo un error al guardar los datos. Recargá la página e intentá de nuevo.');
+        btn.disabled = false; btn.textContent = 'Crear cuenta →';
+        return;
+      }
       showSuccess('¡Cuenta creada! Bienvenido a Pepe Conductores 🎉');
-      setTimeout(async () => { btn.disabled = false; btn.textContent = 'Crear cuenta →'; closeLogin(); await cargarYMostrarPanel(cred.user); }, 1800);
+      btn.disabled = false; btn.textContent = 'Crear cuenta →';
+      closeLogin();
+      await cargarYMostrarPanel(cred.user);
     } catch(e) {
       btn.disabled = false; btn.textContent = 'Crear cuenta →';
       showError(firebaseError(e.code));
@@ -1192,6 +1401,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const esMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
 
   window.doGoogleLogin = async function() {
+    if (!localStorage.getItem('pepe_terminos')) {
+      window._pendingAfterTerminos = window.doGoogleLogin;
+      verTerminos();
+      return;
+    }
     const err = document.getElementById('modal-error');
     if (err) err.style.display = 'none';
     try {
@@ -1263,24 +1477,24 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   };
 
   // ── Términos ──
-  window.cerrarTerminos = function() {
-    document.getElementById('modal-terminos').classList.remove('open');
-  };
-  window.aceptarTerminos = function() {
-    localStorage.setItem('pepe_terminos', 'aceptado');
-    document.getElementById('modal-terminos').classList.remove('open');
-    const next = window._pendingAfterTerminos;
-    if (next) { window._pendingAfterTerminos = null; next(); }
-  };
-  window.verTerminos = function() {
-    document.getElementById('modal-terminos').classList.add('open');
-  };
+  // (verTerminos, cerrarTerminos, aceptarTerminos están definidas en el script normal)
 
   // ── Bienvenida Google ──
   window.guardarBienvenida = async function() {
     const dni = document.getElementById('bienvenida-dni').value.trim();
     const tel = document.getElementById('bienvenida-tel').value.trim();
     const btn = document.querySelector('#modal-bienvenida button');
+
+    // Validaciones antes de guardar
+    if (dni && !/^\d{7,8}$/.test(dni.replace(/\./g, ''))) {
+      alert('⚠ El DNI debe tener 7 u 8 números.');
+      return;
+    }
+    if (tel && !/^[\d\s\+\-\(\)]{8,20}$/.test(tel)) {
+      alert('⚠ El teléfono no es válido.');
+      return;
+    }
+
     if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
     try {
@@ -1344,6 +1558,13 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   window.doLogout = async function() {
     await signOut(auth);
+    window._currentUid = null;
+    window._currentDb = null;
+    window._currentSetDoc = null;
+    window._currentDoc = null;
+    window._currentUpdateDoc = null;
+    window._currentUpdateProfile = null;
+    window._currentAuth = null;
     closePanel();
   };
 
@@ -1365,6 +1586,12 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
     if (!dniFile || !selfieFile) {
       statusEl.textContent = '⚠ Tenés que subir ambas fotos.';
+      statusEl.className = 'verif-msg error';
+      return;
+    }
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(dniFile.type) || !tiposPermitidos.includes(selfieFile.type)) {
+      statusEl.textContent = '⚠ Solo se aceptan imágenes JPG, PNG o WebP.';
       statusEl.className = 'verif-msg error';
       return;
     }
@@ -1424,6 +1651,55 @@ function showPage(id, btn) {
   window.scrollTo(0, 0);
 }
 
+// ── Términos y condiciones — funciones globales (disponibles sin esperar Firebase) ──
+function verTerminos() {
+  var m = document.getElementById('modal-terminos');
+  if (!m) return;
+  m.classList.add('open');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function() {
+    var body = document.getElementById('tc-scroll-body');
+    if (body) body.scrollTop = 0;
+  }, 50);
+}
+
+function cerrarTerminos() {
+  var m = document.getElementById('modal-terminos');
+  if (!m) return;
+  // Si hay registro pendiente y NO aceptó → cancelar y avisar
+  if (window._pendingAfterTerminos && !localStorage.getItem('pepe_terminos')) {
+    window._pendingAfterTerminos = null;
+    m.classList.remove('open');
+    m.style.display = '';
+    document.body.style.overflow = '';
+    var err = document.getElementById('modal-error');
+    if (err) { err.textContent = '⚠ Debés aceptar los Términos y Condiciones para registrarte.'; err.classList.add('show'); }
+    return;
+  }
+  m.classList.remove('open');
+  m.style.display = '';
+  document.body.style.overflow = '';
+}
+
+function aceptarTerminos() {
+  localStorage.setItem('pepe_terminos', 'aceptado');
+  var m = document.getElementById('modal-terminos');
+  if (m) { m.classList.remove('open'); m.style.display = ''; }
+  document.body.style.overflow = '';
+  actualizarEstadoRegistro();
+  var next = window._pendingAfterTerminos;
+  if (next) { window._pendingAfterTerminos = null; next(); }
+}
+
+function scrollTC(id) {
+  setTimeout(function() {
+    var el = document.getElementById(id);
+    var body = document.getElementById('tc-scroll-body');
+    if (el && body) body.scrollTo({ top: el.offsetTop - 12, behavior: 'smooth' });
+  }, 80);
+}
+
 function switchTipo(tipo) {
   document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
@@ -1431,11 +1707,55 @@ function switchTipo(tipo) {
   document.getElementById('form-' + tipo).classList.add('active');
 }
 
+// ── Control de registro según aceptación de términos ──
+function actualizarEstadoRegistro() {
+  var aceptado = !!localStorage.getItem('pepe_terminos');
+  var lock = document.getElementById('tab-register-lock');
+  var btnReg = document.getElementById('btn-reg-submit');
+  var aviso = document.getElementById('reg-terminos-aviso');
+  var tabReg = document.getElementById('tab-register');
+
+  if (lock) lock.textContent = aceptado ? '✓' : '🔒';
+  if (tabReg) tabReg.style.opacity = aceptado ? '1' : '0.55';
+  if (btnReg) btnReg.disabled = !aceptado;
+  if (aviso) aviso.style.display = aceptado ? 'none' : 'block';
+}
+
+function clickTabRegistro(btn) {
+  var aceptado = !!localStorage.getItem('pepe_terminos');
+  if (!aceptado) {
+    // Mostrar aviso y abrir términos
+    var aviso = document.getElementById('reg-terminos-aviso');
+    if (aviso) aviso.style.display = 'block';
+    window._pendingAfterTerminos = function() {
+      actualizarEstadoRegistro();
+      switchLoginTab('register', btn);
+    };
+    verTerminos();
+    return;
+  }
+  switchLoginTab('register', btn);
+}
+
+// Inicializar estado al cargar
+actualizarEstadoRegistro();
+function previewFile(input, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container || !input.files || !input.files[0]) return;
+  const file = input.files[0];
+  // Liberar URL anterior para evitar memory leaks
+  const prevImg = container.querySelector('img');
+  if (prevImg && prevImg.src.startsWith('blob:')) URL.revokeObjectURL(prevImg.src);
+  const url = URL.createObjectURL(file);
+  container.innerHTML = '<img src="' + url + '" alt="Vista previa"><div style="font-size:0.78rem;color:rgba(247,244,238,0.5);margin-top:4px;">✓ ' + file.name + '</div>';
+}
+
 function handleSubmit(btn) {
+  if (btn.disabled) return;
+  btn.disabled = true;
   btn.textContent = '¡Registrado! Te contactamos pronto 🎉';
   btn.style.background = '#2ecc71';
   btn.style.color = '#fff';
-  btn.disabled = true;
 }
 
 // ── Modal login ──
@@ -1499,6 +1819,7 @@ function switchPanel(section, btn) {
   document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('ps-' + section).classList.add('active');
+  if (section === 'menores') renderMenores();
 }
 
 function switchRol(rol) {
@@ -1620,6 +1941,192 @@ async function guardarDatos() {
 // Cerrar modales con click fuera
 document.getElementById('modal-login').addEventListener('click', function(e) { if(e.target === this) closeLogin(); });
 document.getElementById('modal-panel').addEventListener('click', function(e) { if(e.target === this) closePanel(); });
+document.getElementById('modal-terminos').addEventListener('click', function(e) { if(e.target === this) cerrarTerminos(); });
+
+// ── Mostrar términos automáticamente al entrar si no los aceptó todavía ──
+if (!localStorage.getItem('pepe_terminos')) {
+  setTimeout(verTerminos, 800);
+}
+
+// ── GESTIÓN DE MENORES ──
+
+function calcularEdad(fechaNac) {
+  if (!fechaNac) return null;
+  const hoy = new Date();
+  const nac = new Date(fechaNac);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+
+function relacionLabel(rel) {
+  const map = { hijo:'Hijo/a', hijastro:'Hijastro/a', nieto:'Nieto/a', sobrino:'Sobrino/a', tutelado:'Menor bajo tutela' };
+  return map[rel] || rel;
+}
+
+function emojiRelacion(rel) {
+  const map = { hijo:'👦', hijastro:'👦', nieto:'👧', sobrino:'🧒', tutelado:'🧒' };
+  return map[rel] || '👶';
+}
+
+function renderMenores() {
+  const lista = document.getElementById('menores-lista');
+  if (!lista) return;
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (window._currentUid || '')) || '[]');
+  if (!menores.length) {
+    lista.innerHTML = '<div class="viaje-empty" style="padding:1.5rem 0;">Todavía no agregaste ningún hijo/a.<br><span style="font-size:0.78rem;">Los perfiles te permiten solicitar viajes para ellos directamente.</span></div>';
+    return;
+  }
+  lista.innerHTML = menores.map((m, i) => {
+    const edad = calcularEdad(m.fecha);
+    const edadStr = edad !== null ? edad + ' años' : '';
+    const metaStr = [relacionLabel(m.relacion), edadStr, m.dni ? 'DNI: ' + m.dni : ''].filter(Boolean).join(' · ');
+    return `
+      <div class="menor-card">
+        <div class="menor-avatar">${emojiRelacion(m.relacion)}</div>
+        <div class="menor-info">
+          <div class="menor-nombre">${m.nombre}${m.apodo ? ' <span style="font-weight:400;color:var(--texto-apagado);font-size:0.82rem;">("${m.apodo}")</span>' : ''}</div>
+          <div class="menor-meta">${metaStr}</div>
+        </div>
+        <div class="menor-actions">
+          <button class="btn-menor-edit" onclick="editarMenor(${i})">✏️ Editar</button>
+          <button class="btn-menor-del" onclick="eliminarMenor(${i})">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function abrirFormMenor() {
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (window._currentUid || '')) || '[]');
+  if (menores.length >= 5) {
+    const msg = document.getElementById('menor-form-msg');
+    msg.textContent = '⚠ Podés agregar un máximo de 5 perfiles de menores.';
+    msg.style.color = '#ff7755';
+    msg.style.display = 'block';
+    return;
+  }
+  document.getElementById('menor-edit-id').value = '';
+  document.getElementById('m-nombre').value = '';
+  document.getElementById('m-apodo').value = '';
+  document.getElementById('m-fecha').value = '';
+  document.getElementById('m-dni').value = '';
+  document.getElementById('m-relacion').value = '';
+  document.getElementById('menor-form-titulo').textContent = 'Agregar hijo/a';
+  document.getElementById('menor-form-msg').style.display = 'none';
+  document.getElementById('menor-form-box').classList.add('open');
+  document.getElementById('btn-agregar-menor').style.display = 'none';
+}
+
+function cancelarFormMenor() {
+  document.getElementById('menor-form-box').classList.remove('open');
+  document.getElementById('btn-agregar-menor').style.display = '';
+  document.getElementById('menor-form-msg').style.display = 'none';
+}
+
+function editarMenor(idx) {
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (window._currentUid || '')) || '[]');
+  const m = menores[idx];
+  if (!m) return;
+  document.getElementById('menor-edit-id').value = idx;
+  document.getElementById('m-nombre').value = m.nombre || '';
+  document.getElementById('m-apodo').value = m.apodo || '';
+  document.getElementById('m-fecha').value = m.fecha || '';
+  document.getElementById('m-dni').value = m.dni || '';
+  document.getElementById('m-relacion').value = m.relacion || '';
+  document.getElementById('menor-form-titulo').textContent = 'Editar perfil';
+  document.getElementById('menor-form-msg').style.display = 'none';
+  document.getElementById('menor-form-box').classList.add('open');
+  document.getElementById('btn-agregar-menor').style.display = 'none';
+}
+
+function guardarMenor() {
+  const msg = document.getElementById('menor-form-msg');
+  const nombre = document.getElementById('m-nombre').value.trim();
+  const apodo = document.getElementById('m-apodo').value.trim();
+  const fecha = document.getElementById('m-fecha').value;
+  const dni = document.getElementById('m-dni').value.trim();
+  const relacion = document.getElementById('m-relacion').value;
+
+  // Validaciones
+  if (!nombre) {
+    msg.textContent = '⚠ El nombre es obligatorio.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+  if (nombre.length > 60) {
+    msg.textContent = '⚠ El nombre es demasiado largo.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+  if (!fecha) {
+    msg.textContent = '⚠ La fecha de nacimiento es obligatoria.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+  const edad = calcularEdad(fecha);
+  if (edad === null || edad < 0 || edad > 17) {
+    msg.textContent = '⚠ El perfil de menor es solo para personas menores de 18 años.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+  if (!relacion) {
+    msg.textContent = '⚠ Seleccioná la relación con el menor.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+  if (dni && !/^\d{7,8}$/.test(dni.replace(/\./g, ''))) {
+    msg.textContent = '⚠ El DNI debe tener 7 u 8 números.';
+    msg.style.color = '#ff7755'; msg.style.display = 'block'; return;
+  }
+
+  const key = 'pepe_menores_' + (window._currentUid || '');
+  const menores = JSON.parse(localStorage.getItem(key) || '[]');
+  const editIdx = document.getElementById('menor-edit-id').value;
+  const perfil = { nombre, apodo, fecha, dni, relacion };
+
+  if (editIdx !== '') {
+    menores[parseInt(editIdx)] = perfil;
+  } else {
+    menores.push(perfil);
+  }
+
+  localStorage.setItem(key, JSON.stringify(menores));
+
+  // Intentar también guardar en Firestore si está disponible
+  if (window._currentUid && window._currentSetDoc && window._currentDoc && window._currentDb) {
+    window._currentSetDoc(
+      window._currentDoc(window._currentDb, 'usuarios', window._currentUid),
+      { menores },
+      { merge: true }
+    ).catch(e => console.warn('No se pudo sincronizar menores con Firestore:', e.message));
+  }
+
+  cancelarFormMenor();
+  renderMenores();
+}
+
+function eliminarMenor(idx) {
+  const key = 'pepe_menores_' + (window._currentUid || '');
+  const menores = JSON.parse(localStorage.getItem(key) || '[]');
+  const m = menores[idx];
+  if (!m) return;
+  if (!confirm('¿Eliminás el perfil de ' + m.nombre + '? Esta acción no se puede deshacer.')) return;
+  menores.splice(idx, 1);
+  localStorage.setItem(key, JSON.stringify(menores));
+  if (window._currentUid && window._currentSetDoc && window._currentDoc && window._currentDb) {
+    window._currentSetDoc(
+      window._currentDoc(window._currentDb, 'usuarios', window._currentUid),
+      { menores },
+      { merge: true }
+    ).catch(e => console.warn('No se pudo sincronizar menores con Firestore:', e.message));
+  }
+  renderMenores();
+}
+
+// Cargar menores desde Firestore al abrir el panel si hay datos más nuevos
+function sincronizarMenoresDesdeFirestore(uid) {
+  if (!window._currentDoc || !window._currentDb) return;
+  // Ya se cargan en cargarYMostrarPanel via snap.data().menores
+}
+
+// Hook: cuando se abre el panel de menores, renderizar (integrado en switchPanel)
+
 </script>
 </body>
 </html>
