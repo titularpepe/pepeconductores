@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Perfil — Pepe Conductores</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --negro: #0c0c0c;
+  --blanco: #f7f4ee;
+  --amarillo: #f5d800;
+  --naranja: #ff4d00;
+  --gris: #161616;
+  --gris2: #222;
+  --texto-apagado: rgba(247,244,238,0.5);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--negro); color: var(--blanco); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 1rem 5%;
+  background: rgba(12,12,12,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(245,216,0,0.1);
+}
+.logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--amarillo); text-decoration: none; cursor: pointer; }
+.logo span { color: rgba(247,244,238,0.4); font-size: 0.9rem; font-family: 'Barlow', sans-serif; font-weight: 300; }
+.btn-volver { background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.3); color: var(--amarillo); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+.btn-volver:hover { background: rgba(245,216,0,0.2); }
+
+/* LAYOUT */
+.perfil-wrapper { padding: 100px 5% 4rem; max-width: 900px; margin: 0 auto; }
+
+/* HEADER PERFIL */
+.perfil-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.perfil-avatar { width: 72px; height: 72px; border-radius: 16px; background: rgba(245,216,0,0.15); border: 2px solid rgba(245,216,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+.perfil-nombre { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 900; text-transform: uppercase; line-height: 1; }
+.perfil-email { font-size: 0.85rem; color: var(--texto-apagado); margin-top: 4px; }
+.perfil-rol { display: inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amarillo); background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.2); border-radius: 100px; padding: 3px 10px; margin-top: 6px; }
+
+/* TABS */
+.tabs { display: flex; gap: 3px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.07); overflow-x: auto; }
+.tab-btn { flex-shrink: 0; padding: 0.6rem 1.2rem; border-radius: 7px; border: none; background: transparent; color: var(--texto-apagado); cursor: pointer; font-size: 0.82rem; font-family: 'Barlow', sans-serif; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
+.tab-btn.active { background: var(--amarillo); color: var(--negro); }
+.tab-btn:hover:not(.active) { color: var(--blanco); }
+
+/* SECCIONES */
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+.section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: var(--amarillo); margin-bottom: 1.2rem; letter-spacing: 1px; }
+
+/* DATOS GRID */
+.datos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 600px) { .datos-grid { grid-template-columns: 1fr; } }
+.dato-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem 1.2rem; }
+.dato-label { font-size: 0.68rem; color: var(--texto-apagado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.dato-val { font-size: 0.95rem; font-weight: 600; }
+
+/* EDICIÓN */
+.dato-input { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(245,216,0,0.3); border-radius: 6px; padding: 0.5rem 0.8rem; color: var(--blanco); font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none; margin-top: 4px; }
+.dato-input:focus { border-color: var(--amarillo); }
+
+.btn-edit { background: transparent; border: 1.5px solid rgba(245,216,0,0.35); color: var(--amarillo); padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.btn-edit:hover { background: rgba(245,216,0,0.1); }
+.btn-save { background: var(--amarillo); border: none; color: var(--negro); padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.btn-danger { background: rgba(255,77,0,0.1); border: 1px solid rgba(255,77,0,0.3); color: var(--naranja); padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; transition: all 0.2s; }
+.btn-danger:hover { background: rgba(255,77,0,0.2); }
+.btn-logout { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--texto-apagado); border-radius: 8px; padding: 0.8rem; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'Barlow', sans-serif; margin-top: 1.5rem; transition: all 0.2s; }
+.btn-logout:hover { border-color: var(--naranja); color: var(--naranja); }
+
+/* VACÍO */
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--texto-apagado); font-size: 0.88rem; line-height: 1.8; }
+
+/* CONFIG */
+.config-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.config-item:last-child { border-bottom: none; }
+.config-label { font-size: 0.9rem; font-weight: 500; }
+.config-sub { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 2px; }
+.toggle { width: 42px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 100px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; border: none; }
+.toggle.on { background: var(--amarillo); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle.on::after { transform: translateX(18px); }
+
+/* VERIFICACIÓN */
+.verif-estado-box { display: flex; align-items: center; gap: 1rem; background: rgba(245,216,0,0.05); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; }
+.upload-box { background: rgba(255,255,255,0.03); border: 2px dashed rgba(255,255,255,0.12); border-radius: 10px; padding: 1.2rem; cursor: pointer; transition: border-color 0.2s; text-align: center; margin-top: 0.5rem; }
+.upload-box:hover { border-color: rgba(245,216,0,0.4); }
+.verif-msg { font-size: 0.83rem; padding: 0.6rem 0; line-height: 1.6; }
+.verif-msg.error { color: #ff7755; }
+.verif-msg.ok { color: #2ecc71; }
+
+/* MENORES */
+.menor-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.menor-avatar { width: 40px; height: 40px; border-radius: 10px; background: rgba(245,216,0,0.12); border: 1px solid rgba(245,216,0,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.menor-info { flex: 1; }
+.menor-nombre { font-size: 0.92rem; font-weight: 700; }
+.menor-meta { font-size: 0.75rem; color: var(--texto-apagado); margin-top: 2px; }
+.menor-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.btn-menor-edit { background: transparent; border: 1px solid rgba(245,216,0,0.3); color: var(--amarillo); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.btn-menor-del { background: transparent; border: 1px solid rgba(255,77,0,0.3); color: var(--naranja); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.menor-form-box { background: rgba(245,216,0,0.04); border: 1px solid rgba(245,216,0,0.15); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; display: none; }
+.menor-form-box.open { display: block; }
+.menor-legal-note { background: rgba(255,255,255,0.03); border-left: 3px solid rgba(245,216,0,0.4); border-radius: 0 8px 8px 0; padding: 0.8rem 1rem; font-size: 0.78rem; color: var(--texto-apagado); line-height: 1.6; margin-bottom: 1.2rem; }
+.btn-agregar-menor { display: flex; align-items: center; gap: 0.5rem; background: transparent; border: 1.5px dashed rgba(245,216,0,0.3); color: var(--amarillo); width: 100%; padding: 0.8rem; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: 'Barlow', sans-serif; justify-content: center; transition: all 0.2s; margin-top: 0.5rem; }
+.btn-agregar-menor:hover { background: rgba(245,216,0,0.05); }
+
+/* MSG */
+.datos-msg { font-size: 0.82rem; margin-top: 1rem; display: none; padding: 0.6rem 1rem; border-radius: 6px; }
+
+/* LOADING */
+#loading-screen { position: fixed; inset: 0; background: var(--negro); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 1rem; }
+.loading-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2.5rem; font-weight: 900; color: var(--amarillo); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.loading-sub { font-size: 0.82rem; color: var(--texto-apagado); }
+
+.modal-btn { width: 100%; background: var(--amarillo); color: var(--negro); border: none; border-radius: 8px; padding: 0.9rem; font-weight: 700; font-size: 1rem; cursor: pointer; font-family: 'Barlow', sans-serif; margin-top: 0.5rem; transition: background 0.2s; }
+.modal-btn:hover { background: #ffe100; }
+.mfg { margin-bottom: 1rem; }
+.mfg label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; color: var(--texto-apagado); margin-bottom: 6px; text-transform: uppercase; }
+.mfg input, .mfg select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.8rem 1rem; color: var(--blanco); font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+.mfg input:focus, .mfg select:focus { border-color: var(--amarillo); }
+.mfg select option { background: var(--gris2); }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loading-logo">PEPE</div>
+  <div class="loading-sub">Cargando tu perfil...</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="/">PEPE <span>CONDUCTORES</span></a>
+  <a class="btn-volver" href="/">← Volver al inicio</a>
+</nav>
+
+<!-- CONTENIDO -->
+<div class="perfil-wrapper" id="perfil-content" style="display:none;">
+
+  <!-- HEADER -->
+  <div class="perfil-header">
+    <div class="perfil-avatar" id="perfil-avatar">👤</div>
+    <div>
+      <div class="perfil-nombre" id="perfil-nombre">—</div>
+      <div class="perfil-email" id="perfil-email">—</div>
+      <div class="perfil-rol" id="perfil-rol">Pasajero</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('datos', this)">📋 Mis datos</button>
+    <button class="tab-btn" onclick="switchTab('viajes', this)">🗺️ Viajes</button>
+    <button class="tab-btn" onclick="switchTab('pagos', this)">💳 Pagos</button>
+    <button class="tab-btn" onclick="switchTab('verificacion', this)">🪪 Verificación</button>
+    <button class="tab-btn" onclick="switchTab('menores', this)">👶 Mis hijos</button>
+    <button class="tab-btn" onclick="switchTab('config', this)">⚙️ Configuración</button>
+  </div>
+
+  <!-- DATOS -->
+  <div class="tab-section active" id="tab-datos">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+      <div class="section-title" style="margin-bottom:0;">Mis datos personales</div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="btn-edit" id="btn-edit" onclick="toggleEdit()">✏️ Editar</button>
+        <button class="btn-save" id="btn-save" style="display:none;" onclick="guardarDatos()">✓ Guardar</button>
+      </div>
+    </div>
+
+    <!-- VISTA -->
+    <div class="datos-grid" id="datos-vista">
+      <div class="dato-item"><div class="dato-label">Nombre completo</div><div class="dato-val" id="d-nombre">—</div></div>
+      <div class="dato-item"><div class="dato-label">Apodo</div><div class="dato-val" id="d-apodo">—</div></div>
+      <div class="dato-item"><div class="dato-label">DNI</div><div class="dato-val" id="d-dni">—</div></div>
+      <div class="dato-item"><div class="dato-label">Teléfono</div><div class="dato-val" id="d-tel">—</div></div>
+      <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email">—</div></div>
+      <div class="dato-item"><div class="dato-label">Miembro desde</div><div class="dato-val" id="d-fecha">—</div></div>
+      <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" style="color:#2ecc71;">✓ Activo</div></div>
+      <div class="dato-item"><div class="dato-label">Verificación</div><div class="dato-val" id="d-verificado">—</div></div>
+    </div>
+
+    <!-- EDICIÓN -->
+    <div class="datos-grid" id="datos-edicion" style="display:none;">
+      <div class="dato-item"><div class="dato-label">Nombre completo</div><input class="dato-input" id="e-nombre" type="text"></div>
+      <div class="dato-item"><div class="dato-label">Apodo</div><input class="dato-input" id="e-apodo" type="text" placeholder="Ej: Pepe, Caro..."></div>
+      <div class="dato-item"><div class="dato-label">DNI</div><input class="dato-input" id="e-dni" type="text" placeholder="00.000.000"></div>
+      <div class="dato-item"><div class="dato-label">Teléfono</div><input class="dato-input" id="e-tel" type="tel" placeholder="+54 9 387 000-0000"></div>
+      <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email-edit" style="font-size:0.82rem;color:var(--texto-apagado);padding-top:4px;">—</div><div style="font-size:0.68rem;color:rgba(255,255,255,0.2);margin-top:3px;">El email no se puede modificar</div></div>
+    </div>
+
+    <div class="datos-msg" id="datos-msg"></div>
+  </div>
+
+  <!-- VIAJES -->
+  <div class="tab-section" id="tab-viajes">
+    <div class="section-title">Historial de viajes</div>
+    <div class="empty-state">🗺️ Tus viajes aparecerán aquí una vez que uses la app.<br>Disponible desde Diciembre 2026.</div>
+  </div>
+
+  <!-- PAGOS -->
+  <div class="tab-section" id="tab-pagos">
+    <div class="section-title">Historial de pagos</div>
+    <div class="empty-state">💳 Tus movimientos aparecerán aquí.<br>Disponible desde Diciembre 2026.</div>
+  </div>
+
+  <!-- VERIFICACIÓN -->
+  <div class="tab-section" id="tab-verificacion">
+    <div class="section-title">Verificación de identidad</div>
+    <div class="verif-estado-box">
+      <div style="font-size:2rem;">🪪</div>
+      <div>
+        <div style="font-weight:600;font-size:0.95rem;">Estado de verificación</div>
+        <div id="verif-badge" style="color:var(--texto-apagado);font-size:0.85rem;margin-top:3px;">⚠ Sin verificar</div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem;color:var(--texto-apagado);line-height:1.7;margin-bottom:1.5rem;">Para usar todos los servicios necesitamos verificar tu identidad. Es rápido y tus datos están protegidos con cifrado.</p>
+    <div class="mfg">
+      <label>📄 Foto del DNI (frente y dorso)</label>
+      <div class="upload-box" onclick="document.getElementById('upload-dni').click()">
+        <input type="file" id="upload-dni" accept="image/*" style="display:none" onchange="previewFile(this,'prev-dni')">
+        <div id="prev-dni" style="color:var(--texto-apagado);font-size:0.85rem;">📎 Tocar para seleccionar imagen</div>
+      </div>
+    </div>
+    <div class="mfg">
+      <label>🤳 Selfie de validación</label>
+      <div class="upload-box" onclick="document.getElementById('upload-selfie').click()">
+        <input type="file" id="upload-selfie" accept="image/*" capture="user" style="display:none" onchange="previewFile(this,'prev-selfie')">
+        <div id="prev-selfie" style="color:var(--texto-apagado);font-size:0.85rem;">📎 Tocar para seleccionar imagen</div>
+      </div>
+    </div>
+    <div id="verif-status" class="verif-msg"></div>
+    <button class="modal-btn" id="btn-verificar" onclick="doVerificacion()">Enviar verificación →</button>
+  </div>
+
+  <!-- MENORES -->
+  <div class="tab-section" id="tab-menores">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+      <div class="section-title" style="margin-bottom:0;">👶 Mis hijos</div>
+      <span style="font-size:0.72rem;color:var(--texto-apagado);">Máx. 5 perfiles</span>
+    </div>
+    <div class="menor-legal-note">⚖️ Al agregar un perfil de menor, el adulto titular asume responsabilidad total por los viajes solicitados en su nombre. Los datos del menor son protegidos conforme a la Ley N° 25.326.</div>
+    <div id="menores-lista"></div>
+    <div class="menor-form-box" id="menor-form-box">
+      <div style="font-size:0.82rem;font-weight:700;color:var(--amarillo);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px;" id="menor-form-titulo">Agregar hijo/a</div>
+      <input type="hidden" id="menor-edit-id" value="">
+      <div class="datos-grid" style="margin-bottom:1rem;">
+        <div class="dato-item"><div class="dato-label">Nombre completo *</div><input id="m-nombre" type="text" placeholder="Valentina García" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Apodo (opcional)</div><input id="m-apodo" type="text" placeholder="Valen, Toto..." class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Fecha de nacimiento *</div><input id="m-fecha" type="date" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">DNI (opcional)</div><input id="m-dni" type="text" placeholder="00.000.000" class="dato-input"></div>
+        <div class="dato-item" style="grid-column:1/-1;">
+          <div class="dato-label">Relación *</div>
+          <select id="m-relacion" class="dato-input" style="margin-top:4px;">
+            <option value="">Seleccioná...</option>
+            <option value="hijo">Hijo/a</option>
+            <option value="hijastro">Hijastro/a</option>
+            <option value="nieto">Nieto/a</option>
+            <option value="sobrino">Sobrino/a</option>
+            <option value="tutelado">Menor bajo tutela</option>
+          </select>
+        </div>
+      </div>
+      <div id="menor-form-msg" style="font-size:0.82rem;margin-bottom:0.8rem;display:none;"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <button onclick="guardarMenor()" style="flex:1;background:var(--amarillo);border:none;color:var(--negro);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;">✓ Guardar perfil</button>
+        <button onclick="cancelarFormMenor()" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--texto-apagado);padding:0.6rem 1rem;border-radius:8px;font-size:0.85rem;cursor:pointer;font-family:'Barlow',sans-serif;">Cancelar</button>
+      </div>
+    </div>
+    <button class="btn-agregar-menor" id="btn-agregar-menor" onclick="abrirFormMenor()">+ Agregar hijo/a</button>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="tab-section" id="tab-config">
+    <div class="section-title">Configuración</div>
+    <div class="config-item">
+      <div><div class="config-label">Notificaciones push</div><div class="config-sub">Recibí alertas de viajes y novedades</div></div>
+      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="config-item">
+      <div><div class="config-label">Notificaciones por email</div><div class="config-sub">Resumen semanal de actividad</div></div>
+      <button class="toggle" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="config-item">
+      <div><div class="config-label">Modo oscuro</div><div class="config-sub">Siempre activado en Pepe</div></div>
+      <button class="toggle on" disabled></button>
+    </div>
+    <div class="config-item">
+      <div><div class="config-label">Compartir ubicación</div><div class="config-sub">Necesario para solicitar viajes</div></div>
+      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div style="margin-top:1.5rem;">
+      <button class="btn-danger" onclick="confirmDelete()">🗑️ Eliminar mi cuenta</button>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+
+</div><!-- /perfil-wrapper -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+  authDomain: "pepe-conductores.firebaseapp.com",
+  projectId: "pepe-conductores",
+  storageBucket: "pepe-conductores.firebasestorage.app",
+  messagingSenderId: "443201366396",
+  appId: "1:443201366396:web:bca7754157145474fb9cf9"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let _uid = null;
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    // No está logueado → redirigir al inicio
+    window.location.href = '/';
+    return;
+  }
+  _uid = user.uid;
+  await cargarPerfil(user);
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('perfil-content').style.display = 'block';
+  renderMenores();
+});
+
+async function cargarPerfil(user) {
+  let nombre = user.displayName || user.email.split('@')[0];
+  let apodo = '—', dni = '—', tel = '—';
+
+  try {
+    const snap = await db.collection('usuarios').doc(user.uid).get();
+    if (snap.exists) {
+      const d = snap.data();
+      nombre = d.nombre || nombre;
+      apodo = d.apodo || '—';
+      dni = d.dni || '—';
+      tel = d.tel || '—';
+      if (d.menores && Array.isArray(d.menores)) {
+        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
+      }
+    }
+  } catch(e) { console.warn('Error leyendo Firestore:', e); }
+
+  const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
+  const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
+
+  document.getElementById('perfil-avatar').textContent = '👤';
+  document.getElementById('perfil-nombre').textContent = nombre;
+  document.getElementById('perfil-email').textContent = user.email;
+  document.getElementById('d-nombre').textContent = nombre;
+  document.getElementById('d-apodo').textContent = apodo;
+  document.getElementById('d-dni').textContent = dni;
+  document.getElementById('d-tel').textContent = tel;
+  document.getElementById('d-email').textContent = user.email;
+  document.getElementById('d-email-edit').textContent = user.email;
+  document.getElementById('d-fecha').textContent = fecha;
+  document.getElementById('d-verificado').textContent = verificado;
+  document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
+  document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
+  document.getElementById('e-dni').value = dni !== '—' ? dni : '';
+  document.getElementById('e-tel').value = tel !== '—' ? tel : '';
+}
+
+// TABS
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'menores') renderMenores();
+}
+
+// EDITAR DATOS
+function toggleEdit() {
+  document.getElementById('datos-vista').style.display = 'none';
+  document.getElementById('datos-edicion').style.display = '';
+  document.getElementById('btn-edit').style.display = 'none';
+  document.getElementById('btn-save').style.display = '';
+  document.getElementById('datos-msg').style.display = 'none';
+}
+
+async function guardarDatos() {
+  const nombre = document.getElementById('e-nombre').value.trim();
+  const apodo  = document.getElementById('e-apodo').value.trim();
+  const dni    = document.getElementById('e-dni').value.trim();
+  const tel    = document.getElementById('e-tel').value.trim();
+  const msg    = document.getElementById('datos-msg');
+
+  if (!nombre) { mostrarMsg(msg, '⚠ El nombre no puede estar vacío.', false); return; }
+  if (dni && !/^\d{7,8}$/.test(dni.replace(/\./g,''))) { mostrarMsg(msg, '⚠ El DNI debe tener 7 u 8 números.', false); return; }
+  if (tel && !/^[\d\s\+\-\(\)]{8,20}$/.test(tel)) { mostrarMsg(msg, '⚠ El teléfono no es válido.', false); return; }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, dni, tel }, { merge: true });
+    if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '✓ Guardar';
+    mostrarMsg(msg, '❌ Error al guardar. Intentá de nuevo.', false);
+    return;
+  }
+
+  document.getElementById('d-nombre').textContent = nombre;
+  document.getElementById('d-apodo').textContent = apodo || '—';
+  document.getElementById('d-dni').textContent = dni || '—';
+  document.getElementById('d-tel').textContent = tel || '—';
+  document.getElementById('perfil-nombre').textContent = nombre;
+  document.getElementById('datos-vista').style.display = '';
+  document.getElementById('datos-edicion').style.display = 'none';
+  document.getElementById('btn-edit').style.display = '';
+  btn.style.display = 'none';
+  btn.disabled = false; btn.textContent = '✓ Guardar';
+  mostrarMsg(msg, '✅ Datos guardados correctamente.', true);
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+function mostrarMsg(el, txt, ok) {
+  el.textContent = txt;
+  el.style.background = ok ? 'rgba(46,204,113,0.1)' : 'rgba(255,77,0,0.1)';
+  el.style.color = ok ? '#2ecc71' : '#ff7755';
+  el.style.display = 'block';
+}
+
+// VERIFICACIÓN
+function previewFile(input, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container || !input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const url = URL.createObjectURL(file);
+  container.innerHTML = '<img src="' + url + '" style="max-height:120px;border-radius:8px;margin-top:0.5rem;" alt="Vista previa"><div style="font-size:0.78rem;color:rgba(247,244,238,0.5);margin-top:4px;">✓ ' + file.name + '</div>';
+}
+
+async function doVerificacion() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const dniFile = document.getElementById('upload-dni').files[0];
+  const selfieFile = document.getElementById('upload-selfie').files[0];
+  const btn = document.getElementById('btn-verificar');
+  const statusEl = document.getElementById('verif-status');
+  if (!dniFile || !selfieFile) { statusEl.textContent = '⚠ Tenés que subir ambas fotos.'; statusEl.className = 'verif-msg error'; return; }
+  btn.disabled = true; btn.textContent = 'Subiendo...';
+  try {
+    await storage.ref('verificaciones/' + user.uid + '/dni').put(dniFile);
+    await storage.ref('verificaciones/' + user.uid + '/selfie').put(selfieFile);
+    await db.collection('usuarios').doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
+    btn.textContent = '✓ Enviado';
+    statusEl.textContent = '✅ Documentos enviados. Los revisaremos en 24-48 hs.';
+    statusEl.className = 'verif-msg ok';
+    document.getElementById('verif-badge').textContent = '⏳ En revisión';
+    document.getElementById('verif-badge').style.color = '#f5d800';
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Enviar verificación →';
+    statusEl.textContent = '❌ Error al subir. Intentá de nuevo.';
+    statusEl.className = 'verif-msg error';
+  }
+}
+
+// LOGOUT
+async function doLogout() {
+  await auth.signOut();
+  window.location.href = '/';
+}
+
+// ELIMINAR CUENTA
+function confirmDelete() {
+  if (confirm('¿Seguro que querés eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+    auth.currentUser?.delete().then(() => window.location.href = '/').catch(() => alert('Para eliminar la cuenta necesitás volver a iniciar sesión primero.'));
+  }
+}
+
+// MENORES
+function calcularEdad(fechaNac) {
+  if (!fechaNac) return null;
+  const hoy = new Date(), nac = new Date(fechaNac);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+function relacionLabel(rel) {
+  return { hijo:'Hijo/a', hijastro:'Hijastro/a', nieto:'Nieto/a', sobrino:'Sobrino/a', tutelado:'Menor bajo tutela' }[rel] || rel;
+}
+function emojiRelacion(rel) {
+  return { hijo:'👦', hijastro:'👦', nieto:'👧', sobrino:'🧒', tutelado:'🧒' }[rel] || '👶';
+}
+function renderMenores() {
+  const lista = document.getElementById('menores-lista');
+  if (!lista) return;
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
+  if (!menores.length) {
+    lista.innerHTML = '<div class="empty-state" style="padding:1.5rem 0;">Todavía no agregaste ningún hijo/a.</div>';
+    return;
+  }
+  lista.innerHTML = menores.map((m, i) => {
+    const edad = calcularEdad(m.fecha);
+    const metaStr = [relacionLabel(m.relacion), edad !== null ? edad + ' años' : '', m.dni ? 'DNI: ' + m.dni : ''].filter(Boolean).join(' · ');
+    return `<div class="menor-card">
+      <div class="menor-avatar">${emojiRelacion(m.relacion)}</div>
+      <div class="menor-info">
+        <div class="menor-nombre">${m.nombre}${m.apodo ? ' <span style="font-weight:400;color:var(--texto-apagado);font-size:0.82rem;">("${m.apodo}")</span>' : ''}</div>
+        <div class="menor-meta">${metaStr}</div>
+      </div>
+      <div class="menor-actions">
+        <button class="btn-menor-edit" onclick="editarMenor(${i})">✏️</button>
+        <button class="btn-menor-del" onclick="eliminarMenor(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function abrirFormMenor() {
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
+  if (menores.length >= 5) { alert('Podés agregar un máximo de 5 perfiles.'); return; }
+  ['menor-edit-id','m-nombre','m-apodo','m-fecha','m-dni'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-relacion').value = '';
+  document.getElementById('menor-form-titulo').textContent = 'Agregar hijo/a';
+  document.getElementById('menor-form-msg').style.display = 'none';
+  document.getElementById('menor-form-box').classList.add('open');
+  document.getElementById('btn-agregar-menor').style.display = 'none';
+}
+function cancelarFormMenor() {
+  document.getElementById('menor-form-box').classList.remove('open');
+  document.getElementById('btn-agregar-menor').style.display = '';
+}
+function editarMenor(idx) {
+  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
+  const m = menores[idx];
+  if (!m) return;
+  document.getElementById('menor-edit-id').value = idx;
+  document.getElementById('m-nombre').value = m.nombre || '';
+  document.getElementById('m-apodo').value = m.apodo || '';
+  document.getElementById('m-fecha').value = m.fecha || '';
+  document.getElementById('m-dni').value = m.dni || '';
+  document.getElementById('m-relacion').value = m.relacion || '';
+  document.getElementById('menor-form-titulo').textContent = 'Editar perfil';
+  document.getElementById('menor-form-box').classList.add('open');
+  document.getElementById('btn-agregar-menor').style.display = 'none';
+}
+async function guardarMenor() {
+  const msg = document.getElementById('menor-form-msg');
+  const nombre = document.getElementById('m-nombre').value.trim();
+  const apodo = document.getElementById('m-apodo').value.trim();
+  const fecha = document.getElementById('m-fecha').value;
+  const dni = document.getElementById('m-dni').value.trim();
+  const relacion = document.getElementById('m-relacion').value;
+  if (!nombre) { msg.textContent='⚠ El nombre es obligatorio.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
+  if (!fecha) { msg.textContent='⚠ La fecha de nacimiento es obligatoria.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
+  const edad = calcularEdad(fecha);
+  if (edad === null || edad < 0 || edad > 17) { msg.textContent='⚠ Solo para menores de 18 años.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
+  if (!relacion) { msg.textContent='⚠ Seleccioná la relación.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
+  const key = 'pepe_menores_' + (_uid || '');
+  const menores = JSON.parse(localStorage.getItem(key) || '[]');
+  const editIdx = document.getElementById('menor-edit-id').value;
+  const perfil = { nombre, apodo, fecha, dni, relacion };
+  if (editIdx !== '') menores[parseInt(editIdx)] = perfil;
+  else menores.push(perfil);
+  localStorage.setItem(key, JSON.stringify(menores));
+  try { await db.collection('usuarios').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  cancelarFormMenor();
+  renderMenores();
+}
+async function eliminarMenor(idx) {
+  const key = 'pepe_menores_' + (_uid || '');
+  const menores = JSON.parse(localStorage.getItem(key) || '[]');
+  const m = menores[idx];
+  if (!m || !confirm('¿Eliminás el perfil de ' + m.nombre + '?')) return;
+  menores.splice(idx, 1);
+  localStorage.setItem(key, JSON.stringify(menores));
+  try { await db.collection('usuarios').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  renderMenores();
+}
+</script>
+</body>
+</html>
