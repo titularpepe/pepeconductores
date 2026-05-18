@@ -444,7 +444,7 @@ async function guardarDatos() {
 
   document.getElementById('d-nombre').textContent = nombre;
   document.getElementById('d-apodo').textContent = apodo || '—';
-  document.getElementById('d-dni').textContent = dniAGuardar || '—';
+  document.getElementById('d-dni').textContent = document.getElementById('e-dni').value || '—';
   document.getElementById('d-tel').textContent = tel || '—';
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('datos-vista').style.display = '';
