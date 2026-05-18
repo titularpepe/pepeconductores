@@ -343,24 +343,20 @@ async function cargarPerfil(user) {
   let dniYaTiene = false;
 
   try {
-    // Leer datos personales desde 'usuarios'
-    const snapU = await db.collection('usuarios').doc(user.uid).get();
-    if (snapU.exists) {
-      const u = snapU.data();
-      nombre = u.nombre || user.displayName || user.email.split('@')[0];
-      apodo = u.apodo || '—';
-      tel = u.tel || '—';
-      if (u.menores && Array.isArray(u.menores)) {
-        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(u.menores));
+    // Todo está en 'conductores'
+    const snapC = await db.collection('conductores').doc(user.uid).get();
+    if (snapC.exists) {
+      const d = snapC.data();
+      nombre = d.nombre || user.displayName || user.email.split('@')[0];
+      apodo = d.apodo || '—';
+      dni = d.dni || '—';
+      tel = d.telefono || d.tel || '—';
+      dniYaTiene = !!(d.dni && d.dni.trim() !== '');
+      if (d.menores && Array.isArray(d.menores)) {
+        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
       }
     } else {
       nombre = user.displayName || user.email.split('@')[0];
-    }
-    // Leer DNI desde 'conductores' (inamovible)
-    const snapC = await db.collection('conductores').doc(user.uid).get();
-    if (snapC.exists && snapC.data().dni) {
-      dni = snapC.data().dni;
-      dniYaTiene = true;
     }
   } catch(e) { console.warn('Error leyendo Firestore:', e); }
 
@@ -436,17 +432,9 @@ async function guardarDatos() {
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
 
-  // Guardar nombre/apodo/tel en 'usuarios' — DNI vive en 'conductores' y es inamovible
-  let dniAGuardar = '—';
+  // Guardar en 'conductores' — DNI inamovible nunca se toca
   try {
-    const snapC = await db.collection('conductores').doc(_uid).get();
-    if (snapC.exists && snapC.data().dni) {
-      dniAGuardar = snapC.data().dni;
-    }
-  } catch(e) {}
-
-  try {
-    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, tel }, { merge: true });
+    await db.collection('conductores').doc(_uid).set({ nombre, apodo, telefono: tel }, { merge: true });
     if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
