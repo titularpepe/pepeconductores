@@ -499,6 +499,7 @@ async function doVerificacion() {
 
 // LOGOUT
 async function doLogout() {
+  sessionStorage.setItem('pepe_logout', '1');
   await auth.signOut();
   window.location.href = '/';
 }
