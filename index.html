@@ -1230,6 +1230,12 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   let _primeraVez = true;
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // Si viene de un logout, forzar cierre de sesión y no mostrar como logueado
+      if (sessionStorage.getItem('pepe_logout')) {
+        sessionStorage.removeItem('pepe_logout');
+        await signOut(auth);
+        return;
+      }
       window._currentUid = user.uid;
       window._currentAuth = auth;
       window._currentDb = db;
