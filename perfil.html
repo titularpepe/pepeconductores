@@ -338,20 +338,25 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 async function cargarPerfil(user) {
-  let nombre = user.displayName || user.email.split('@')[0];
+  let nombre = '';
   let apodo = '—', dni = '—', tel = '—';
+  let dniYaTiene = false;
 
   try {
     const snap = await db.collection('usuarios').doc(user.uid).get();
     if (snap.exists) {
       const d = snap.data();
-      nombre = d.nombre || nombre;
+      // Prioridad: nombre en Firestore → displayName de Auth → parte antes del @ del email
+      nombre = d.nombre || user.displayName || user.email.split('@')[0];
       apodo = d.apodo || '—';
       dni = d.dni || '—';
       tel = d.tel || '—';
+      dniYaTiene = !!(d.dni && d.dni.trim() !== '');
       if (d.menores && Array.isArray(d.menores)) {
         localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
       }
+    } else {
+      nombre = user.displayName || user.email.split('@')[0];
     }
   } catch(e) { console.warn('Error leyendo Firestore:', e); }
 
@@ -371,8 +376,30 @@ async function cargarPerfil(user) {
   document.getElementById('d-verificado').textContent = verificado;
   document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
-  document.getElementById('e-dni').value = dni !== '—' ? dni : '';
   document.getElementById('e-tel').value = tel !== '—' ? tel : '';
+
+  // DNI: si ya tiene uno guardado, mostrar bloqueado e inamovible
+  const eDni = document.getElementById('e-dni');
+  if (dniYaTiene) {
+    eDni.value = dni;
+    eDni.disabled = true;
+    eDni.style.opacity = '0.5';
+    eDni.style.cursor = 'not-allowed';
+    eDni.title = 'El DNI no se puede modificar una vez registrado';
+    const dniItem = eDni.closest('.dato-item');
+    if (dniItem && !dniItem.querySelector('.dni-lock-note')) {
+      const nota = document.createElement('div');
+      nota.className = 'dni-lock-note';
+      nota.style.cssText = 'font-size:0.68rem;color:rgba(255,77,0,0.7);margin-top:4px;';
+      nota.textContent = '🔒 El DNI no se puede modificar';
+      dniItem.appendChild(nota);
+    }
+  } else {
+    eDni.value = '';
+    eDni.disabled = false;
+    eDni.style.opacity = '';
+    eDni.style.cursor = '';
+  }
 }
 
 // TABS
@@ -396,19 +423,35 @@ function toggleEdit() {
 async function guardarDatos() {
   const nombre = document.getElementById('e-nombre').value.trim();
   const apodo  = document.getElementById('e-apodo').value.trim();
-  const dni    = document.getElementById('e-dni').value.trim();
   const tel    = document.getElementById('e-tel').value.trim();
   const msg    = document.getElementById('datos-msg');
 
   if (!nombre) { mostrarMsg(msg, '⚠ El nombre no puede estar vacío.', false); return; }
-  if (dni && !/^\d{7,8}$/.test(dni.replace(/\./g,''))) { mostrarMsg(msg, '⚠ El DNI debe tener 7 u 8 números.', false); return; }
   if (tel && !/^[\d\s\+\-\(\)]{8,20}$/.test(tel)) { mostrarMsg(msg, '⚠ El teléfono no es válido.', false); return; }
 
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
 
+  // Leer DNI actual de Firestore para no sobreescribirlo nunca
+  let dniAGuardar = '';
   try {
-    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, dni, tel }, { merge: true });
+    const snap = await db.collection('usuarios').doc(_uid).get();
+    if (snap.exists && snap.data().dni) {
+      dniAGuardar = snap.data().dni; // DNI inamovible: siempre el original
+    } else {
+      // Solo si NO tiene DNI, tomar el del input (primera vez)
+      const inputDni = document.getElementById('e-dni').value.trim();
+      if (inputDni && !/^\d{7,8}$/.test(inputDni.replace(/\./g,''))) {
+        mostrarMsg(msg, '⚠ El DNI debe tener 7 u 8 números.', false);
+        btn.disabled = false; btn.textContent = '✓ Guardar';
+        return;
+      }
+      dniAGuardar = inputDni;
+    }
+  } catch(e) {}
+
+  try {
+    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, dni: dniAGuardar, tel }, { merge: true });
     if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
@@ -418,7 +461,7 @@ async function guardarDatos() {
 
   document.getElementById('d-nombre').textContent = nombre;
   document.getElementById('d-apodo').textContent = apodo || '—';
-  document.getElementById('d-dni').textContent = dni || '—';
+  document.getElementById('d-dni').textContent = dniAGuardar || '—';
   document.getElementById('d-tel').textContent = tel || '—';
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('datos-vista').style.display = '';
