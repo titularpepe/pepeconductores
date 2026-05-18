@@ -343,20 +343,24 @@ async function cargarPerfil(user) {
   let dniYaTiene = false;
 
   try {
-    const snap = await db.collection('usuarios').doc(user.uid).get();
-    if (snap.exists) {
-      const d = snap.data();
-      // Prioridad: nombre en Firestore → displayName de Auth → parte antes del @ del email
-      nombre = d.nombre || user.displayName || user.email.split('@')[0];
-      apodo = d.apodo || '—';
-      dni = d.dni || '—';
-      tel = d.tel || '—';
-      dniYaTiene = !!(d.dni && d.dni.trim() !== '');
-      if (d.menores && Array.isArray(d.menores)) {
-        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
+    // Leer datos personales desde 'usuarios'
+    const snapU = await db.collection('usuarios').doc(user.uid).get();
+    if (snapU.exists) {
+      const u = snapU.data();
+      nombre = u.nombre || user.displayName || user.email.split('@')[0];
+      apodo = u.apodo || '—';
+      tel = u.tel || '—';
+      if (u.menores && Array.isArray(u.menores)) {
+        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(u.menores));
       }
     } else {
       nombre = user.displayName || user.email.split('@')[0];
+    }
+    // Leer DNI desde 'conductores' (inamovible)
+    const snapC = await db.collection('conductores').doc(user.uid).get();
+    if (snapC.exists && snapC.data().dni) {
+      dni = snapC.data().dni;
+      dniYaTiene = true;
     }
   } catch(e) { console.warn('Error leyendo Firestore:', e); }
 
@@ -432,26 +436,17 @@ async function guardarDatos() {
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
 
-  // Leer DNI actual de Firestore para no sobreescribirlo nunca
-  let dniAGuardar = '';
+  // Guardar nombre/apodo/tel en 'usuarios' — DNI vive en 'conductores' y es inamovible
+  let dniAGuardar = '—';
   try {
-    const snap = await db.collection('usuarios').doc(_uid).get();
-    if (snap.exists && snap.data().dni) {
-      dniAGuardar = snap.data().dni; // DNI inamovible: siempre el original
-    } else {
-      // Solo si NO tiene DNI, tomar el del input (primera vez)
-      const inputDni = document.getElementById('e-dni').value.trim();
-      if (inputDni && !/^\d{7,8}$/.test(inputDni.replace(/\./g,''))) {
-        mostrarMsg(msg, '⚠ El DNI debe tener 7 u 8 números.', false);
-        btn.disabled = false; btn.textContent = '✓ Guardar';
-        return;
-      }
-      dniAGuardar = inputDni;
+    const snapC = await db.collection('conductores').doc(_uid).get();
+    if (snapC.exists && snapC.data().dni) {
+      dniAGuardar = snapC.data().dni;
     }
   } catch(e) {}
 
   try {
-    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, dni: dniAGuardar, tel }, { merge: true });
+    await db.collection('usuarios').doc(_uid).set({ nombre, apodo, tel }, { merge: true });
     if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
@@ -501,7 +496,7 @@ async function doVerificacion() {
   try {
     await storage.ref('verificaciones/' + user.uid + '/dni').put(dniFile);
     await storage.ref('verificaciones/' + user.uid + '/selfie').put(selfieFile);
-    await db.collection('usuarios').doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
+    await db.collection('conductores').doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
     btn.textContent = '✓ Enviado';
     statusEl.textContent = '✅ Documentos enviados. Los revisaremos en 24-48 hs.';
     statusEl.className = 'verif-msg ok';
@@ -613,7 +608,7 @@ async function guardarMenor() {
   if (editIdx !== '') menores[parseInt(editIdx)] = perfil;
   else menores.push(perfil);
   localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection('usuarios').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  try { await db.collection('conductores').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
   cancelarFormMenor();
   renderMenores();
 }
@@ -624,7 +619,7 @@ async function eliminarMenor(idx) {
   if (!m || !confirm('¿Eliminás el perfil de ' + m.nombre + '?')) return;
   menores.splice(idx, 1);
   localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection('usuarios').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  try { await db.collection('conductores').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
   renderMenores();
 }
 </script>
