@@ -190,6 +190,7 @@ nav {
       <div class="dato-item"><div class="dato-label">Apodo</div><div class="dato-val" id="d-apodo">—</div></div>
       <div class="dato-item"><div class="dato-label">DNI</div><div class="dato-val" id="d-dni">—</div></div>
       <div class="dato-item"><div class="dato-label">Teléfono</div><div class="dato-val" id="d-tel">—</div></div>
+      <div class="dato-item" id="item-alias"><div class="dato-label">Alias / CBU</div><div class="dato-val" id="d-alias">—</div></div>
       <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email">—</div></div>
       <div class="dato-item"><div class="dato-label">Miembro desde</div><div class="dato-val" id="d-fecha">—</div></div>
       <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" style="color:#2ecc71;">✓ Activo</div></div>
@@ -426,6 +427,13 @@ function renderRol(col) {
   const vpos = (d.votos && d.votos.positiva != null) ? d.votos.positiva : (d.megusta || 0);
   const vneg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
   document.getElementById('d-votos').textContent = '👍 ' + vpos + '   👎 ' + vneg;
+  const itemAlias = document.getElementById('item-alias');
+  if (col === 'conductores') {
+    itemAlias.style.display = '';
+    document.getElementById('d-alias').textContent = d.alias || d.cbu || '— (cargalo desde la app)';
+  } else {
+    itemAlias.style.display = 'none';
+  }
   document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
   document.getElementById('e-tel').value = tel !== '—' ? tel : '';
