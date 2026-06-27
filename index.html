@@ -1325,6 +1325,18 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     window.open(url, '_blank');
   };
 
+  // Contador de visitas
+  (async () => {
+    try {
+      const ref = db.collection('config').doc('visitas');
+      await ref.set({ total: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+      const snap = await ref.get();
+      const n = (snap.data() && snap.data().total) || 0;
+      const el = document.getElementById('visitas-final');
+      if (el) el.textContent = '👁️ ' + Number(n).toLocaleString('es-AR') + ' visitas';
+    } catch(e) {}
+  })();
+
   window.cargarSponsorsWeb = async function() {
     const cont = document.getElementById('sponsors-web-content');
     if (!cont) return;
@@ -2352,5 +2364,6 @@ function sincronizarMenoresDesdeFirestore(uid) {
 // Hook: cuando se abre el panel de menores, renderizar (integrado en switchPanel)
 
 </script>
+<div id="visitas-final" style="text-align:center;padding:1.5rem;font-size:0.8rem;color:rgba(247,244,238,0.4);border-top:1px solid rgba(255,255,255,0.05);">👁️ — visitas</div>
 </body>
 </html>
