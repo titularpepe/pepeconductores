@@ -50,7 +50,7 @@ nav {
 .modal-overlay.open { display: flex !important; }
 
 /* LOGIN MODAL */
-.login-modal { background: var(--gris); border: 1px solid rgba(245,216,0,0.15); border-radius: 20px; width: 100%; max-width: 420px; padding: 2.5rem; position: relative; animation: modalIn 0.3s ease; }
+.login-modal { background: var(--gris); border: 1px solid rgba(245,216,0,0.15); border-radius: 20px; width: 100%; max-width: 420px; padding: 2.5rem; position: relative; animation: modalIn 0.3s ease; max-height: 92vh; overflow-y: auto; }
 @keyframes modalIn { from { opacity:0; transform: translateY(20px) scale(0.97); } to { opacity:1; transform: none; } }
 .modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.06); border: none; color: var(--texto-apagado); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .modal-close:hover { background: rgba(255,255,255,0.12); color: var(--blanco); }
@@ -723,17 +723,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <div id="modal-error" class="modal-error"></div>
     <div id="modal-success" class="modal-success"></div>
 
-    <!-- BOTÓN GOOGLE -->
-    <button onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.8rem;background:white;color:#333;border:1px solid #ddd;border-radius:8px;padding:0.75rem;font-family:'Barlow',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;margin-bottom:1rem;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='none'">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Continuar con Google
-    </button>
-
-    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;">
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
-      <span style="font-size:0.75rem;color:var(--texto-apagado);">o con email</span>
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
-    </div>
 
     <!-- LOGIN -->
     <div class="modal-form active" id="mf-login">
@@ -744,14 +733,40 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
     <!-- REGISTRO -->
     <div class="modal-form" id="mf-register">
-      <div class="mfg"><label>Nombre completo</label><input type="text" id="reg-nombre" placeholder="Juan Pérez"></div>
+      <div class="mfg">
+        <label>Me registro como</label>
+        <div style="display:flex;gap:6px;">
+          <button type="button" id="rolreg-pasajero" class="modal-tab active" style="flex:1;" onclick="setRegRol('pasajero')">🧍 Pasajero</button>
+          <button type="button" id="rolreg-conductor" class="modal-tab" style="flex:1;" onclick="setRegRol('conductor')">🚗 Conductor</button>
+        </div>
+      </div>
+      <div class="mfg"><label>Nombre</label><input type="text" id="reg-nombre" placeholder="Juan"></div>
+      <div class="mfg"><label>Apellido</label><input type="text" id="reg-apellido" placeholder="Pérez"></div>
+      <div class="mfg"><label>Apodo</label><input type="text" id="reg-apodo" placeholder="Ej: Pepe, Caro..."></div>
+      <div class="mfg"><label>DNI</label><input type="text" id="reg-dni" placeholder="00.000.000"></div>
+      <div class="mfg"><label>Género</label>
+        <select id="reg-genero"><option value="">Seleccioná...</option><option value="M">Masculino</option><option value="F">Femenino</option></select>
+      </div>
+      <div class="mfg"><label>Teléfono</label><input type="tel" id="reg-tel" placeholder="+54 9 387 000-0000"></div>
       <div class="mfg"><label>Email</label><input type="email" id="reg-email" placeholder="tu@email.com"></div>
       <div class="mfg"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
-      <p style="font-size:0.78rem;color:var(--texto-apagado);margin-bottom:1rem;line-height:1.6;">Con una sola cuenta podés usar Pepe tanto como pasajero como conductor.</p>
       <div id="reg-terminos-aviso" style="background:rgba(255,77,0,0.08);border:1px solid rgba(255,77,0,0.25);border-radius:8px;padding:0.7rem 1rem;font-size:0.78rem;color:rgba(255,150,100,0.9);margin-bottom:1rem;line-height:1.6;display:none;">
         ⚠ Para registrarte necesitás aceptar los <button onclick="verTerminos()" style="background:none;border:none;color:#f5d800;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:'Barlow',sans-serif;">Términos y Condiciones</button>.
       </div>
       <button class="modal-btn" id="btn-reg-submit" onclick="doRegister()">Crear cuenta →</button>
+    </div>
+
+    <!-- VERIFICAR EMAIL (paso 2 del registro) -->
+    <div class="modal-form" id="mf-verificar">
+      <div style="text-align:center;padding:0.5rem 0;">
+        <div style="font-size:2.5rem;margin-bottom:0.8rem;">📩</div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:0.5rem;">Verificá tu email</div>
+        <p style="font-size:0.85rem;color:var(--texto-apagado);line-height:1.6;margin-bottom:1.2rem;">
+          Te mandamos un correo a <b id="verif-email" style="color:#f5d800;">—</b>.<br>Abrilo, tocá el enlace, y después volvé acá.
+        </p>
+      </div>
+      <button class="modal-btn" id="btn-verif-continuar" onclick="continuarRegistro()">Ya verifiqué, continuar →</button>
+      <button onclick="reenviarVerif()" style="width:100%;background:transparent;border:none;color:var(--texto-apagado);font-size:0.82rem;cursor:pointer;font-family:'Barlow',sans-serif;margin-top:0.8rem;text-decoration:underline;">Reenviar correo</button>
     </div>
   </div>
 </div>
@@ -1406,41 +1421,97 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     }
   }
 
-  // ── Registro ──
+  // ── Registro (alineado con las apps: crea /conductores o /pasajeros + DNI único) ──
+  let _regRol = 'pasajero';
+  let _regDatos = null;
+  window.setRegRol = function(rol) {
+    _regRol = rol;
+    document.getElementById('rolreg-pasajero').classList.toggle('active', rol === 'pasajero');
+    document.getElementById('rolreg-conductor').classList.toggle('active', rol === 'conductor');
+  };
+
   window.doRegister = async function() {
     if (!localStorage.getItem('pepe_terminos')) {
       window._pendingAfterTerminos = window.doRegister;
       verTerminos();
       return;
     }
-    const nombre = document.getElementById('reg-nombre').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
+    const g = id => (document.getElementById(id).value || '').trim();
+    const nombre = g('reg-nombre'), apellido = g('reg-apellido'), apodo = g('reg-apodo');
+    const dni = g('reg-dni'), genero = g('reg-genero'), tel = g('reg-tel'), email = g('reg-email');
     const pass = document.getElementById('reg-pass').value;
     const btn = document.getElementById('btn-reg-submit');
     clearMsgs();
-    if (!nombre || !email || !pass) return showError('Completá todos los campos.');
+    if (!nombre || !apellido || !dni || !genero || !tel || !email || !pass) return showError('Completá todos los campos.');
     if (pass.length < 6) return showError('La contraseña debe tener al menos 6 caracteres.');
     btn.disabled = true; btn.textContent = 'Creando cuenta...';
+    const dniCol = _regRol === 'conductor' ? 'dni-registrados' : 'dni-pasajeros';
+    const dniId = dni + '_' + genero;
     try {
+      const dniSnap = await getDoc(doc(db, dniCol, dniId));
+      if (dniSnap.exists) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; return showError('Ya existe una cuenta con este DNI.'); }
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(cred.user, { displayName: nombre });
-      try {
-        await setDoc(doc(db, "usuarios", cred.user.uid), { nombre, email, roles: ['pasajero', 'conductor'], modoActivo: 'pasajero', creadoEn: new Date().toISOString() });
-      } catch(e) {
-        console.error('No se pudo crear el documento en Firestore:', e);
-        showError('Cuenta creada pero hubo un error al guardar los datos. Recargá la página e intentá de nuevo.');
-        btn.disabled = false; btn.textContent = 'Crear cuenta →';
-        return;
-      }
-      showSuccess('¡Cuenta creada! Bienvenido a Pepe Conductores 🎉');
+      await updateProfile(cred.user, { displayName: nombre + ' ' + apellido });
+      _regDatos = { uid: cred.user.uid, rol: _regRol, nombre, apellido, apodo, dni, genero, tel, email, dniCol, dniId };
+      try { await cred.user.sendEmailVerification(); } catch(e) {}
+      document.getElementById('verif-email').textContent = email;
+      document.getElementById('mf-register').classList.remove('active');
+      document.getElementById('mf-verificar').classList.add('active');
       btn.disabled = false; btn.textContent = 'Crear cuenta →';
-      closeLogin();
-      window.location.href = '/perfil.html';
     } catch(e) {
       btn.disabled = false; btn.textContent = 'Crear cuenta →';
       showError(firebaseError(e.code));
     }
   };
+
+  window.reenviarVerif = async function() {
+    try { await auth.currentUser.sendEmailVerification(); showSuccess('Correo reenviado.'); } catch(e) { showError('No se pudo reenviar.'); }
+  };
+
+  window.continuarRegistro = async function() {
+    const btn = document.getElementById('btn-verif-continuar');
+    if (!_regDatos || !auth.currentUser) { showError('Volvé a registrarte.'); return; }
+    btn.disabled = true; btn.textContent = 'Verificando...';
+    try {
+      await auth.currentUser.reload();
+      if (!auth.currentUser.emailVerified) {
+        btn.disabled = false; btn.textContent = 'Ya verifiqué, continuar →';
+        showError('Todavía no verificaste el email. Abrí el correo y tocá el enlace.');
+        return;
+      }
+      await crearPerfilRegistro();
+      closeLogin();
+      window.location.href = '/perfil.html';
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Ya verifiqué, continuar →';
+      showError('Error al crear el perfil. Intentá de nuevo.');
+    }
+  };
+
+  async function crearPerfilRegistro() {
+    const d = _regDatos;
+    const FV = firebase.firestore.FieldValue.serverTimestamp();
+    if (d.rol === 'conductor') {
+      await setDoc(doc(db, 'conductores', d.uid), {
+        uid: d.uid, nombre: d.nombre, apellido: d.apellido, apodo: d.apodo, dni: d.dni, genero: d.genero,
+        telefono: d.tel, email: (d.email || '').toLowerCase(), cbu: '', creadoEn: new Date().toISOString(),
+        estado: 'pendiente', modoActivo: 'conductor', vehiculos: [], saldo: 0, deudaPepe: 0,
+        cancelacionesSeguidas: 0, ciclosCancelaciones: 0,
+        documentos: { dni_frente:'pendiente', dni_dorso:'pendiente', carnet:'pendiente', selfie:'pendiente', seguro_chofer:'pendiente', antecedentes:'pendiente', antecedentesAprobadoEn: null },
+        fotosConductor: {}, fotosVehiculos: {}, rechazosSeguidosSinAceptar: 0, viajesHoy: 0, gananciasHoy: 0,
+        fechaUltimoReset: '', latUltima: 0, lngUltima: 0, expoPushToken: null, viajesNoCobradosSeguidos: 0,
+        viajesCompletados: 0, megusta: 0, nomegusta: 0, historial: [],
+      });
+    } else {
+      await setDoc(doc(db, 'pasajeros', d.uid), {
+        uid: d.uid, nombre: d.nombre, apellido: d.apellido, apodo: d.apodo, dni: d.dni, genero: d.genero,
+        tipoPasajero: d.genero === 'F' ? 'mujer' : 'hombre', telefono: d.tel, email: (d.email || '').toLowerCase(),
+        fotoPerfil: '', estado: 'activo', estadoDni: 'no-verificado', calificacion: 5.0, viajesTotales: 0, deuda: 0,
+        creadoEn: FV,
+      });
+    }
+    try { await setDoc(doc(db, d.dniCol, d.dniId), { dni: d.dni, genero: d.genero, uid: d.uid, estado: 'activa', creadoEn: FV }); } catch(e) {}
+  }
 
   // ── Login con Google ──
   // ── Detectar si es móvil ──
