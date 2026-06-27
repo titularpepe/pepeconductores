@@ -147,7 +147,11 @@ nav {
 
   <!-- HEADER -->
   <div class="perfil-header">
-    <div class="perfil-avatar" id="perfil-avatar">👤</div>
+    <div style="position:relative;">
+      <div class="perfil-avatar" id="perfil-avatar">👤</div>
+      <button onclick="document.getElementById('foto-input').click()" title="Cambiar foto" style="position:absolute;bottom:-6px;right:-6px;width:28px;height:28px;border-radius:50%;background:var(--amarillo);border:2px solid var(--negro);color:var(--negro);cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">📷</button>
+      <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="subirFotoPerfil(event)">
+    </div>
     <div>
       <div class="perfil-nombre" id="perfil-nombre">—</div>
       <div class="perfil-email" id="perfil-email">—</div>
@@ -421,7 +425,10 @@ function renderRol(col) {
   const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
   const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
 
-  document.getElementById('perfil-avatar').textContent = col === 'conductores' ? '🚗' : '🧍';
+  const foto = d.fotoPerfil || (d.fotosConductor && d.fotosConductor.selfie) || '';
+  const av = document.getElementById('perfil-avatar');
+  if (foto) { av.innerHTML = '<img src="' + foto + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;" onerror="this.parentNode.textContent=\'' + (col === 'conductores' ? '🚗' : '🧍') + '\'">'; }
+  else { av.textContent = col === 'conductores' ? '🚗' : '🧍'; }
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('perfil-email').textContent = user.email;
   document.getElementById('perfil-rol').textContent = _rolLabel;
@@ -744,6 +751,26 @@ async function doVerificacion() {
     statusEl.className = 'verif-msg error';
   }
 }
+
+// FOTO DE PERFIL
+window.subirFotoPerfil = async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const av = document.getElementById('perfil-avatar');
+  const prev = av.innerHTML;
+  av.innerHTML = '<div style="font-size:0.7rem;color:#000;">Subiendo…</div>';
+  try {
+    const ref = storage.ref('perfil-fotos/' + _uid + '/' + Date.now());
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    await db.collection(_col).doc(_uid).set({ fotoPerfil: url }, { merge: true });
+    if (_docs[_col]) _docs[_col].fotoPerfil = url;
+    av.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">';
+  } catch(err) {
+    av.innerHTML = prev;
+    alert('No se pudo subir la foto. Intentá de nuevo.');
+  }
+};
 
 // SUGERENCIAS
 window.enviarSugerencia = async function() {
