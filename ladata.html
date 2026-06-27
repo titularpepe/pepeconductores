@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Data - Eventos - Versión de Prueba Web</title>
+
+    <meta name="description" content="Enterate de los mejores eventos, peñas, ferias y shows en Salta, Jujuy y Tucumán. Publicá tu evento en La Data - Eventos.">
+    <meta property="og:title" content="La Data - Eventos">
+    <meta property="og:description" content="Enterate de los mejores eventos, peñas, ferias y shows en Salta, Jujuy y Tucumán.">
+    <meta property="og:type" content="website">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background-image 0.6s ease-in-out;
+        }
+
+        .credito-foto-fondo {
+            position: fixed;
+            bottom: 8px;
+            right: 10px;
+            font-size: 11px;
+            color: #475569;
+            background: rgba(255,255,255,0.8);
+            padding: 3px 9px;
+            border-radius: 5px;
+            z-index: 50;
+            display: none;
+        }
+        .credito-foto-fondo a { color: #3b82f6; text-decoration: none; }
+
+        header {
+            background-color: #1e293b;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #3b82f6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .logo span { color: white; }
+
+        .botones-acceso {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-ubicacion {
+            background-color: #334155;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-ubicacion:hover {
+            background-color: #475569;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-azul { background-color: #3b82f6; }
+        .btn-azul:hover { background-color: #2563eb; }
+        .btn-gris { background-color: #64748b; }
+        .btn-gris:hover { background-color: #475569; }
+        .btn-verde { background-color: #10b981; }
+        .btn-rojo { background-color: #e11d48; }
+
+        .pantalla {
+            display: none;
+            padding: 20px;
+        }
+
+        .pantalla-activa {
+            display: block !important;
+        }
+
+        #pantalla-bienvenida {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0f172a;
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pantalla-bienvenida.bloqueo-activo {
+            display: flex !important;
+        }
+
+        .caja-bienvenida {
+            background-color: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .contenedor-portal {
+            display: flex;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .columna {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            width: 33.33%;
+            min-height: 70vh;
+        }
+
+        .columna-izq { border-top: 5px solid #e11d48; }
+        .columna-cen { border-top: 5px solid #3b82f6; width: 40%; }
+        .columna-der { border-top: 5px solid #10b981; }
+
+        .titulo-columna {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .tarjeta-evento {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tarjeta-evento:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .tarjeta-premium { border-left: 4px solid #e11d48; background-color: #fff1f2; }
+        .tarjeta-gratis { border-left: 4px solid #10b981; }
+
+        .hora-tag {
+            display: inline-block;
+            background-color: #1e293b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .tarjeta-premium .hora-tag { background-color: #e11d48; }
+        .tarjeta-gratis .hora-tag { background-color: #10b981; }
+
+        .evento-titulo { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .evento-detalle { font-size: 14px; color: #64748b; margin-bottom: 4px; }
+        .evento-ubicacion-tag { font-size: 12px; color: #3b82f6; font-weight: 500; }
+
+        .caja-formulario {
+            background-color: white;
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .campo { margin-bottom: 15px; }
+        .campo label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        .campo input, .campo select, .campo textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        
+        .regla-advertencia {
+            background-color: #fff7ed;
+            border: 1px solid #ffedd5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #c2410c;
+            font-weight: 500;
+        }
+
+        /* MODALES (MERCADO PAGO Y DETALLE DE EVENTO) */
+        .modal-contenedor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .caja-mp {
+            background-color: #fff;
+            width: 90%;
+            max-width: 430px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+        }
+
+        .mp-header {
+            background-color: #009ee3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .mp-body { padding: 25px; }
+
+        /* OPCIONES DE TARJETA ESTILO MERCADO PAGO */
+        .opciones-pago-mp {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .opcion-tarjeta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .opcion-tarjeta:hover {
+            background-color: #f1f5f9;
+        }
+
+        .opcion-tarjeta input[type="radio"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .opcion-tarjeta label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .opcion-tarjeta label span {
+            font-size: 12px;
+            font-weight: normal;
+            color: #64748b;
+        }
+
+        .caja-detalle {
+            background-color: white;
+            width: 90%;
+            max-width: 550px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detalle-header {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+
+        .detalle-body { padding: 25px; }
+
+        .vista-multimedia {
+            width: 100%;
+            max-height: 250px;
+            background-color: #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .vista-multimedia img, .vista-multimedia video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .zona-refresco {
+            max-width: 1600px;
+            margin: 15px auto 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .indicador-carga {
+            display: none;
+            font-size: 14px;
+            color: #3b82f6;
+            font-weight: bold;
+            align-items: center;
+        }
+
+        @media (max-width: 1024px) {
+            .contenedor-portal { flex-direction: column; }
+            .columna { width: 100%; }
+        }
+
+        .barra-filtros {
+            display: flex;
+            gap: 10px;
+            max-width: 1300px;
+            margin: 18px auto 0 auto;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+        .barra-filtros input,
+        .barra-filtros select {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+        }
+        .barra-filtros input { flex: 2; min-width: 220px; }
+        .barra-filtros select { flex: 1; min-width: 180px; }
+    </style>
+</head>
+<body>
+
+    <div id="credito-foto-fondo" class="credito-foto-fondo"></div>
+
+    <div id="pantalla-bienvenida" class="modal-contenedor">
+        <div class="caja-bienvenida">
+            <h1 style="color: #3b82f6; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">LA DATA</h1>
+            <p style="color: #475569; font-size: 15px; margin-bottom: 25px;">Seleccioná tu ubicación para ver la cartelera de eventos de tu zona.</p>
+            
+            <div class="campo" style="text-align: left;">
+                <label>Provincia</label>
+                <select id="select-bienvenida-provincia" onchange="actualizarCiudadesBienvenida()">
+                    <option value="">-- Seleccioná Provincia --</option>
+                    <option value="Salta">Salta</option>
+                    <option value="Jujuy">Jujuy</option>
+                    <option value="Tucumán">Tucumán</option>
+                </select>
+            </div>
+
+            <div class="campo" style="text-align: left; margin-bottom: 25px;">
+                <label>Ciudad / Localidad</label>
+                <select id="select-bienvenida-ciudad" disabled>
+                    <option value="">-- Seleccioná primero Provincia --</option>
+                </select>
+            </div>
+
+            <button class="btn btn-azul" style="width: 100%; padding: 14px; font-size: 16px;" onclick="guardarUbicacionInicial()">
+                Ingresar al Portal
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-mercadopago" class="modal-contenedor">
+        <div class="caja-mp">
+            <div class="mp-header">Mercado Pago</div>
+            <div class="mp-body">
+                <p style="text-align: center; margin-bottom: 12px; font-weight: 500; color:#475569;">Publicación de Anuncio Premium Destacado</p>
+                <div style="background-color: #f1f5f9; padding: 12px; border-radius: 6px; text-align: center; font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 20px;">
+                    $ 2.500,00
+                </div>
+
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px; text-align:center;">
+                    Vas a ser redirigido al sitio seguro de Mercado Pago para completar el pago con tarjeta de crédito, débito o dinero en cuenta.
+                </p>
+
+                <button id="btn-ir-a-mp" class="btn" style="background-color: #009ee3; color: white; width:100%; padding: 12px; font-size:15px; margin-bottom: 10px;" onclick="iniciarPagoMP()">
+                    Continuar a Mercado Pago
+                </button>
+                <button class="btn btn-gris" style="width:100%; padding: 10px;" onclick="cancelarPagoMP()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-detalle-evento" class="modal-contenedor">
+        <div class="caja-detalle">
+            <div class="detalle-header">
+                <h3 id="det-titulo" style="font-size: 20px;">Título del Evento</h3>
+                <p id="det-ubicacion-completa" style="font-size: 13px; color: #3b82f6; margin-top: 5px;">Ciudad, Provincia</p>
+            </div>
+            <div class="detalle-body">
+                <div id="det-multimedia-container" class="vista-multimedia"></div>
+                <p style="margin-bottom: 10px; font-size: 15px;"><strong>📍 Dirección:</strong> <span id="det-lugar">---</span></p>
+                <p style="margin-bottom: 10px; font-size: 15px;"><strong>📅 Fecha:</strong> <span id="det-fecha">---</span></p>
+                <p style="margin-bottom: 15px; font-size: 15px;"><strong>🕒 Horario:</strong> <span id="det-hora">---</span></p>
+                <p id="det-categoria-wrapper" style="margin-bottom: 15px; font-size: 15px;"><strong>🏷️ Categoría:</strong> <span id="det-categoria">---</span></p>
+                <div style="margin-bottom: 20px;">
+                    <strong style="display:block; margin-bottom: 5px; font-size: 15px;">📝 Descripción del Evento:</strong>
+                    <p id="det-descripcion" style="color: #475569; font-size: 14px; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;"></p>
+                </div>
+                <a id="btn-compartir-whatsapp" href="#" target="_blank" rel="noopener" class="btn" style="display:block; text-align:center; width: 100%; padding: 12px; margin-bottom: 8px; background-color: #25D366; color: white; text-decoration:none;">📲 Compartir por WhatsApp</a>
+                <button class="btn btn-azul" style="width: 100%; padding: 12px;" onclick="cerrarDetalleEvento()">Cerrar Vista</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo" onclick="irA('pantalla-inicio')">
+            <h1>La Data<span> - Eventos</span></h1>
+        </div>
+        
+        <button id="btn-cambiar-ubicacion" class="btn-ubicacion" onclick="forzarCambioUbicacion()">
+            📍 <span id="texto-ubicacion-navbar">Cargando...</span> ▼
+        </button>
+
+        <div class="botones-acceso">
+            <div id="reloj-digital-web" style="font-weight: bold; color: #94a3b8; font-size: 14px; margin-right: 15px;"></div>
+
+            <button id="btn-cargar-nav" class="btn btn-verde" style="display:none;" onclick="irA('pantalla-panel')">➕ Cargar Evento</button>
+            <span id="saludo-usuario" style="font-weight:bold; color:#3b82f6; display:none; margin-right:10px;"></span>
+            
+            <button id="btn-login-nav" class="btn btn-gris" onclick="irA('pantalla-login')">Iniciar Sesión</button>
+            <button id="btn-registro-nav" class="btn btn-azul" onclick="irA('pantalla-registro')">Registrarse</button>
+            <button id="btn-salir-nav" class="btn btn-rojo" style="display:none;" onclick="cerrarSesion()">Salir</button>
+        </div>
+    </header>
+
+    <div id="control-refresco-web" class="zona-refresco">
+        <button class="btn btn-azul" onclick="simularRefresco('Botón Manual')">🔄 Actualizar Cartelera (Botón)</button>
+        <button class="btn btn-gris" onclick="simularRefresco('Pull to Refresh (Deslizar)')">👇 Simular Deslizar pantalla abajo</button>
+        <div id="carga-rueda" class="indicador-carga">⏳ Sincronizando con base de datos en Python...</div>
+    </div>
+
+    <div id="pantalla-inicio" class="pantalla pantalla-activa">
+        <div class="barra-filtros">
+            <input type="text" id="input-busqueda" placeholder="🔎 Buscar evento por nombre..." oninput="aplicarFiltrosYRenderizar()">
+            <select id="select-filtro-categoria" onchange="aplicarFiltrosYRenderizar()">
+                <option value="">Todas las categorías</option>
+                <option value="Música">🎵 Música</option>
+                <option value="Deportes">⚽ Deportes</option>
+                <option value="Gastronomía">🍴 Gastronomía</option>
+                <option value="Ferias y Artesanos">🧺 Ferias y Artesanos</option>
+                <option value="Otros">📌 Otros</option>
+            </select>
+        </div>
+        <div class="contenedor-portal">
+            
+            <div class="columna columna-izq">
+                <div class="titulo-columna" style="color: #e11d48;">⭐ EVENTOS PREMIUM</div>
+                <div id="dinamico-premium"></div>
+            </div>
+
+            <div class="columna columna-cen">
+                <div class="titulo-columna" style="color: #3b82f6;">⏱️ ¿QUÉ HAY PARA HACER AHORA?</div>
+                <div id="dinamico-centro"></div>
+            </div>
+
+            <div class="columna columna-der">
+                <div class="titulo-columna" style="color: #10b981;">🎁 GRATUITOS DEL MES</div>
+                <div id="dinamico-gratis"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="pantalla-login" class="pantalla">
+        <div class="caja-formulario">
+            <h2 style="margin-bottom: 20px; color:#1e293b;">Iniciar Sesión</h2>
+            <div class="campo"><label>Correo Electrónico</label><input type="email" id="log-email" value="david@eventos.com"></div>
+            <div class="campo"><label>Contraseña</label><input type="password" id="log-pass" value="1234"></div>
+            <button class="btn btn-azul" style="width:100%; padding:12px;" onclick="simularLogin()">Ingresar</button>
+            <button class="btn btn-gris" style="width:100%; padding:10px; margin-top:8px;" onclick="irA('pantalla-inicio')">Volver al Inicio</button>
+        </div>
+    </div>
+
+    <div id="pantalla-registro" class="pantalla">
+        <div class="caja-formulario">
+            <h2>Crear Cuenta Nueva</h2>
+            <p style="margin: 15px 0; color:#64748b;">Acceso rápido de simulación:</p>
+            <button class="btn btn-azul" onclick="irA('pantalla-login')">Ir a Iniciar Sesión directamente</button>
+        </div>
+    </div>
+
+    <div id="pantalla-panel" class="pantalla">
+        <div class="caja-formulario" style="max-width: 550px; margin: 20px auto;">
+            <h2 style="color:#10b981; margin-bottom: 5px;">Panel del Organizador</h2>
+            <p style="font-size:14px; color:#64748b; margin-bottom: 15px;">Publicá tu anuncio respetando los límites.</p>
+            
+            <div class="regla-advertencia">
+                🛡️ <strong>Regla Anti-Spam:</strong> No se permite publicar un mismo evento más de 2 veces.
+            </div>
+
+            <div class="campo">
+                <label>Título del Evento</label>
+                <input type="text" id="form-titulo" placeholder="Ej: Peña La Callejera">
+            </div>
+            <div class="campo">
+                <label>Lugar / Dirección</label>
+                <input type="text" id="form-lugar" placeholder="Ej: Alvarado al 400">
+            </div>
+            <div class="campo">
+                <label>Fecha del Evento</label>
+                <input type="date" id="form-fecha">
+            </div>
+            <div class="campo">
+                <label>Horario / Hora de Inicio</label>
+                <input type="text" id="form-hora" placeholder="Ej: 22:00 hs">
+            </div>
+
+            <div class="campo">
+                <label>Categoría del Evento</label>
+                <select id="form-categoria">
+                    <option value="Música">🎵 Música</option>
+                    <option value="Deportes">⚽ Deportes</option>
+                    <option value="Gastronomía">🍴 Gastronomía</option>
+                    <option value="Ferias y Artesanos">🧺 Ferias y Artesanos</option>
+                    <option value="Otros">📌 Otros</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label>Descripción detallada del Evento</label>
+                <textarea id="form-descripcion" rows="3" placeholder="Contale a la gente de qué se trata el show, artistas invitados, entradas, etc..."></textarea>
+            </div>
+
+            <div class="campo">
+                <label>Subir Foto o Video del Evento</label>
+                <input type="file" id="form-multimedia" accept="image/*,video/*">
+            </div>
+
+            <div class="campo">
+                <label>Provincia del Evento</label>
+                <select id="form-provincia" onchange="actualizarCiudadesFormulario()">
+                    <option value="Salta">Salta</option>
+                    <option value="Jujuy">Jujuy</option>
+                    <option value="Tucumán">Tucumán</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label>Ciudad del Evento</label>
+                <select id="form-ciudad"></select>
+            </div>
+
+            <div class="campo">
+                <label>Columna Destino</label>
+                <select id="form-tipo">
+                    <option value="centro">Central (Normal - Gratis)</option>
+                    <option value="gratis">Derecha (Gratuitos del Mes)</option>
+                    <option value="premium">Izquierda (Premium Destacado)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-verde" style="width:100%; padding:14px; margin-top:15px; font-size:15px;" onclick="verificarYPublicar()">
+                Validar Identidad y Publicar Anuncio
+            </button>
+            <button class="btn btn-gris" style="width:100%; padding:10px; margin-top:8px;" onclick="irA('pantalla-inicio')">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        const localidadesPorProvincia = {
+            "Salta": ["Salta Capital", "Cafayate", "San Lorenzo", "Orán"],
+            "Jujuy": ["San Salvador", "Tilcara", "Humahuaca"],
+            "Tucumán": ["San Miguel", "Yerba Buena", "Tafí del Valle"]
+        };
+
+        // Relaciona cada ciudad de la app con su página en Wikipedia en español,
+        // para poder pedirle a la API pública de Wikipedia la foto de portada.
+        const ciudadAPaginaWikipedia = {
+            "Salta Capital": "Salta_(Argentina)",
+            "Cafayate": "Cafayate",
+            "San Lorenzo": "San_Lorenzo_(Salta)",
+            "Orán": "San_Ramón_de_la_Nueva_Orán",
+            "San Salvador": "San_Salvador_de_Jujuy",
+            "Tilcara": "Tilcara",
+            "Humahuaca": "Humahuaca",
+            "San Miguel": "San_Miguel_de_Tucumán",
+            "Yerba Buena": "Yerba_Buena_(Tucumán)",
+            "Tafí del Valle": "Tafí_del_Valle"
+        };
+
+        const cacheFondosCiudad = {}; // evita pedirle la misma foto a Wikipedia más de una vez
+
+        async function actualizarFondoCiudad(ciudad) {
+            const elementoCredito = document.getElementById('credito-foto-fondo');
+
+            if (!ciudad) {
+                document.body.style.backgroundImage = "none";
+                elementoCredito.style.display = "none";
+                return;
+            }
+
+            if (cacheFondosCiudad[ciudad]) {
+                aplicarFondoCiudad(cacheFondosCiudad[ciudad]);
+                return;
+            }
+
+            const pagina = ciudadAPaginaWikipedia[ciudad];
+            if (!pagina) { document.body.style.backgroundImage = "none"; elementoCredito.style.display = "none"; return; }
+
+            try {
+                const respuesta = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pagina)}`);
+                if (!respuesta.ok) throw new Error('Sin foto disponible');
+                const datos = await respuesta.json();
+                const urlFoto = (datos.originalimage && datos.originalimage.source) || (datos.thumbnail && datos.thumbnail.source);
+
+                if (!urlFoto) throw new Error('Esta ciudad no tiene foto en Wikipedia');
+
+                const info = { urlFoto, urlPagina: datos.content_urls?.desktop?.page || `https://es.wikipedia.org/wiki/${pagina}` };
+                cacheFondosCiudad[ciudad] = info;
+                aplicarFondoCiudad(info);
+            } catch (error) {
+                // Si Wikipedia no tiene foto de esta localidad (puede pasar en pueblos chicos), se deja el fondo normal sin romper nada.
+                document.body.style.backgroundImage = "none";
+                elementoCredito.style.display = "none";
+            }
+        }
+
+        function aplicarFondoCiudad(info) {
+            document.body.style.backgroundImage = `linear-gradient(rgba(244,246,249,0.35), rgba(244,246,249,0.35)), url('${info.urlFoto}')`;
+            const elementoCredito = document.getElementById('credito-foto-fondo');
+            elementoCredito.innerHTML = `Foto: <a href="${info.urlPagina}" target="_blank" rel="noopener">Wikipedia</a>`;
+            elementoCredito.style.display = "block";
+        }
+
+
+        let baseDeDatosEventos = [
+            { id: 1, titulo: "Gran Peña Bailable Destacada", lugar: "Balcarce al 900", fecha: "2026-06-25", hora: "22:30 hs", descripcion: "La mejor peña de la ciudad con la presencia estelar de artistas locales, empanadas salteñas y el mejor vino. ¡Cupos limitados!", tipo: "premium", categoria: "Música", provincia: "Salta", ciudad: "Salta Capital", multimediaUrl: "", multimediaTipo: "" },
+            { id: 2, titulo: "Show de Folklore en Vivo", lugar: "Paseo de los Poetas", fecha: "2026-06-20", hora: "23:00 hs", descripcion: "Música al aire libre para disfrutar en familia. Entrada libre y gratuita. Traer reposera.", tipo: "centro", categoria: "Música", provincia: "Salta", ciudad: "Salta Capital", multimediaUrl: "", multimediaTipo: "" },
+            { id: 3, titulo: "Feria de Artesanos del Norte", lugar: "Cuarteles de Belgrano", fecha: "2026-06-01", hora: "Todo el Mes", descripcion: "Exposición de tejidos, cerámicas y productos regionales directo de los productores.", tipo: "gratis", categoria: "Ferias y Artesanos", provincia: "Salta", ciudad: "Salta Capital", multimediaUrl: "", multimediaTipo: "" }
+        ];
+
+        let historialTitulosAntiSpam = ["Peña La Callejera", "Peña La Callejera"];
+        let cachePublicacionTemporal = null;
+
+        window.onload = function() {
+            arrancarRelojDigital();
+            actualizarCiudadesFormulario(); 
+            verificarUbicacionUsuario();
+            verificarRetornoDePago();
+        };
+
+        function arrancarRelojDigital() {
+            setInterval(() => {
+                const ahora = new Date();
+                const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('reloj-digital-web').innerText = `${ahora.toLocaleDateString('es-AR', opciones)} - ${ahora.toLocaleTimeString('es-AR')}`;
+            }, 1000);
+        }
+
+        function verificarUbicacionUsuario() {
+            const provinciaGuardada = localStorage.getItem('user_provincia');
+            const ciudadGuardada = localStorage.getItem('user_ciudad');
+            if (!provinciaGuardada || !ciudadGuardada) {
+                document.getElementById('pantalla-bienvenida').classList.add('bloqueo-activo');
+                actualizarFondoCiudad(null);
+            } else {
+                document.getElementById('pantalla-bienvenida').classList.remove('bloqueo-activo');
+                document.getElementById('texto-ubicacion-navbar').innerText = `${ciudadGuardada}, ${provinciaGuardada}`;
+                renderizarCarteleraFiltrada(provinciaGuardada, ciudadGuardada);
+                actualizarFondoCiudad(ciudadGuardada);
+            }
+        }
+
+        function actualizarCiudadesBienvenida() {
+            const provSelect = document.getElementById('select-bienvenida-provincia').value;
+            const citySelect = document.getElementById('select-bienvenida-ciudad');
+            citySelect.innerHTML = "";
+            if(!provSelect) { citySelect.innerHTML = '<option value="">-- Seleccioná primero --</option>'; citySelect.disabled = true; return; }
+            citySelect.disabled = false;
+            localidadesPorProvincia[provSelect].forEach(ciudad => {
+                let opt = document.createElement('option'); opt.value = ciudad; opt.innerText = ciudad; citySelect.appendChild(opt);
+            });
+        }
+
+        function guardarUbicacionInicial() {
+            const prov = document.getElementById('select-bienvenida-provincia').value;
+            const city = document.getElementById('select-bienvenida-ciudad').value;
+            if(!prov || !city) { alert("Por favor elegí ubicación obligatoriamente."); return; }
+            localStorage.setItem('user_provincia', prov);
+            localStorage.setItem('user_ciudad', city);
+            verificarUbicacionUsuario();
+        }
+
+        function forzarCambioUbicacion() {
+            localStorage.removeItem('user_provincia'); localStorage.removeItem('user_ciudad');
+            document.getElementById('select-bienvenida-provincia').value = "";
+            document.getElementById('select-bienvenida-ciudad').innerHTML = '<option value="">-- Seleccioná primero --</option>';
+            document.getElementById('select-bienvenida-ciudad').disabled = true;
+            verificarUbicacionUsuario();
+        }
+
+        let ultimaProvinciaRenderizada = null;
+        let ultimaCiudadRenderizada = null;
+
+        function renderizarCarteleraFiltrada(provincia, ciudad) {
+            ultimaProvinciaRenderizada = provincia;
+            ultimaCiudadRenderizada = ciudad;
+
+            document.getElementById('dinamico-premium').innerHTML = "";
+            document.getElementById('dinamico-centro').innerHTML = "";
+            document.getElementById('dinamico-gratis').innerHTML = "";
+
+            const textoBusqueda = (document.getElementById('input-busqueda')?.value || "").trim().toLowerCase();
+            const categoriaElegida = document.getElementById('select-filtro-categoria')?.value || "";
+
+            const eventosFiltrados = baseDeDatosEventos.filter(ev => {
+                if (ev.provincia !== provincia || ev.ciudad !== ciudad) return false;
+                if (categoriaElegida && ev.categoria !== categoriaElegida) return false;
+                if (textoBusqueda && !ev.titulo.toLowerCase().includes(textoBusqueda)) return false;
+                return true;
+            });
+
+            if(eventosFiltrados.length === 0) {
+                const aviso = '<p style="font-size:13px; color:#94a3b8; text-align:center; padding:20px;">No hay eventos que coincidan con la búsqueda.</p>';
+                document.getElementById('dinamico-premium').innerHTML = aviso;
+                document.getElementById('dinamico-centro').innerHTML = aviso;
+                document.getElementById('dinamico-gratis').innerHTML = aviso;
+                return;
+            }
+
+            eventosFiltrados.forEach(evento => {
+                let tarjeta = document.createElement('div');
+                tarjeta.className = `tarjeta-evento ${evento.tipo === 'premium' ? 'tarjeta-premium' : (evento.tipo === 'gratis' ? 'tarjeta-gratis' : '')}`;
+                tarjeta.onclick = function() { abrirDetalleEvento(evento.id); };
+
+                tarjeta.innerHTML = `
+                    <span class="hora-tag">🕒 ${evento.hora}</span>
+                    <span class="hora-tag" style="background:#475569;">📅 ${evento.fecha}</span>
+                    <div class="evento-titulo">${evento.titulo}</div>
+                    <div class="evento-detalle">📍 ${evento.lugar}</div>
+                    <div class="evento-ubicacion-tag">📌 ${evento.ciudad} (${evento.provincia}) ${evento.categoria ? '· ' + evento.categoria : ''}</div>
+                `;
+                document.getElementById('dinamico-' + evento.tipo).appendChild(tarjeta);
+            });
+        }
+
+        function aplicarFiltrosYRenderizar() {
+            if (!ultimaProvinciaRenderizada || !ultimaCiudadRenderizada) return;
+            renderizarCarteleraFiltrada(ultimaProvinciaRenderizada, ultimaCiudadRenderizada);
+        }
+
+        function abrirDetalleEvento(id) {
+            const evento = baseDeDatosEventos.find(ev => ev.id === id);
+            if(!evento) return;
+
+            document.getElementById('det-titulo').innerText = evento.titulo;
+            document.getElementById('det-ubicacion-completa').innerText = `📌 ${evento.ciudad}, ${evento.provincia}`;
+            document.getElementById('det-lugar').innerText = evento.lugar;
+            document.getElementById('det-fecha').innerText = evento.fecha;
+            document.getElementById('det-hora').innerText = evento.hora;
+            const wrapperCategoria = document.getElementById('det-categoria-wrapper');
+            if (evento.categoria) {
+                document.getElementById('det-categoria').innerText = evento.categoria;
+                wrapperCategoria.style.display = "block";
+            } else {
+                wrapperCategoria.style.display = "none";
+            }
+            document.getElementById('det-descripcion').innerText = evento.descripcion || "Sin descripción disponible.";
+
+            const multiContainer = document.getElementById('det-multimedia-container');
+            multiContainer.innerHTML = "";
+
+            if(evento.multimediaUrl) {
+                if(evento.multimediaTipo.startsWith('image/')) {
+                    multiContainer.innerHTML = `<img src="${evento.multimediaUrl}" alt="Flyer">`;
+                } else if(evento.multimediaTipo.startsWith('video/')) {
+                    multiContainer.innerHTML = `<video src="${evento.multimediaUrl}" controls></video>`;
+                }
+            } else {
+                multiContainer.innerHTML = `<span style="color:#94a3b8; font-size:13px;">📷 Sin Imagen/Video ilustrativo</span>`;
+            }
+
+            document.getElementById('modal-detalle-evento').style.display = "flex";
+
+            const botonCompartir = document.getElementById('btn-compartir-whatsapp');
+            if (botonCompartir) {
+                const mensaje = `📌 ${evento.titulo}\n📍 ${evento.lugar}, ${evento.ciudad}\n📅 ${evento.fecha} - 🕒 ${evento.hora}\n\nVisto en La Data - Eventos`;
+                botonCompartir.href = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+            }
+        }
+
+        function cerrarDetalleEvento() {
+            document.getElementById('modal-detalle-evento').style.display = "none";
+        }
+
+        function actualizarCiudadesFormulario() {
+            const prov = document.getElementById('form-provincia').value;
+            const citySelect = document.getElementById('form-ciudad');
+            citySelect.innerHTML = "";
+            localidadesPorProvincia[prov].forEach(ciudad => {
+                let opt = document.createElement('option'); opt.value = ciudad; opt.innerText = ciudad;
+                citySelect.appendChild(opt);
+            });
+        }
+
+        function verificarYPublicar() {
+            const titulo = document.getElementById('form-titulo').value.trim();
+            const lugar = document.getElementById('form-lugar').value.trim();
+            const fecha = document.getElementById('form-fecha').value;
+            const hora = document.getElementById('form-hora').value.trim();
+            const descripcion = document.getElementById('form-descripcion').value.trim();
+            const prov = document.getElementById('form-provincia').value;
+            const city = document.getElementById('form-ciudad').value;
+            const tipo = document.getElementById('form-tipo').value;
+            const categoria = document.getElementById('form-categoria').value;
+            const fileInput = document.getElementById('form-multimedia');
+
+            if(!titulo || !lugar || !fecha || !hora) { alert("Por favor completá los campos principales obligatorios."); return; }
+
+            let totalRepetidos = historialTitulosAntiSpam.filter(t => t.toLowerCase() === titulo.toLowerCase()).length;
+            if (totalRepetidos >= 2) {
+                alert(`⚠️ DETECCIÓN DE SPAM AUTOMÁTICA ⚠️\n\nEl evento ya fue publicado demasiado en el sistema backend.`);
+                return; 
+            }
+
+            let fileUrl = "";
+            let fileType = "";
+            if(fileInput.files && fileInput.files[0]) {
+                fileUrl = URL.createObjectURL(fileInput.files[0]);
+                fileType = fileInput.files[0].type;
+            }
+
+            cachePublicacionTemporal = { titulo, lugar, fecha, hora, descripcion, prov, city, tipo, categoria, fileUrl, fileType };
+
+            if (tipo === "premium") {
+                document.getElementById('modal-mercadopago').style.display = "flex";
+            } else {
+                confirmarInyeccionFinalBaseDatos();
+            }
+        }
+
+        const URL_BACKEND_PAGO = '/api/crear-preferencia'; // función serverless desplegada junto a esta misma web en Vercel
+
+        async function iniciarPagoMP() {
+            const boton = document.getElementById('btn-ir-a-mp');
+            boton.disabled = true;
+            boton.innerText = "Generando pago...";
+
+            try {
+                // Guardamos el evento en el navegador para recuperarlo cuando Mercado Pago nos devuelva al sitio
+                sessionStorage.setItem('evento_pendiente_pago', JSON.stringify(cachePublicacionTemporal));
+
+                const respuesta = await fetch(URL_BACKEND_PAGO, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        titulo: cachePublicacionTemporal.titulo,
+                        origin: window.location.origin
+                    })
+                });
+
+                if (!respuesta.ok) throw new Error('Error del servidor de pagos');
+
+                const datos = await respuesta.json();
+                window.location.href = datos.init_point; // Redirige a la pasarela real de Mercado Pago
+            } catch (error) {
+                alert("No se pudo iniciar el pago. Intentá nuevamente en un momento.");
+                boton.disabled = false;
+                boton.innerText = "Continuar a Mercado Pago";
+            }
+        }
+
+        function cancelarPagoMP() {
+            document.getElementById('modal-mercadopago').style.display = "none";
+            sessionStorage.removeItem('evento_pendiente_pago');
+            cachePublicacionTemporal = null;
+        }
+
+        function verificarRetornoDePago() {
+            const params = new URLSearchParams(window.location.search);
+            const estadoPago = params.get('pago');
+            if (!estadoPago) return;
+
+            const eventoGuardado = sessionStorage.getItem('evento_pendiente_pago');
+
+            if (estadoPago === 'exito' && eventoGuardado) {
+                cachePublicacionTemporal = JSON.parse(eventoGuardado);
+                confirmarInyeccionFinalBaseDatos();
+                alert("✓ Pago aprobado por Mercado Pago. ¡Anuncio publicado!");
+            } else if (estadoPago === 'fallo') {
+                alert("❌ El pago fue rechazado o cancelado en Mercado Pago.");
+            } else if (estadoPago === 'pendiente') {
+                alert("⏳ Tu pago quedó pendiente de aprobación (por ejemplo, pago en efectivo). Volvé a intentar publicar una vez que se acredite.");
+            }
+
+            sessionStorage.removeItem('evento_pendiente_pago');
+            // Limpia el parámetro de la URL para que no quede ahí si el usuario refresca la página
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        function confirmarInyeccionFinalBaseDatos() {
+            if(!cachePublicacionTemporal) return;
+
+            historialTitulosAntiSpam.push(cachePublicacionTemporal.titulo);
+            
+            baseDeDatosEventos.push({
+                id: baseDeDatosEventos.length + 1,
+                titulo: cachePublicacionTemporal.titulo,
+                lugar: cachePublicacionTemporal.lugar,
+                fecha: cachePublicacionTemporal.fecha,
+                hora: cachePublicacionTemporal.hora,
+                descripcion: cachePublicacionTemporal.descripcion,
+                tipo: cachePublicacionTemporal.tipo,
+                categoria: cachePublicacionTemporal.categoria,
+                provincia: cachePublicacionTemporal.prov,
+                ciudad: cachePublicacionTemporal.city,
+                multimediaUrl: cachePublicacionTemporal.fileUrl,
+                multimediaTipo: cachePublicacionTemporal.fileType
+            });
+
+            alert("✓ ¡Anuncio Aprobado e Indexado con éxito!");
+
+            const pActual = localStorage.getItem('user_provincia');
+            const cActual = localStorage.getItem('user_ciudad');
+            renderizarCarteleraFiltrada(pActual, cActual);
+            
+            irA('pantalla-inicio');
+
+            document.getElementById('form-titulo').value = '';
+            document.getElementById('form-lugar').value = '';
+            document.getElementById('form-fecha').value = '';
+            document.getElementById('form-hora').value = '';
+            document.getElementById('form-descripcion').value = '';
+            document.getElementById('form-multimedia').value = '';
+            cachePublicacionTemporal = null;
+        }
+
+        function irA(idPantalla) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('pantalla-activa'));
+            document.getElementById(idPantalla).classList.add('pantalla-activa');
+            if(idPantalla === 'pantalla-inicio') {
+                document.getElementById('control-refresco-web').style.display = 'flex';
+                document.getElementById('btn-cambiar-ubicacion').style.display = 'flex';
+            } else {
+                document.getElementById('control-refresco-web').style.display = 'none';
+                document.getElementById('btn-cambiar-ubicacion').style.display = 'none';
+            }
+        }
+
+        function simularLogin() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+            if(email === "david@eventos.com" && pass === "1234") {
+                alert("¡Ingreso exitoso!");
+                document.getElementById('saludo-usuario').innerText = "¡Hola, David!";
+                document.getElementById('saludo-usuario').style.display = "inline";
+                document.getElementById('btn-cargar-nav').style.display = "inline-block";
+                document.getElementById('btn-salir-nav').style.display = "inline-block";
+                document.getElementById('btn-login-nav').style.display = "none";
+                document.getElementById('btn-registro-nav').style.display = "none";
+                irA('pantalla-panel');
+            } else { alert("Usar credenciales por defecto."); }
+        }
+
+        function simularRefresco(metodoUsado) {
+            const indicador = document.getElementById('carga-rueda');
+            indicador.style.display = 'inline-flex';
+            setTimeout(() => {
+                indicador.style.display = 'none';
+                const p = localStorage.getItem('user_provincia'); const c = localStorage.getItem('user_ciudad');
+                renderizarCarteleraFiltrada(p, c);
+                alert(`[Sincronización Exitosa]\nFiltrado por API en Python para "${c}, ${p}".`);
+            }, 1200);
+        }
+
+        function cerrarSesion() {
+            document.getElementById('saludo-usuario').style.display = "none";
+            document.getElementById('btn-cargar-nav').style.display = "none";
+            document.getElementById('btn-salir-nav').style.display = "none";
+            document.getElementById('btn-login-nav').style.display = "inline-block";
+            document.getElementById('btn-registro-nav').style.display = "inline-block";
+            alert("Sesión cerrada.");
+            irA('pantalla-inicio');
+        }
+    </script>
+</body>
+</html>

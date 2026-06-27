@@ -352,6 +352,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
     <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
     <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-box').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
+    <button class="tab-nav-btn" onclick="showPage('sponsors',this)">🤝 Sponsors</button>
+    <button class="tab-nav-btn" onclick="window.open('/ladata.html','_blank')">📊 La Data</button>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
     <button class="btn-nav" id="btn-login-nav" onclick="openLogin()">Iniciar sesión</button>
@@ -591,7 +593,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="metric-list">
         <div class="metric-item"><span class="metric-label">Comisión por viaje</span><span class="metric-val">$0 — Ninguna</span></div>
         <div class="metric-item"><span class="metric-label">Tarifa dinámica</span><span class="metric-val">No existe</span></div>
-        <div class="metric-item"><span class="metric-label">Plataformas</span><span class="metric-val">iOS + Android</span></div>
+        <div class="metric-item"><span class="metric-label">Plataformas</span><span class="metric-val">Android</span></div>
         <div class="metric-item"><span class="metric-label">Horario</span><span class="metric-val">100% flexible</span></div>
         <div class="metric-item"><span class="metric-label">Lanzamiento</span><span class="metric-val">Dic. 2026</span></div>
       </div>
@@ -716,6 +718,26 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       </div>
     </div>
   </div>
+
+  <!-- PAGE SPONSORS -->
+  <div id="page-sponsors" class="page">
+    <div class="section" style="max-width:900px;margin:0 auto;">
+      <div class="section-label">Nuestros aliados</div>
+      <h2 class="section-title">🤝 Sponsors</h2>
+      <p class="section-sub">Negocios y promociones para nuestra comunidad.</p>
+      <div id="sponsors-web-content" style="margin-top:2rem;"></div>
+    </div>
+  </div>
+
+  <!-- PAGE LA DATA -->
+  <div id="page-ladata" class="page">
+    <div class="section" style="max-width:900px;margin:0 auto;text-align:center;">
+      <div class="section-label">Próximamente</div>
+      <h2 class="section-title">📊 La Data</h2>
+      <p class="section-sub">Un nuevo portal que estamos preparando. ¡Muy pronto!</p>
+    </div>
+  </div>
+
   <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
 </div>
 
@@ -1303,6 +1325,30 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     window.open(url, '_blank');
   };
 
+  window.cargarSponsorsWeb = async function() {
+    const cont = document.getElementById('sponsors-web-content');
+    if (!cont) return;
+    cont.innerHTML = '<p style="color:var(--texto-apagado);">Cargando…</p>';
+    let lista = [];
+    try {
+      const snap = await db.collection('sponsors').where('activo', '==', true).get();
+      snap.forEach(d => lista.push(d.data()));
+      lista.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    } catch(e) {}
+    if (!lista.length) { cont.innerHTML = '<p style="color:var(--texto-apagado);">Pronto vas a ver promos acá. 🤝</p>'; return; }
+    const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;">' +
+      lista.map(s =>
+        '<div style="background:var(--gris);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">' +
+        (s.imagen ? '<img src="' + esc(s.imagen) + '" style="width:100%;height:150px;object-fit:cover;">' : '') +
+        '<div style="padding:1rem;"><div style="font-weight:700;font-size:1rem;">' + esc(s.nombre || '') + '</div>' +
+        (s.rubro ? '<div style="font-size:0.8rem;color:var(--amarillo);margin-top:2px;">' + esc(s.rubro) + '</div>' : '') +
+        (s.telefono ? '<div style="font-size:0.82rem;color:var(--texto-apagado);margin-top:6px;">📞 ' + esc(s.telefono) + '</div>' : '') +
+        (s.direccion ? '<div style="font-size:0.82rem;color:var(--texto-apagado);">📍 ' + esc(s.direccion) + '</div>' : '') +
+        '</div></div>'
+      ).join('') + '</div>';
+  };
+
   // ── Estado auth (solo para reload de página) ──
   let _primeraVez = true;
   onAuthStateChanged(auth, async (user) => {
@@ -1817,6 +1863,7 @@ function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
   window.scrollTo(0, 0);
+  if (id === 'sponsors' && typeof cargarSponsorsWeb === 'function') cargarSponsorsWeb();
 }
 
 // ── Términos y condiciones — funciones globales (disponibles sin esperar Firebase) ──
