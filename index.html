@@ -1448,23 +1448,43 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     const dniCol = _regRol === 'conductor' ? 'dni-registrados' : 'dni-pasajeros';
     const dniId = dni + '_' + genero;
     try {
-      // 1) Crear cuenta primero → quedás autenticado (necesario para que las reglas dejen leer el DNI)
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      // 1) Cuenta nueva, o si el email ya existe → iniciar sesión para AGREGAR el otro rol (doble rol como las apps)
+      let cred, cuentaNueva = true;
+      try {
+        cred = await createUserWithEmailAndPassword(auth, email, pass);
+      } catch (e1) {
+        if (e1.code === 'auth/email-already-in-use') {
+          try { cred = await signInWithEmailAndPassword(auth, email, pass); cuentaNueva = false; }
+          catch (eL) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; return showError('Ese email ya tiene cuenta. Poné la contraseña correcta para agregar el rol.'); }
+        } else throw e1;
+      }
       await updateProfile(cred.user, { displayName: nombre + ' ' + apellido });
-      // 2) DNI no usado. Si lo tiene OTRO, la regla deniega el get (permission-denied) → ya usado.
+      // 2) ¿Ya tiene ESTE rol?
+      const colRol = _regRol === 'conductor' ? 'conductores' : 'pasajeros';
+      const yaRol = await getDoc(doc(db, colRol, cred.user.uid));
+      if (yaRol.exists) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; return showError('Ya tenés una cuenta de ' + (_regRol === 'conductor' ? 'conductor' : 'pasajero') + ' con este email.'); }
+      // 3) DNI no usado en esta colección. Si lo tiene OTRO, la regla deniega el get → ya usado.
       let dniTomado = false;
       try { const snap = await getDoc(doc(db, dniCol, dniId)); if (snap.exists) dniTomado = true; }
       catch (e2) { if (e2.code === 'permission-denied') dniTomado = true; }
       if (dniTomado) {
-        try { await cred.user.delete(); } catch(e3) {}
+        if (cuentaNueva) { try { await cred.user.delete(); } catch(e3) {} }
         btn.disabled = false; btn.textContent = 'Crear cuenta →';
         return showError('Ya existe una cuenta con este DNI.');
       }
       _regDatos = { uid: cred.user.uid, rol: _regRol, nombre, apellido, apodo, dni, genero, tel, email, dniCol, dniId };
-      try { await cred.user.sendEmailVerification(); } catch(e) {}
-      document.getElementById('verif-email').textContent = email;
-      document.getElementById('mf-register').classList.remove('active');
-      document.getElementById('mf-verificar').classList.add('active');
+      if (cuentaNueva && !cred.user.emailVerified) {
+        // Cuenta nueva → verificar email antes de crear el perfil
+        try { await cred.user.sendEmailVerification(); } catch(e) {}
+        document.getElementById('verif-email').textContent = email;
+        document.getElementById('mf-register').classList.remove('active');
+        document.getElementById('mf-verificar').classList.add('active');
+      } else {
+        // Email ya verificado (cuenta existente que agrega el otro rol) → crear el perfil directo
+        await crearPerfilRegistro();
+        closeLogin();
+        window.location.href = '/perfil.html';
+      }
       btn.disabled = false; btn.textContent = 'Crear cuenta →';
     } catch(e) {
       btn.disabled = false; btn.textContent = 'Crear cuenta →';
