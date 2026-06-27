@@ -423,7 +423,6 @@ function renderRol(col) {
   const dni = d.dni || '—';
   const tel = d.telefono || d.tel || '—';
   const dniYaTiene = !!(d.dni && String(d.dni).trim() !== '');
-  if (d.menores && Array.isArray(d.menores)) localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
 
   const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
   const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';

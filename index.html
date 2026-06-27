@@ -352,7 +352,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
     <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
     <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-box').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
-    <button class="tab-nav-btn" onclick="showPage('sponsors',this); if(window.cargarSponsorsWeb)window.cargarSponsorsWeb()">🤝 Sponsors</button>
+    <button class="tab-nav-btn" onclick="showPage('sponsors',this)">🤝 Sponsors</button>
     <button class="tab-nav-btn" onclick="window.open('/ladata.html','_blank')">📊 La Data</button>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
@@ -382,7 +382,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <h1>Viajá<br><span class="am">sin</span><br><span class="out">sorpresas</span></h1>
       <p class="hero-desc">Tarifa fija. Sin comisiones abusivas. Conductores profesionales verificados. Pepe Conductores conecta pasajeros y conductores de manera justa y transparente.</p>
       <div class="hero-ctas">
-        <button class="btn-main" onclick="showPage('registro',null)">Quiero registrarme</button>
+        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Quiero registrarme</button>
         <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
       </div>
       <div class="hero-ctas" id="descargas-box" style="margin-top:1rem;">
@@ -729,15 +729,6 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <h2 class="section-title">🤝 Sponsors</h2>
     <p class="section-sub">Negocios y promociones para nuestra comunidad.</p>
     <div id="sponsors-web-content" style="margin-top:2rem;"></div>
-  </div>
-</div>
-
-<!-- PAGE LA DATA -->
-<div id="page-ladata" class="page">
-  <div class="section" style="max-width:900px;margin:0 auto;text-align:center;">
-    <div class="section-label">Próximamente</div>
-    <h2 class="section-title">📊 La Data</h2>
-    <p class="section-sub">Un nuevo portal que estamos preparando. ¡Muy pronto!</p>
   </div>
 </div>
 
