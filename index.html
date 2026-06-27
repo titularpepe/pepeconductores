@@ -1448,10 +1448,18 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     const dniCol = _regRol === 'conductor' ? 'dni-registrados' : 'dni-pasajeros';
     const dniId = dni + '_' + genero;
     try {
-      const dniSnap = await getDoc(doc(db, dniCol, dniId));
-      if (dniSnap.exists) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; return showError('Ya existe una cuenta con este DNI.'); }
+      // 1) Crear cuenta primero → quedás autenticado (necesario para que las reglas dejen leer el DNI)
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(cred.user, { displayName: nombre + ' ' + apellido });
+      // 2) DNI no usado. Si lo tiene OTRO, la regla deniega el get (permission-denied) → ya usado.
+      let dniTomado = false;
+      try { const snap = await getDoc(doc(db, dniCol, dniId)); if (snap.exists) dniTomado = true; }
+      catch (e2) { if (e2.code === 'permission-denied') dniTomado = true; }
+      if (dniTomado) {
+        try { await cred.user.delete(); } catch(e3) {}
+        btn.disabled = false; btn.textContent = 'Crear cuenta →';
+        return showError('Ya existe una cuenta con este DNI.');
+      }
       _regDatos = { uid: cred.user.uid, rol: _regRol, nombre, apellido, apodo, dni, genero, tel, email, dniCol, dniId };
       try { await cred.user.sendEmailVerification(); } catch(e) {}
       document.getElementById('verif-email').textContent = email;
