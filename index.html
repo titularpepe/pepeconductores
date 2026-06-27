@@ -382,6 +382,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <button class="btn-main" onclick="showPage('registro',null)">Quiero registrarme</button>
         <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
       </div>
+      <div class="hero-ctas" style="margin-top:1rem;">
+        <button class="btn-main" id="dl-pasajeros" onclick="descargarApp('pasajeros')">📱 Descargar app Pasajeros</button>
+        <button class="btn-main" id="dl-conductor" onclick="descargarApp('conductor')">🚗 Descargar app Conductor</button>
+      </div>
       <div class="hero-stats">
         <div><div class="stat-num">$200</div><div class="stat-label">Costo fijo por solicitud</div></div>
         <div><div class="stat-num">$1.100</div><div class="stat-label">Tarifa por kilómetro</div></div>
@@ -1280,6 +1284,15 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
+
+  // ⬇️⬇️ PEGÁ ACÁ LOS LINKS DE LOS APK CUANDO LOS SUBAS ⬇️⬇️
+  const URL_APK_PASAJEROS = '';   // ← link del APK de Pasajeros
+  const URL_APK_CONDUCTOR  = '';   // ← link del APK del Conductor
+  window.descargarApp = function(appTipo) {
+    const url = appTipo === 'conductor' ? URL_APK_CONDUCTOR : URL_APK_PASAJEROS;
+    if (!url) { alert('La app todavía no está disponible para descargar. ¡Muy pronto! 🙌'); return; }
+    window.open(url, '_blank');
+  };
 
   // ── Estado auth (solo para reload de página) ──
   let _primeraVez = true;
