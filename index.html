@@ -726,8 +726,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
     <!-- LOGIN -->
     <div class="modal-form active" id="mf-login">
-      <div class="mfg"><label>Email</label><input type="email" id="login-email" placeholder="tu@email.com"></div>
-      <div class="mfg"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <div class="mfg"><label>Email</label><input type="email" id="login-email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="mfg"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="modal-btn" id="btn-login-submit" onclick="doLogin()">Ingresar →</button>
     </div>
 
@@ -749,7 +749,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       </div>
       <div class="mfg"><label>Teléfono</label><input type="tel" id="reg-tel" placeholder="+54 9 387 000-0000"></div>
       <div class="mfg"><label>Email</label><input type="email" id="reg-email" placeholder="tu@email.com"></div>
-      <div class="mfg"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="mfg"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()"></div>
       <div id="reg-terminos-aviso" style="background:rgba(255,77,0,0.08);border:1px solid rgba(255,77,0,0.25);border-radius:8px;padding:0.7rem 1rem;font-size:0.78rem;color:rgba(255,150,100,0.9);margin-bottom:1rem;line-height:1.6;display:none;">
         ⚠ Para registrarte necesitás aceptar los <button onclick="verTerminos()" style="background:none;border:none;color:#f5d800;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:'Barlow',sans-serif;">Términos y Condiciones</button>.
       </div>
@@ -1332,6 +1332,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     if (!email || !pass) return showError('Completá todos los campos.');
     if (email.length > 100 || pass.length > 100) return showError('Datos demasiado largos.');
     btn.disabled = true; btn.textContent = 'Ingresando...';
+    sessionStorage.removeItem('pepe_logout'); // que el login no se deshaga por la marca de logout
     try {
       const cred = await signInWithEmailAndPassword(auth, email, pass);
       _loginFails = 0;

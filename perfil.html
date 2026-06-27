@@ -441,10 +441,17 @@ function renderRol(col) {
   }
 }
 
-function renderVehiculos(col) {
+async function renderVehiculos(col) {
   const cont = document.getElementById('vehiculos-content');
   if (!cont) return;
-  const vehiculos = (col === 'conductores' && _docs.conductores && _docs.conductores.vehiculos) || [];
+  if (col !== 'conductores') { cont.innerHTML = ''; return; }
+  cont.innerHTML = '<div class="empty-state">Cargando…</div>';
+  let vehiculos = [];
+  try {
+    const snap = await db.collection('conductores').doc(_uid).collection('vehiculos').get();
+    snap.forEach(dd => vehiculos.push(dd.data()));
+  } catch(e) {}
+  if (!vehiculos.length && _docs.conductores && Array.isArray(_docs.conductores.vehiculos)) vehiculos = _docs.conductores.vehiculos;
   if (!vehiculos.length) { cont.innerHTML = '<div class="empty-state">🚗 Todavía no cargaste vehículos.<br>Agregalos desde la app.</div>'; return; }
   cont.innerHTML = vehiculos.map(v => {
     const titulo = [v.marca, v.modelo].filter(Boolean).join(' ') || 'Vehículo';
