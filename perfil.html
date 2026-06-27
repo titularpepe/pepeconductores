@@ -164,9 +164,11 @@ nav {
     <button class="tab-btn active" onclick="switchTab('datos', this)">📋 Mis datos</button>
     <button class="tab-btn" onclick="switchTab('viajes', this)">🗺️ Viajes</button>
     <button class="tab-btn" onclick="switchTab('pagos', this)">💰 Saldo</button>
+    <button class="tab-btn" data-rol="conductores" onclick="switchTab('vehiculos', this)">🚗 Mis Vehículos</button>
+    <button class="tab-btn" data-rol="conductores" onclick="switchTab('stats', this)">📊 Estadísticas</button>
     <button class="tab-btn" onclick="switchTab('verificacion', this)">🪪 Verificación</button>
-    <button class="tab-btn" onclick="switchTab('menores', this)">👶 Mis hijos</button>
-    <button class="tab-btn" onclick="switchTab('config', this)">⚙️ Configuración</button>
+    <button class="tab-btn" data-rol="pasajeros" onclick="switchTab('menores', this)">👶 Mis hijos</button>
+    <button class="tab-btn" onclick="switchTab('config', this)">⚙️ Cuenta</button>
   </div>
 
   <!-- DATOS -->
@@ -213,6 +215,18 @@ nav {
   <div class="tab-section" id="tab-pagos">
     <div class="section-title">Mi saldo</div>
     <div id="saldo-content"></div>
+  </div>
+
+  <!-- MIS VEHÍCULOS -->
+  <div class="tab-section" id="tab-vehiculos">
+    <div class="section-title">Mis vehículos</div>
+    <div id="vehiculos-content"></div>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="tab-section" id="tab-stats">
+    <div class="section-title">Estadísticas</div>
+    <div id="stats-content"></div>
   </div>
 
   <!-- VERIFICACIÓN -->
@@ -411,6 +425,48 @@ function renderRol(col) {
 
   renderSaldo(col);
   renderHistorial(col);
+  renderVehiculos(col);
+  renderEstadisticas(col);
+
+  // Mostrar/ocultar pestañas según el rol
+  document.querySelectorAll('.tab-btn[data-rol]').forEach(b => {
+    b.style.display = (b.getAttribute('data-rol') === col) ? '' : 'none';
+  });
+  const activa = document.querySelector('.tab-btn.active');
+  if (activa && activa.style.display === 'none') {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    document.querySelector('.tab-btn').classList.add('active');
+    document.getElementById('tab-datos').classList.add('active');
+  }
+}
+
+function renderVehiculos(col) {
+  const cont = document.getElementById('vehiculos-content');
+  if (!cont) return;
+  const vehiculos = (col === 'conductores' && _docs.conductores && _docs.conductores.vehiculos) || [];
+  if (!vehiculos.length) { cont.innerHTML = '<div class="empty-state">🚗 Todavía no cargaste vehículos.<br>Agregalos desde la app.</div>'; return; }
+  cont.innerHTML = vehiculos.map(v => {
+    const titulo = [v.marca, v.modelo].filter(Boolean).join(' ') || 'Vehículo';
+    const det = [v.patente ? 'Patente: ' + v.patente : '', v.color || '', v.categoria || v.tipo || ''].filter(Boolean).join(' · ');
+    return '<div class="dato-item" style="margin-bottom:0.8rem;"><div class="dato-val" style="font-weight:700;">' + escH(titulo) + '</div><div class="dato-label" style="margin-top:4px;">' + escH(det) + '</div></div>';
+  }).join('');
+}
+
+function renderEstadisticas(col) {
+  const cont = document.getElementById('stats-content');
+  if (!cont) return;
+  if (col !== 'conductores') { cont.innerHTML = ''; return; }
+  const d = _docs.conductores || {};
+  const stat = (label, val) => '<div class="dato-item"><div class="dato-label">' + label + '</div><div class="dato-val" style="font-size:1.4rem;">' + val + '</div></div>';
+  const pos = d.megusta || (d.votos && d.votos.positiva) || 0;
+  const neg = d.nomegusta || (d.votos && d.votos.negativa) || 0;
+  cont.innerHTML = '<div class="datos-grid">' +
+    stat('Viajes completados', Number(d.viajesCompletados || 0)) +
+    stat('Viajes hoy', Number(d.viajesHoy || 0)) +
+    stat('Ganancias hoy', '$' + Number(d.gananciasHoy || 0).toLocaleString('es-AR')) +
+    stat('Calificación', '👍 ' + pos + '  👎 ' + neg) +
+  '</div>';
 }
 
 function escH(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
