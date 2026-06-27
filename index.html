@@ -1338,15 +1338,24 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     if (!lista.length) { cont.innerHTML = '<p style="color:var(--texto-apagado);">Pronto vas a ver promos acá. 🤝</p>'; return; }
     const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;">' +
-      lista.map(s =>
-        '<div style="background:var(--gris);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">' +
+      lista.map(s => {
+        const conHttp = u => /^https?:\/\//i.test(u) ? u : 'https://' + u;
+        const btn = (txt, url) => '<a href="' + url + '" target="_blank" style="display:inline-block;background:rgba(245,216,0,0.12);border:1px solid rgba(245,216,0,0.3);color:var(--amarillo);padding:0.35rem 0.7rem;border-radius:8px;font-size:0.78rem;font-weight:700;text-decoration:none;margin:3px 3px 0 0;">' + txt + '</a>';
+        let acc = '';
+        if (s.whatsapp) acc += btn('💬 WhatsApp', 'https://wa.me/' + String(s.whatsapp).replace(/\D/g,''));
+        if (s.telefono) acc += btn('📞 Llamar', 'tel:' + s.telefono);
+        if (s.direccion) acc += btn('📍 Mapa', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.direccion));
+        if (s.web) acc += btn('🌐 Web', conHttp(s.web));
+        if (s.instagram) acc += btn('📸 Instagram', String(s.instagram).startsWith('http') ? s.instagram : 'https://instagram.com/' + String(s.instagram).replace('@',''));
+        return '<div style="background:var(--gris);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">' +
         (s.imagen ? '<img src="' + esc(s.imagen) + '" style="width:100%;height:150px;object-fit:cover;">' : '') +
         '<div style="padding:1rem;"><div style="font-weight:700;font-size:1rem;">' + esc(s.nombre || '') + '</div>' +
         (s.rubro ? '<div style="font-size:0.8rem;color:var(--amarillo);margin-top:2px;">' + esc(s.rubro) + '</div>' : '') +
-        (s.telefono ? '<div style="font-size:0.82rem;color:var(--texto-apagado);margin-top:6px;">📞 ' + esc(s.telefono) + '</div>' : '') +
-        (s.direccion ? '<div style="font-size:0.82rem;color:var(--texto-apagado);">📍 ' + esc(s.direccion) + '</div>' : '') +
-        '</div></div>'
-      ).join('') + '</div>';
+        (s.descripcionHtml ? '<div style="font-size:0.85rem;color:#ccc;margin-top:8px;line-height:1.5;">' + s.descripcionHtml + '</div>' : '') +
+        (s.horarios ? '<div style="font-size:0.8rem;color:var(--texto-apagado);margin-top:6px;">🕐 ' + esc(s.horarios) + '</div>' : '') +
+        (acc ? '<div style="margin-top:0.8rem;">' + acc + '</div>' : '') +
+        '</div></div>';
+      }).join('') + '</div>';
   };
 
   // ── Estado auth (solo para reload de página) ──
