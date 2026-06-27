@@ -152,6 +152,10 @@ nav {
       <div class="perfil-nombre" id="perfil-nombre">—</div>
       <div class="perfil-email" id="perfil-email">—</div>
       <div class="perfil-rol" id="perfil-rol">Pasajero</div>
+      <div id="rol-switch" style="display:none;gap:6px;margin-top:8px;">
+        <button class="tab-btn" id="rs-conductor" onclick="cambiarRol('conductor')">🚗 Conductor</button>
+        <button class="tab-btn" id="rs-pasajero" onclick="cambiarRol('pasajero')">🧍 Pasajero</button>
+      </div>
     </div>
   </div>
 
@@ -339,36 +343,45 @@ auth.onAuthStateChanged(async (user) => {
   renderMenores();
 });
 
-async function cargarPerfil(user) {
-  let nombre = '';
-  let apodo = '—', dni = '—', tel = '—';
-  let dniYaTiene = false;
+let _docs = { conductores: null, pasajeros: null };
+let _userRef = null;
 
+async function cargarPerfil(user) {
+  _userRef = user;
   try {
-    // Detectar la colección según el rol: conductor o pasajero
-    let snap = await db.collection('conductores').doc(user.uid).get();
-    if (snap.exists) { _col = 'conductores'; _rolLabel = 'Conductor'; }
-    else { snap = await db.collection('pasajeros').doc(user.uid).get(); if (snap.exists) { _col = 'pasajeros'; _rolLabel = 'Pasajero'; } }
-    if (snap.exists) {
-      const d = snap.data();
-      const nomComp = ((d.nombre || '') + ' ' + (d.apellido || '')).trim();
-      nombre = nomComp || user.displayName || user.email.split('@')[0];
-      apodo = d.apodo || '—';
-      dni = d.dni || '—';
-      tel = d.telefono || d.tel || '—';
-      dniYaTiene = !!(d.dni && String(d.dni).trim() !== '');
-      if (d.menores && Array.isArray(d.menores)) {
-        localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
-      }
-    } else {
-      nombre = user.displayName || user.email.split('@')[0];
-    }
+    // Cargar AMBOS roles (un usuario puede ser conductor y/o pasajero)
+    const [snapC, snapP] = await Promise.all([
+      db.collection('conductores').doc(user.uid).get(),
+      db.collection('pasajeros').doc(user.uid).get(),
+    ]);
+    _docs.conductores = snapC.exists ? snapC.data() : null;
+    _docs.pasajeros   = snapP.exists ? snapP.data() : null;
   } catch(e) { console.warn('Error leyendo Firestore:', e); }
+
+  const tieneC = !!_docs.conductores, tieneP = !!_docs.pasajeros;
+  const sw = document.getElementById('rol-switch');
+  if (sw) sw.style.display = (tieneC && tieneP) ? 'flex' : 'none';
+
+  renderRol(tieneC ? 'conductores' : 'pasajeros');
+}
+
+function renderRol(col) {
+  const user = _userRef;
+  _col = col;
+  _rolLabel = col === 'conductores' ? 'Conductor' : 'Pasajero';
+  const d = _docs[col] || {};
+  const nomComp = ((d.nombre || '') + ' ' + (d.apellido || '')).trim();
+  const nombre = nomComp || user.displayName || user.email.split('@')[0];
+  const apodo = d.apodo || '—';
+  const dni = d.dni || '—';
+  const tel = d.telefono || d.tel || '—';
+  const dniYaTiene = !!(d.dni && String(d.dni).trim() !== '');
+  if (d.menores && Array.isArray(d.menores)) localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
 
   const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
   const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
 
-  document.getElementById('perfil-avatar').textContent = '👤';
+  document.getElementById('perfil-avatar').textContent = col === 'conductores' ? '🚗' : '🧍';
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('perfil-email').textContent = user.email;
   document.getElementById('perfil-rol').textContent = _rolLabel;
@@ -384,29 +397,23 @@ async function cargarPerfil(user) {
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
   document.getElementById('e-tel').value = tel !== '—' ? tel : '';
 
-  // DNI: si ya tiene uno guardado, mostrar bloqueado e inamovible
+  const rc = document.getElementById('rs-conductor'), rp = document.getElementById('rs-pasajero');
+  if (rc) rc.classList.toggle('active', col === 'conductores');
+  if (rp) rp.classList.toggle('active', col === 'pasajeros');
+
   const eDni = document.getElementById('e-dni');
   if (dniYaTiene) {
-    eDni.value = dni;
-    eDni.disabled = true;
-    eDni.style.opacity = '0.5';
-    eDni.style.cursor = 'not-allowed';
+    eDni.value = dni; eDni.disabled = true; eDni.style.opacity = '0.5'; eDni.style.cursor = 'not-allowed';
     eDni.title = 'El DNI no se puede modificar una vez registrado';
-    const dniItem = eDni.closest('.dato-item');
-    if (dniItem && !dniItem.querySelector('.dni-lock-note')) {
-      const nota = document.createElement('div');
-      nota.className = 'dni-lock-note';
-      nota.style.cssText = 'font-size:0.68rem;color:rgba(255,77,0,0.7);margin-top:4px;';
-      nota.textContent = '🔒 El DNI no se puede modificar';
-      dniItem.appendChild(nota);
-    }
   } else {
-    eDni.value = '';
-    eDni.disabled = false;
-    eDni.style.opacity = '';
-    eDni.style.cursor = '';
+    eDni.value = ''; eDni.disabled = false; eDni.style.opacity = ''; eDni.style.cursor = '';
   }
 }
+
+window.cambiarRol = function(rol) {
+  renderRol(rol === 'conductor' ? 'conductores' : 'pasajeros');
+  if (typeof renderMenores === 'function') renderMenores();
+};
 
 // TABS
 function switchTab(id, btn) {
