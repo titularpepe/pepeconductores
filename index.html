@@ -351,6 +351,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
     <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
+    <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-box').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
     <button class="btn-nav" id="btn-login-nav" onclick="openLogin()">Iniciar sesión</button>
@@ -382,7 +383,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <button class="btn-main" onclick="showPage('registro',null)">Quiero registrarme</button>
         <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
       </div>
-      <div class="hero-ctas" style="margin-top:1rem;">
+      <div class="hero-ctas" id="descargas-box" style="margin-top:1rem;">
         <button class="btn-main" id="dl-pasajeros" onclick="descargarApp('pasajeros')">📱 Descargar app Pasajeros</button>
         <button class="btn-main" id="dl-conductor" onclick="descargarApp('conductor')">🚗 Descargar app Conductor</button>
       </div>
@@ -693,6 +694,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="req-item"><span class="req-check">✓</span> Foto selfie a cara limpia: sin gafas, sin gorra, sin gorro</div>
         <div class="req-item"><span class="req-check">✓</span> Seguro de chofer <strong style="color:var(--naranja);">OBLIGATORIO</strong></div>
         <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
+        <div class="req-title" style="margin-top:1.2rem;">🚗 Del vehículo</div>
+        <div class="req-item"><span class="req-check">✓</span> VTV vigente <span style="color:var(--texto-apagado);font-size:0.78rem;">(no aplica para motos en Salta)</span></div>
+        <div class="req-item"><span class="req-check">✓</span> Cédula del vehículo — frente y dorso</div>
+        <div class="req-item"><span class="req-check">✓</span> Seguro del vehículo vigente</div>
+        <div class="req-item"><span class="req-check">✓</span> Foto del vehículo (con la patente visible)</div>
       </div>
     </div>
 
@@ -702,8 +708,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="req-title">📋 Requisitos para pasajeros</div>
         <div class="req-item"><span class="req-check">✓</span> DNI original vigente</div>
         <div class="req-item"><span class="req-check">✓</span> Foto selfie a cara limpia: sin gafas, sin gorra, sin gorro. Buena iluminación y rostro completo visible</div>
+        <div class="req-item"><span class="req-check">✓</span> Foto del DNI — frente y dorso (para verificar tu identidad)</div>
         <div class="req-item"><span class="req-check">✓</span> Domicilio real (residencia actual)</div>
         <div class="req-item"><span class="req-check">✓</span> Teléfono de contacto</div>
+        <div class="req-item"><span class="req-check">✓</span> Email válido</div>
+        <div class="req-item"><span class="req-check">✓</span> Ser mayor de 18 años <span style="color:var(--texto-apagado);font-size:0.78rem;">(los menores se agregan como "Mis hijos")</span></div>
       </div>
     </div>
   </div>
