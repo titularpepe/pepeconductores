@@ -417,7 +417,8 @@ function renderRol(col) {
   let nomComp = (d.nombre || '').trim();
   const ap = (d.apellido || '').trim();
   if (ap && !nomComp.toLowerCase().includes(ap.toLowerCase())) nomComp += ' ' + ap;
-  const nombre = nomComp || user.displayName || user.email.split('@')[0];
+  let nombre = nomComp || user.displayName || user.email.split('@')[0];
+  nombre = nombre.split(/\s+/).filter((w, i, a) => i === 0 || w.toLowerCase() !== a[i - 1].toLowerCase()).join(' ');
   const apodo = d.apodo || '—';
   const dni = d.dni || '—';
   const tel = d.telefono || d.tel || '—';
