@@ -323,6 +323,8 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 let _uid = null;
+let _col = 'pasajeros';
+let _rolLabel = 'Pasajero';
 
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
@@ -343,15 +345,18 @@ async function cargarPerfil(user) {
   let dniYaTiene = false;
 
   try {
-    // Todo está en 'conductores'
-    const snapC = await db.collection('conductores').doc(user.uid).get();
-    if (snapC.exists) {
-      const d = snapC.data();
-      nombre = d.nombre || user.displayName || user.email.split('@')[0];
+    // Detectar la colección según el rol: conductor o pasajero
+    let snap = await db.collection('conductores').doc(user.uid).get();
+    if (snap.exists) { _col = 'conductores'; _rolLabel = 'Conductor'; }
+    else { snap = await db.collection('pasajeros').doc(user.uid).get(); if (snap.exists) { _col = 'pasajeros'; _rolLabel = 'Pasajero'; } }
+    if (snap.exists) {
+      const d = snap.data();
+      const nomComp = ((d.nombre || '') + ' ' + (d.apellido || '')).trim();
+      nombre = nomComp || user.displayName || user.email.split('@')[0];
       apodo = d.apodo || '—';
       dni = d.dni || '—';
       tel = d.telefono || d.tel || '—';
-      dniYaTiene = !!(d.dni && d.dni.trim() !== '');
+      dniYaTiene = !!(d.dni && String(d.dni).trim() !== '');
       if (d.menores && Array.isArray(d.menores)) {
         localStorage.setItem('pepe_menores_' + user.uid, JSON.stringify(d.menores));
       }
@@ -366,6 +371,7 @@ async function cargarPerfil(user) {
   document.getElementById('perfil-avatar').textContent = '👤';
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('perfil-email').textContent = user.email;
+  document.getElementById('perfil-rol').textContent = _rolLabel;
   document.getElementById('d-nombre').textContent = nombre;
   document.getElementById('d-apodo').textContent = apodo;
   document.getElementById('d-dni').textContent = dni;
@@ -434,7 +440,7 @@ async function guardarDatos() {
 
   // Guardar en 'conductores' — DNI inamovible nunca se toca
   try {
-    await db.collection('conductores').doc(_uid).set({ nombre, apodo, telefono: tel }, { merge: true });
+    await db.collection(_col).doc(_uid).set({ nombre, apodo, telefono: tel }, { merge: true });
     if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
@@ -484,7 +490,7 @@ async function doVerificacion() {
   try {
     await storage.ref('verificaciones/' + user.uid + '/dni').put(dniFile);
     await storage.ref('verificaciones/' + user.uid + '/selfie').put(selfieFile);
-    await db.collection('conductores').doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
+    await db.collection(_col).doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
     btn.textContent = '✓ Enviado';
     statusEl.textContent = '✅ Documentos enviados. Los revisaremos en 24-48 hs.';
     statusEl.className = 'verif-msg ok';
@@ -597,7 +603,7 @@ async function guardarMenor() {
   if (editIdx !== '') menores[parseInt(editIdx)] = perfil;
   else menores.push(perfil);
   localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection('conductores').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  try { await db.collection(_col).doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
   cancelarFormMenor();
   renderMenores();
 }
@@ -608,7 +614,7 @@ async function eliminarMenor(idx) {
   if (!m || !confirm('¿Eliminás el perfil de ' + m.nombre + '?')) return;
   menores.splice(idx, 1);
   localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection('conductores').doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  try { await db.collection(_col).doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
   renderMenores();
 }
 </script>
