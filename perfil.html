@@ -204,6 +204,7 @@ nav {
       <div class="dato-item"><div class="dato-label">Apodo</div><input class="dato-input" id="e-apodo" type="text" placeholder="Ej: Pepe, Caro..."></div>
       <div class="dato-item"><div class="dato-label">DNI</div><input class="dato-input" id="e-dni" type="text" placeholder="00.000.000"></div>
       <div class="dato-item"><div class="dato-label">Teléfono</div><input class="dato-input" id="e-tel" type="tel" placeholder="+54 9 387 000-0000"></div>
+      <div class="dato-item" id="item-alias-edit"><div class="dato-label">Alias / CBU</div><input class="dato-input" id="e-alias" type="text" placeholder="tu.alias.mp o CBU"></div>
       <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email-edit" style="font-size:0.82rem;color:var(--texto-apagado);padding-top:4px;">—</div><div style="font-size:0.68rem;color:rgba(255,255,255,0.2);margin-top:3px;">El email no se puede modificar</div></div>
     </div>
 
@@ -436,11 +437,15 @@ function renderRol(col) {
   const vneg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
   document.getElementById('d-votos').textContent = '👍 ' + vpos + '   👎 ' + vneg;
   const itemAlias = document.getElementById('item-alias');
+  const itemAliasEdit = document.getElementById('item-alias-edit');
   if (col === 'conductores') {
     itemAlias.style.display = '';
-    document.getElementById('d-alias').textContent = d.alias || d.cbu || '— (cargalo desde la app)';
+    if (itemAliasEdit) itemAliasEdit.style.display = '';
+    document.getElementById('d-alias').textContent = d.alias || d.cbu || '—';
+    document.getElementById('e-alias').value = d.alias || d.cbu || '';
   } else {
     itemAlias.style.display = 'none';
+    if (itemAliasEdit) itemAliasEdit.style.display = 'none';
   }
   document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
@@ -669,9 +674,14 @@ async function guardarDatos() {
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
 
-  // Guardar en 'conductores' — DNI inamovible nunca se toca
+  const datosGuardar = { nombre, apodo, telefono: tel };
+  if (_col === 'conductores') {
+    const alias = document.getElementById('e-alias').value.trim();
+    datosGuardar.alias = alias;
+  }
+  // Guardar — DNI inamovible nunca se toca
   try {
-    await db.collection(_col).doc(_uid).set({ nombre, apodo, telefono: tel }, { merge: true });
+    await db.collection(_col).doc(_uid).set(datosGuardar, { merge: true });
     if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
@@ -683,6 +693,7 @@ async function guardarDatos() {
   document.getElementById('d-apodo').textContent = apodo || '—';
   document.getElementById('d-dni').textContent = document.getElementById('e-dni').value || '—';
   document.getElementById('d-tel').textContent = tel || '—';
+  if (_col === 'conductores') { document.getElementById('d-alias').textContent = datosGuardar.alias || '—'; if (_docs.conductores) _docs.conductores.alias = datosGuardar.alias; }
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('datos-vista').style.display = '';
   document.getElementById('datos-edicion').style.display = 'none';
