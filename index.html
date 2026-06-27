@@ -352,7 +352,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
     <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
     <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-box').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
-    <button class="tab-nav-btn" onclick="showPage('sponsors',this)">🤝 Sponsors</button>
+    <button class="tab-nav-btn" onclick="showPage('sponsors',this); if(window.cargarSponsorsWeb)window.cargarSponsorsWeb()">🤝 Sponsors</button>
     <button class="tab-nav-btn" onclick="window.open('/ladata.html','_blank')">📊 La Data</button>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
@@ -1334,7 +1334,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       const snap = await db.collection('sponsors').where('activo', '==', true).get();
       snap.forEach(d => lista.push(d.data()));
       lista.sort((a, b) => (a.orden || 0) - (b.orden || 0));
-    } catch(e) {}
+    } catch(e) { cont.innerHTML = '<p style="color:#ff7755;">Error al cargar: ' + (e.message || e) + '</p>'; return; }
     if (!lista.length) { cont.innerHTML = '<p style="color:var(--texto-apagado);">Pronto vas a ver promos acá. 🤝</p>'; return; }
     const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;">' +
