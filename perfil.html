@@ -163,7 +163,7 @@ nav {
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('datos', this)">📋 Mis datos</button>
     <button class="tab-btn" onclick="switchTab('viajes', this)">🗺️ Viajes</button>
-    <button class="tab-btn" onclick="switchTab('pagos', this)">💰 Saldo</button>
+    <button class="tab-btn" id="tab-pagos-btn" onclick="switchTab('pagos', this)">💰 Saldo</button>
     <button class="tab-btn" data-rol="conductores" onclick="switchTab('vehiculos', this)">🚗 Mis Vehículos</button>
     <button class="tab-btn" data-rol="conductores" onclick="switchTab('stats', this)">📊 Estadísticas</button>
     <button class="tab-btn" data-rol="pasajeros" onclick="switchTab('verificacion', this)">🪪 Verificación</button>
@@ -439,6 +439,8 @@ function renderRol(col) {
     eDni.value = ''; eDni.disabled = false; eDni.style.opacity = ''; eDni.style.cursor = '';
   }
 
+  const pagosBtn = document.getElementById('tab-pagos-btn');
+  if (pagosBtn) pagosBtn.textContent = col === 'conductores' ? '💰 Billetera' : '💰 Saldo';
   renderSaldo(col);
   renderHistorial(col);
   renderVehiculos(col);
