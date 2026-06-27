@@ -163,7 +163,7 @@ nav {
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('datos', this)">📋 Mis datos</button>
     <button class="tab-btn" onclick="switchTab('viajes', this)">🗺️ Viajes</button>
-    <button class="tab-btn" onclick="switchTab('pagos', this)">💳 Pagos</button>
+    <button class="tab-btn" onclick="switchTab('pagos', this)">💰 Saldo</button>
     <button class="tab-btn" onclick="switchTab('verificacion', this)">🪪 Verificación</button>
     <button class="tab-btn" onclick="switchTab('menores', this)">👶 Mis hijos</button>
     <button class="tab-btn" onclick="switchTab('config', this)">⚙️ Configuración</button>
@@ -211,8 +211,8 @@ nav {
 
   <!-- PAGOS -->
   <div class="tab-section" id="tab-pagos">
-    <div class="section-title">Historial de pagos</div>
-    <div class="empty-state">💳 Tus movimientos aparecerán aquí.<br>Disponible desde Diciembre 2026.</div>
+    <div class="section-title">Mi saldo</div>
+    <div id="saldo-content"></div>
   </div>
 
   <!-- VERIFICACIÓN -->
@@ -407,6 +407,27 @@ function renderRol(col) {
     eDni.title = 'El DNI no se puede modificar una vez registrado';
   } else {
     eDni.value = ''; eDni.disabled = false; eDni.style.opacity = ''; eDni.style.cursor = '';
+  }
+
+  renderSaldo(col);
+}
+
+function renderSaldo(col) {
+  const cont = document.getElementById('saldo-content');
+  if (!cont) return;
+  const d = _docs[col] || {};
+  const fmt = n => '$' + Number(n || 0).toLocaleString('es-AR');
+  if (col === 'conductores') {
+    const saldo = d.saldo || 0, deuda = d.deudaPepe || 0;
+    cont.innerHTML =
+      '<div class="dato-item" style="margin-bottom:0.8rem;"><div class="dato-label">Saldo disponible</div><div class="dato-val" style="font-size:1.6rem;color:#2ecc71;">' + fmt(saldo) + '</div></div>' +
+      '<div class="dato-item"><div class="dato-label">Deuda con Pepe</div><div class="dato-val" style="font-size:1.4rem;color:' + (deuda > 0 ? '#ff4d00' : '#2ecc71') + ';">' + fmt(deuda) + '</div></div>' +
+      (deuda > 0 ? '<p style="font-size:0.82rem;color:var(--texto-apagado);margin-top:0.8rem;">Tu deuda se descuenta automáticamente. Podés pagarla desde la app.</p>' : '');
+  } else {
+    const deuda = d.deuda || 0;
+    cont.innerHTML =
+      '<div class="dato-item"><div class="dato-label">Deuda pendiente</div><div class="dato-val" style="font-size:1.6rem;color:' + (deuda > 0 ? '#ff4d00' : '#2ecc71') + ';">' + fmt(deuda) + '</div></div>' +
+      (deuda > 0 ? '<p style="font-size:0.82rem;color:var(--texto-apagado);margin-top:0.8rem;">Podés pagar tu deuda desde la app, sección Mi Saldo.</p>' : '<p style="font-size:0.82rem;color:#2ecc71;margin-top:0.8rem;">✓ No tenés deudas.</p>');
   }
 }
 
