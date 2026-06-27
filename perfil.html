@@ -310,6 +310,14 @@ nav {
     <p style="font-size:0.88rem;color:var(--texto-apagado);line-height:1.7;margin-bottom:1.2rem;">¿Necesitás ayuda? Escribinos y te respondemos lo antes posible.</p>
     <a href="https://wa.me/5493875157437" target="_blank" class="modal-btn" style="display:block;text-decoration:none;text-align:center;margin-bottom:0.8rem;">💬 WhatsApp: +54 9 387 515-7437</a>
     <a href="mailto:titular@pepeconductores.com" style="display:block;text-align:center;color:var(--amarillo);font-size:0.9rem;text-decoration:none;">📧 titular@pepeconductores.com</a>
+
+    <div style="margin-top:2rem;">
+      <div class="dato-label" style="margin-bottom:0.5rem;">📬 Buzón de sugerencias</div>
+      <p style="font-size:0.78rem;color:var(--texto-apagado);margin-bottom:0.6rem;line-height:1.5;">Tu mensaje queda registrado con tu nombre y DNI.</p>
+      <textarea id="sug-texto" rows="4" placeholder="Escribí tu sugerencia o reclamo..." class="dato-input" style="resize:vertical;font-family:'Barlow',sans-serif;"></textarea>
+      <div id="sug-msg" style="font-size:0.82rem;margin-top:0.5rem;display:none;"></div>
+      <button class="modal-btn" id="sug-btn" onclick="enviarSugerencia()">Enviar sugerencia →</button>
+    </div>
   </div>
 
   <!-- CONFIG -->
@@ -536,11 +544,31 @@ function renderEstadisticas(col) {
   const stat = (label, val) => '<div class="dato-item"><div class="dato-label">' + label + '</div><div class="dato-val" style="font-size:1.4rem;">' + val + '</div></div>';
   const pos = (d.votos && d.votos.positiva != null) ? d.votos.positiva : (d.megusta || 0);
   const neg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
+  const total = pos + neg;
+  const ratingPct = total ? Math.round((pos / total) * 100) : null;
+
+  // Ganancias semana/mes desde el historial (entradas tipo ingreso)
+  const ahora = new Date();
+  const iniSemana = new Date(ahora); iniSemana.setDate(ahora.getDate() - 7);
+  const iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+  let gSemana = 0, gMes = 0;
+  (d.historial || []).forEach(h => {
+    if (!h || h.tipo !== 'ingreso' || !h.monto) return;
+    const f = new Date(fechaMs(h.fecha));
+    if (f >= iniSemana) gSemana += Number(h.monto) || 0;
+    if (f >= iniMes) gMes += Number(h.monto) || 0;
+  });
+  const m = n => '$' + Number(n || 0).toLocaleString('es-AR');
+
   cont.innerHTML = '<div class="datos-grid">' +
     stat('Viajes completados', Number(d.viajesCompletados || 0)) +
     stat('Viajes hoy', Number(d.viajesHoy || 0)) +
-    stat('Ganancias hoy', '$' + Number(d.gananciasHoy || 0).toLocaleString('es-AR')) +
-    stat('Calificación', '👍 ' + pos + '  👎 ' + neg) +
+    stat('Ganancias hoy', m(d.gananciasHoy)) +
+    stat('Ganancias semana', m(gSemana)) +
+    stat('Ganancias mes', m(gMes)) +
+    stat('Saldo', m(d.saldo)) +
+    stat('Calificación', '👍 ' + pos + '  👎 ' + neg + (ratingPct != null ? '  (' + ratingPct + '%)' : '')) +
+    stat('Cancelaciones', Number(d.cancelacionesSeguidas || 0)) +
   '</div>';
 }
 
@@ -705,6 +733,27 @@ async function doVerificacion() {
     statusEl.className = 'verif-msg error';
   }
 }
+
+// SUGERENCIAS
+window.enviarSugerencia = async function() {
+  const texto = document.getElementById('sug-texto').value.trim();
+  const msg = document.getElementById('sug-msg');
+  const btn = document.getElementById('sug-btn');
+  if (!texto) { msg.textContent = '⚠ Escribí algo primero.'; msg.style.color = '#ff7755'; msg.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  const d = _docs[_col] || {};
+  try {
+    await db.collection('sugerencias').add({
+      texto, categoria: 'general', conductorId: _uid,
+      nombre: d.nombre || (_userRef && _userRef.displayName) || 'Sin nombre',
+      dni: d.dni || 'Sin DNI', email: (_userRef && _userRef.email) || d.email || '',
+      leida: false, creadoEn: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    document.getElementById('sug-texto').value = '';
+    msg.textContent = '✅ ¡Gracias! Tu sugerencia fue enviada.'; msg.style.color = '#2ecc71'; msg.style.display = 'block';
+  } catch(e) { msg.textContent = '❌ Error al enviar.'; msg.style.color = '#ff7755'; msg.style.display = 'block'; }
+  btn.disabled = false; btn.textContent = 'Enviar sugerencia →';
+};
 
 // LOGOUT
 async function doLogout() {
