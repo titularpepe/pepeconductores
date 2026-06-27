@@ -414,7 +414,9 @@ function renderRol(col) {
   _col = col;
   _rolLabel = col === 'conductores' ? 'Conductor' : 'Pasajero';
   const d = _docs[col] || {};
-  const nomComp = ((d.nombre || '') + ' ' + (d.apellido || '')).trim();
+  let nomComp = (d.nombre || '').trim();
+  const ap = (d.apellido || '').trim();
+  if (ap && !nomComp.toLowerCase().includes(ap.toLowerCase())) nomComp += ' ' + ap;
   const nombre = nomComp || user.displayName || user.email.split('@')[0];
   const apodo = d.apodo || '—';
   const dni = d.dni || '—';
