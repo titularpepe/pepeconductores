@@ -520,7 +520,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   <div class="cta-bottom">
     <div class="cta-bottom-text">El transporte que <span>Argentina</span> se merece</div>
     <div class="cta-bottom-btns">
-      <button class="btn-main" onclick="showPage('registro',null)">Registrarme ahora</button>
+      <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Registrarme ahora</button>
       <a href="https://wa.me/5493875157437" target="_blank" class="btn-outline">💬 WhatsApp</a>
     </div>
   </div>
@@ -588,7 +588,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="section-label">¿Sos conductor profesional?</div>
         <h3 class="section-title" style="font-size:2.2rem;">Sumate desde<br>el primer día</h3>
         <p class="section-sub" style="margin-bottom:1.5rem;">Pepe Conductores busca choferes de taxi, remis, moto y más.</p>
-        <button class="btn-main" onclick="showPage('registro',null)">Quiero ser conductor</button>
+        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Quiero ser conductor</button>
       </div>
       <div class="metric-list">
         <div class="metric-item"><span class="metric-label">Comisión por viaje</span><span class="metric-val">$0 — Ninguna</span></div>
@@ -640,6 +640,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <div class="section-label">¿El viaje no es para vos?</div>
     <h2 class="section-title">Pedí un viaje<br>para otra persona</h2>
     <p class="section-sub">Podés solicitar un viaje para un familiar o conocido. El conductor verá el nombre y DNI del pasajero real para mayor seguridad de todos.</p>
+    <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Registrarme como pasajero</button>
     <button class="btn-main" onclick="solicitarParaTercero()">👥 Pedir viaje para otra persona</button>
   </div>
   <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a></footer>
