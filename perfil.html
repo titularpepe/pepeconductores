@@ -423,8 +423,8 @@ function renderRol(col) {
   document.getElementById('d-email-edit').textContent = user.email;
   document.getElementById('d-fecha').textContent = fecha;
   document.getElementById('d-verificado').textContent = verificado;
-  const vpos = d.megusta || (d.votos && d.votos.positiva) || 0;
-  const vneg = d.nomegusta || (d.votos && d.votos.negativa) || 0;
+  const vpos = (d.votos && d.votos.positiva != null) ? d.votos.positiva : (d.megusta || 0);
+  const vneg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
   document.getElementById('d-votos').textContent = '👍 ' + vpos + '   👎 ' + vneg;
   document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
@@ -526,8 +526,8 @@ function renderEstadisticas(col) {
   if (col !== 'conductores') { cont.innerHTML = ''; return; }
   const d = _docs.conductores || {};
   const stat = (label, val) => '<div class="dato-item"><div class="dato-label">' + label + '</div><div class="dato-val" style="font-size:1.4rem;">' + val + '</div></div>';
-  const pos = d.megusta || (d.votos && d.votos.positiva) || 0;
-  const neg = d.nomegusta || (d.votos && d.votos.negativa) || 0;
+  const pos = (d.votos && d.votos.positiva != null) ? d.votos.positiva : (d.megusta || 0);
+  const neg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
   cont.innerHTML = '<div class="datos-grid">' +
     stat('Viajes completados', Number(d.viajesCompletados || 0)) +
     stat('Viajes hoy', Number(d.viajesHoy || 0)) +
