@@ -194,6 +194,7 @@ nav {
       <div class="dato-item"><div class="dato-label">Miembro desde</div><div class="dato-val" id="d-fecha">—</div></div>
       <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" style="color:#2ecc71;">✓ Activo</div></div>
       <div class="dato-item"><div class="dato-label">Verificación</div><div class="dato-val" id="d-verificado">—</div></div>
+      <div class="dato-item"><div class="dato-label">Calificación</div><div class="dato-val" id="d-votos">—</div></div>
     </div>
 
     <!-- EDICIÓN -->
@@ -279,21 +280,13 @@ nav {
       <div style="font-size:0.82rem;font-weight:700;color:var(--amarillo);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px;" id="menor-form-titulo">Agregar hijo/a</div>
       <input type="hidden" id="menor-edit-id" value="">
       <div class="datos-grid" style="margin-bottom:1rem;">
-        <div class="dato-item"><div class="dato-label">Nombre completo *</div><input id="m-nombre" type="text" placeholder="Valentina García" class="dato-input"></div>
-        <div class="dato-item"><div class="dato-label">Apodo (opcional)</div><input id="m-apodo" type="text" placeholder="Valen, Toto..." class="dato-input"></div>
-        <div class="dato-item"><div class="dato-label">Fecha de nacimiento *</div><input id="m-fecha" type="date" class="dato-input"></div>
-        <div class="dato-item"><div class="dato-label">DNI (opcional)</div><input id="m-dni" type="text" placeholder="00.000.000" class="dato-input"></div>
-        <div class="dato-item" style="grid-column:1/-1;">
-          <div class="dato-label">Relación *</div>
-          <select id="m-relacion" class="dato-input" style="margin-top:4px;">
-            <option value="">Seleccioná...</option>
-            <option value="hijo">Hijo/a</option>
-            <option value="hijastro">Hijastro/a</option>
-            <option value="nieto">Nieto/a</option>
-            <option value="sobrino">Sobrino/a</option>
-            <option value="tutelado">Menor bajo tutela</option>
-          </select>
-        </div>
+        <div class="dato-item"><div class="dato-label">Nombre *</div><input id="m-nombre" type="text" placeholder="Nombre" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Apodo</div><input id="m-apodo" type="text" placeholder="Como lo llaman" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Edad *</div><input id="m-edad" type="number" placeholder="Ej: 12" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">DNI</div><input id="m-dni" type="text" placeholder="Sin puntos" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Teléfono *</div><input id="m-telefono" type="tel" placeholder="Ej: 3875001234" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Email</div><input id="m-email" type="email" placeholder="correo@ejemplo.com" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">PIN (4 dígitos) *</div><input id="m-pin" type="text" inputmode="numeric" maxlength="4" placeholder="● ● ● ●" class="dato-input"></div>
       </div>
       <div id="menor-form-msg" style="font-size:0.82rem;margin-bottom:0.8rem;display:none;"></div>
       <div style="display:flex;gap:0.6rem;">
@@ -430,6 +423,9 @@ function renderRol(col) {
   document.getElementById('d-email-edit').textContent = user.email;
   document.getElementById('d-fecha').textContent = fecha;
   document.getElementById('d-verificado').textContent = verificado;
+  const vpos = d.megusta || (d.votos && d.votos.positiva) || 0;
+  const vneg = d.nomegusta || (d.votos && d.votos.negativa) || 0;
+  document.getElementById('d-votos').textContent = '👍 ' + vpos + '   👎 ' + vneg;
   document.getElementById('e-nombre').value = nombre !== '—' ? nombre : '';
   document.getElementById('e-apodo').value = apodo !== '—' ? apodo : '';
   document.getElementById('e-tel').value = tel !== '—' ? tel : '';
@@ -574,6 +570,12 @@ async function renderHistorial(col) {
   ).join('');
 }
 
+function botonPagarDeuda() {
+  return '<button onclick="pagarDeuda()" style="width:100%;background:#009ee3;color:#fff;border:none;border-radius:10px;padding:0.9rem;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;margin-top:0.8rem;">💳 Pagar mi deuda</button>';
+}
+window.pagarDeuda = function() {
+  alert('Próximamente vas a poder pagar tu deuda con Pepe desde acá (Mercado Pago). Por ahora, hacelo desde la app.');
+};
 function renderSaldo(col) {
   const cont = document.getElementById('saldo-content');
   if (!cont) return;
@@ -584,13 +586,16 @@ function renderSaldo(col) {
     cont.innerHTML =
       '<div class="dato-item" style="margin-bottom:0.8rem;"><div class="dato-label">Saldo disponible</div><div class="dato-val" style="font-size:1.6rem;color:#2ecc71;">' + fmt(saldo) + '</div></div>' +
       '<div class="dato-item"><div class="dato-label">Deuda con Pepe</div><div class="dato-val" style="font-size:1.4rem;color:' + (deuda > 0 ? '#ff4d00' : '#2ecc71') + ';">' + fmt(deuda) + '</div></div>' +
-      (deuda > 0 ? '<p style="font-size:0.82rem;color:var(--texto-apagado);margin-top:0.8rem;">Tu deuda se descuenta automáticamente. Podés pagarla desde la app.</p>' : '');
+      (deuda > 0 ? '<p style="font-size:0.82rem;color:var(--texto-apagado);margin-top:0.8rem;">Tu deuda se descuenta automáticamente.</p>' + botonPagarDeuda() : '');
   } else {
     const deuda = d.deuda || 0;
     cont.innerHTML =
       '<div class="dato-item"><div class="dato-label">Deuda pendiente</div><div class="dato-val" style="font-size:1.6rem;color:' + (deuda > 0 ? '#ff4d00' : '#2ecc71') + ';">' + fmt(deuda) + '</div></div>' +
-      (deuda > 0 ? '<p style="font-size:0.82rem;color:var(--texto-apagado);margin-top:0.8rem;">Podés pagar tu deuda desde la app, sección Mi Saldo.</p>' : '<p style="font-size:0.82rem;color:#2ecc71;margin-top:0.8rem;">✓ No tenés deudas.</p>');
+      (deuda > 0 ? botonPagarDeuda() : '<p style="font-size:0.82rem;color:#2ecc71;margin-top:0.8rem;">✓ No tenés deudas.</p>');
   }
+  cont.innerHTML += '<div style="margin-top:1.5rem;"><div class="dato-label" style="margin-bottom:0.6rem;">Mis tarjetas</div>' +
+    '<div class="empty-state" style="padding:1rem 0;">No tenés tarjetas guardadas.</div>' +
+    '<button onclick="alert(\'Próximamente vas a poder agregar tu tarjeta de forma segura.\')" style="width:100%;background:transparent;border:1.5px dashed rgba(245,216,0,0.4);color:var(--amarillo);padding:0.8rem;border-radius:10px;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;">+ Agregar tarjeta</button></div>';
 }
 
 window.cambiarRol = function(rol) {
@@ -708,49 +713,29 @@ function confirmDelete() {
 }
 
 // MENORES
-function calcularEdad(fechaNac) {
-  if (!fechaNac) return null;
-  const hoy = new Date(), nac = new Date(fechaNac);
-  let edad = hoy.getFullYear() - nac.getFullYear();
-  const m = hoy.getMonth() - nac.getMonth();
-  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-  return edad;
-}
-function relacionLabel(rel) {
-  return { hijo:'Hijo/a', hijastro:'Hijastro/a', nieto:'Nieto/a', sobrino:'Sobrino/a', tutelado:'Menor bajo tutela' }[rel] || rel;
-}
-function emojiRelacion(rel) {
-  return { hijo:'👦', hijastro:'👦', nieto:'👧', sobrino:'🧒', tutelado:'🧒' }[rel] || '👶';
-}
-function renderMenores() {
+let _hijosCache = [];
+async function renderMenores() {
   const lista = document.getElementById('menores-lista');
   if (!lista) return;
-  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
-  if (!menores.length) {
-    lista.innerHTML = '<div class="empty-state" style="padding:1.5rem 0;">Todavía no agregaste ningún hijo/a.</div>';
-    return;
-  }
-  lista.innerHTML = menores.map((m, i) => {
-    const edad = calcularEdad(m.fecha);
-    const metaStr = [relacionLabel(m.relacion), edad !== null ? edad + ' años' : '', m.dni ? 'DNI: ' + m.dni : ''].filter(Boolean).join(' · ');
-    return `<div class="menor-card">
-      <div class="menor-avatar">${emojiRelacion(m.relacion)}</div>
-      <div class="menor-info">
-        <div class="menor-nombre">${m.nombre}${m.apodo ? ' <span style="font-weight:400;color:var(--texto-apagado);font-size:0.82rem;">("${m.apodo}")</span>' : ''}</div>
-        <div class="menor-meta">${metaStr}</div>
-      </div>
-      <div class="menor-actions">
-        <button class="btn-menor-edit" onclick="editarMenor(${i})">✏️</button>
-        <button class="btn-menor-del" onclick="eliminarMenor(${i})">✕</button>
-      </div>
-    </div>`;
+  if (_col !== 'pasajeros') { lista.innerHTML = '<div class="empty-state">Disponible solo para pasajeros.</div>'; return; }
+  lista.innerHTML = '<div class="empty-state" style="padding:1rem 0;">Cargando…</div>';
+  _hijosCache = [];
+  try {
+    const snap = await db.collection('pasajeros').doc(_uid).collection('hijos').get();
+    snap.forEach(d => _hijosCache.push(Object.assign({ id: d.id }, d.data())));
+  } catch(e) {}
+  if (!_hijosCache.length) { lista.innerHTML = '<div class="empty-state" style="padding:1.5rem 0;">Todavía no agregaste ningún hijo/a.</div>'; return; }
+  lista.innerHTML = _hijosCache.map(m => {
+    const meta = [m.edad != null ? m.edad + ' años' : '', m.dni ? 'DNI: ' + m.dni : '', m.telefono ? '📞 ' + m.telefono : ''].filter(Boolean).join(' · ');
+    return '<div class="menor-card"><div class="menor-avatar">👶</div><div class="menor-info">' +
+      '<div class="menor-nombre">' + escH(m.nombre||'') + (m.apodo ? ' <span style="font-weight:400;color:var(--texto-apagado);font-size:0.82rem;">("' + escH(m.apodo) + '")</span>' : '') + '</div>' +
+      '<div class="menor-meta">' + escH(meta) + '</div></div>' +
+      '<div class="menor-actions"><button class="btn-menor-edit" onclick="editarMenor(\'' + m.id + '\')">✏️</button>' +
+      '<button class="btn-menor-del" onclick="eliminarMenor(\'' + m.id + '\')">✕</button></div></div>';
   }).join('');
 }
 function abrirFormMenor() {
-  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
-  if (menores.length >= 5) { alert('Podés agregar un máximo de 5 perfiles.'); return; }
-  ['menor-edit-id','m-nombre','m-apodo','m-fecha','m-dni'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('m-relacion').value = '';
+  ['menor-edit-id','m-nombre','m-apodo','m-edad','m-dni','m-telefono','m-email','m-pin'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('menor-form-titulo').textContent = 'Agregar hijo/a';
   document.getElementById('menor-form-msg').style.display = 'none';
   document.getElementById('menor-form-box').classList.add('open');
@@ -760,51 +745,49 @@ function cancelarFormMenor() {
   document.getElementById('menor-form-box').classList.remove('open');
   document.getElementById('btn-agregar-menor').style.display = '';
 }
-function editarMenor(idx) {
-  const menores = JSON.parse(localStorage.getItem('pepe_menores_' + (_uid || '')) || '[]');
-  const m = menores[idx];
+function editarMenor(id) {
+  const m = _hijosCache.find(h => h.id === id);
   if (!m) return;
-  document.getElementById('menor-edit-id').value = idx;
+  document.getElementById('menor-edit-id').value = id;
   document.getElementById('m-nombre').value = m.nombre || '';
   document.getElementById('m-apodo').value = m.apodo || '';
-  document.getElementById('m-fecha').value = m.fecha || '';
+  document.getElementById('m-edad').value = m.edad != null ? m.edad : '';
   document.getElementById('m-dni').value = m.dni || '';
-  document.getElementById('m-relacion').value = m.relacion || '';
+  document.getElementById('m-telefono').value = m.telefono || '';
+  document.getElementById('m-email').value = m.email || '';
+  document.getElementById('m-pin').value = m.pin || '';
   document.getElementById('menor-form-titulo').textContent = 'Editar perfil';
   document.getElementById('menor-form-box').classList.add('open');
   document.getElementById('btn-agregar-menor').style.display = 'none';
 }
 async function guardarMenor() {
   const msg = document.getElementById('menor-form-msg');
+  const fail = t => { msg.textContent = t; msg.style.color = '#ff7755'; msg.style.display = 'block'; };
   const nombre = document.getElementById('m-nombre').value.trim();
   const apodo = document.getElementById('m-apodo').value.trim();
-  const fecha = document.getElementById('m-fecha').value;
+  const edad = parseInt(document.getElementById('m-edad').value);
   const dni = document.getElementById('m-dni').value.trim();
-  const relacion = document.getElementById('m-relacion').value;
-  if (!nombre) { msg.textContent='⚠ El nombre es obligatorio.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
-  if (!fecha) { msg.textContent='⚠ La fecha de nacimiento es obligatoria.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
-  const edad = calcularEdad(fecha);
-  if (edad === null || edad < 0 || edad > 17) { msg.textContent='⚠ Solo para menores de 18 años.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
-  if (!relacion) { msg.textContent='⚠ Seleccioná la relación.'; msg.style.color='#ff7755'; msg.style.display='block'; return; }
-  const key = 'pepe_menores_' + (_uid || '');
-  const menores = JSON.parse(localStorage.getItem(key) || '[]');
-  const editIdx = document.getElementById('menor-edit-id').value;
-  const perfil = { nombre, apodo, fecha, dni, relacion };
-  if (editIdx !== '') menores[parseInt(editIdx)] = perfil;
-  else menores.push(perfil);
-  localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection(_col).doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+  const telefono = document.getElementById('m-telefono').value.trim();
+  const email = document.getElementById('m-email').value.trim();
+  const pin = document.getElementById('m-pin').value.trim();
+  if (!nombre) return fail('⚠ El nombre es obligatorio.');
+  if (isNaN(edad) || edad < 0 || edad > 17) return fail('⚠ La edad debe ser de un menor (0-17).');
+  if (!telefono) return fail('⚠ El teléfono es obligatorio.');
+  if (!/^\d{4}$/.test(pin)) return fail('⚠ El PIN debe ser de 4 dígitos.');
+  const data = { nombre, apodo, edad, dni, telefono, pin };
+  if (email) data.email = email;
+  const editId = document.getElementById('menor-edit-id').value;
+  try {
+    if (editId) await db.collection('pasajeros').doc(_uid).collection('hijos').doc(editId).set(data, { merge: true });
+    else { data.creadoEn = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('pasajeros').doc(_uid).collection('hijos').add(data); }
+  } catch(e) { return fail('❌ Error al guardar.'); }
   cancelarFormMenor();
   renderMenores();
 }
-async function eliminarMenor(idx) {
-  const key = 'pepe_menores_' + (_uid || '');
-  const menores = JSON.parse(localStorage.getItem(key) || '[]');
-  const m = menores[idx];
-  if (!m || !confirm('¿Eliminás el perfil de ' + m.nombre + '?')) return;
-  menores.splice(idx, 1);
-  localStorage.setItem(key, JSON.stringify(menores));
-  try { await db.collection(_col).doc(_uid).set({ menores }, { merge: true }); } catch(e) {}
+async function eliminarMenor(id) {
+  const m = _hijosCache.find(h => h.id === id);
+  if (!m || !confirm('¿Eliminás el perfil de ' + (m.nombre || '') + '?')) return;
+  try { await db.collection('pasajeros').doc(_uid).collection('hijos').doc(id).delete(); } catch(e) {}
   renderMenores();
 }
 </script>
