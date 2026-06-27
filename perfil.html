@@ -206,7 +206,7 @@ nav {
   <!-- VIAJES -->
   <div class="tab-section" id="tab-viajes">
     <div class="section-title">Historial de viajes</div>
-    <div class="empty-state">🗺️ Tus viajes aparecerán aquí una vez que uses la app.<br>Disponible desde Diciembre 2026.</div>
+    <div id="historial-content"><div class="empty-state">Cargando…</div></div>
   </div>
 
   <!-- PAGOS -->
@@ -410,6 +410,41 @@ function renderRol(col) {
   }
 
   renderSaldo(col);
+  renderHistorial(col);
+}
+
+function escH(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fechaMs(f){ if(!f) return 0; try{ if(f.toDate) return f.toDate().getTime(); return new Date(f).getTime()||0; }catch{ return 0; } }
+function fechaTxt(f){ const ms=fechaMs(f); return ms? new Date(ms).toLocaleDateString('es-AR') : ''; }
+
+async function renderHistorial(col) {
+  const cont = document.getElementById('historial-content');
+  if (!cont) return;
+  cont.innerHTML = '<div class="empty-state">Cargando…</div>';
+  let viajes = [];
+  try {
+    if (col === 'conductores') {
+      viajes = (_docs.conductores && _docs.conductores.historial || [])
+        .filter(h => h && (h.origen || h.destino))
+        .map(h => ({ origen: h.origen, destino: h.destino, fecha: h.fecha, monto: h.monto, otro: h.pasajero }));
+    } else {
+      const snap = await db.collection('solicitudes').where('uid_pasajero', '==', _uid).where('estado', '==', 'completado').get();
+      snap.forEach(d => { const v = d.data(); viajes.push({
+        origen: ((v.calleOrigen||'') + ' ' + (v.alturaOrigen||'')).trim(),
+        destino: ((v.calleDestino||'') + ' ' + (v.alturaDestino||'')).trim(),
+        fecha: v.fecha || v.creadoEn, monto: v.montoEstimado || v.total || v.monto, otro: v.conductorAsignado,
+      }); });
+    }
+  } catch(e) { cont.innerHTML = '<div class="empty-state">No se pudo cargar el historial.</div>'; return; }
+  viajes.sort((a,b) => fechaMs(b.fecha) - fechaMs(a.fecha));
+  if (!viajes.length) { cont.innerHTML = '<div class="empty-state">🗺️ Todavía no hiciste viajes.</div>'; return; }
+  cont.innerHTML = viajes.map(v =>
+    '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:1rem 1.2rem;margin-bottom:0.8rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">' +
+      '<div><div style="font-size:0.88rem;font-weight:600;">' + escH(v.origen||'—') + ' → ' + escH(v.destino||'—') + '</div>' +
+      '<div style="font-size:0.75rem;color:var(--texto-apagado);margin-top:3px;">' + fechaTxt(v.fecha) + (v.otro ? ' · ' + escH(v.otro) : '') + '</div></div>' +
+      (v.monto ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.2rem;font-weight:800;color:var(--amarillo);white-space:nowrap;">$' + Number(v.monto).toLocaleString('es-AR') + '</div>' : '') +
+    '</div>'
+  ).join('');
 }
 
 function renderSaldo(col) {
