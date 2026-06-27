@@ -484,16 +484,16 @@ async function renderNotif(col) {
   cont.innerHTML = '<div class="empty-state">Cargando…</div>';
   let items = [];
   try {
-    const snap = await db.collection('conductores').doc(_uid).collection('notificaciones').orderBy('fecha', 'desc').limit(30).get();
+    const snap = await db.collection('mensajes-admin').orderBy('creadoEn', 'desc').limit(20).get();
     snap.forEach(d => items.push(d.data()));
   } catch(e) {
-    try { const snap2 = await db.collection('conductores').doc(_uid).collection('notificaciones').limit(30).get(); snap2.forEach(d => items.push(d.data())); } catch(e2) {}
+    try { const s2 = await db.collection('mensajes-admin').limit(20).get(); s2.forEach(d => items.push(d.data())); } catch(e2) {}
   }
   if (!items.length) { cont.innerHTML = '<div class="empty-state">🔔 No tenés notificaciones.</div>'; return; }
   cont.innerHTML = items.map(n =>
-    '<div class="dato-item" style="margin-bottom:0.7rem;"><div class="dato-val" style="font-size:0.9rem;font-weight:600;">' + escH(n.titulo || n.title || 'Aviso') + '</div>' +
-    '<div class="dato-label" style="margin-top:4px;">' + escH(n.mensaje || n.body || n.texto || '') + '</div>' +
-    (n.fecha ? '<div style="font-size:0.7rem;color:var(--texto-apagado);margin-top:4px;">' + fechaTxt(n.fecha) + '</div>' : '') + '</div>'
+    '<div class="dato-item" style="margin-bottom:0.7rem;"><div class="dato-val" style="font-size:0.9rem;font-weight:600;">' + escH(n.titulo || n.title || 'Aviso de Pepe') + '</div>' +
+    '<div class="dato-label" style="margin-top:4px;">' + escH(n.mensaje || n.texto || n.body || '') + '</div>' +
+    (n.creadoEn ? '<div style="font-size:0.7rem;color:var(--texto-apagado);margin-top:4px;">' + fechaTxt(n.creadoEn) + '</div>' : '') + '</div>'
   ).join('');
 }
 
