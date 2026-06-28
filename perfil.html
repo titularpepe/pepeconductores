@@ -370,6 +370,8 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+const BASE_URL = 'https://pepe-backend-production-6f08.up.railway.app';
+
 let _uid = null;
 let _col = 'pasajeros';
 let _rolLabel = 'Pasajero';
@@ -623,8 +625,36 @@ async function renderHistorial(col) {
 function botonPagarDeuda() {
   return '<button onclick="pagarDeuda()" style="width:100%;background:#009ee3;color:#fff;border:none;border-radius:10px;padding:0.9rem;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;margin-top:0.8rem;">💳 Pagar mi deuda</button>';
 }
-window.pagarDeuda = function() {
-  alert('Próximamente vas a poder pagar tu deuda con Pepe desde acá (Mercado Pago). Por ahora, hacelo desde la app.');
+window.pagarDeuda = async function() {
+  const user = auth.currentUser;
+  if (!user) return;
+  // El rol activo define qué deuda y qué endpoint:
+  //  conductor → deudaPepe (comisión) → /crear-preferencia-pepe
+  //  pasajero  → deuda (viajes)        → /crear-preferencia-deuda
+  const esConductor = _col === 'conductores';
+  const d = _docs[_col] || {};
+  const monto = esConductor ? (d.deudaPepe || 0) : (d.deuda || 0);
+  if (!monto || monto <= 0) return;
+  const endpoint = esConductor ? '/crear-preferencia-pepe' : '/crear-preferencia-deuda';
+  const btn = document.querySelector('#saldo-content button[onclick="pagarDeuda()"]');
+  const txtPrev = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Abriendo Mercado Pago…'; }
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch(BASE_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ monto }),
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (!data.checkout_url) throw new Error();
+    // El webhook /webhook-pepe descuenta la deuda sola cuando MP confirma el pago.
+    window.location.href = data.checkout_url;
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = txtPrev || '💳 Pagar mi deuda'; }
+    alert('No se pudo iniciar el pago. Intentá de nuevo en unos minutos.');
+  }
 };
 function renderSaldo(col) {
   const cont = document.getElementById('saldo-content');
