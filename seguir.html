@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Seguimiento en vivo · Pepe</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: -apple-system, Roboto, Arial, sans-serif; background: #0c0c0c; }
+    #mapa { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+    #barra {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(12,12,12,0.92); color: #fff; padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    #barra b { color: #FFD700; }
+    #estado { font-size: 13px; color: #bbb; margin-left: auto; }
+    #aviso {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      z-index: 1000; background: rgba(12,12,12,0.95); color: #fff; padding: 22px 26px;
+      border-radius: 14px; text-align: center; max-width: 300px; display: none;
+    }
+    .pin-emoji { font-size: 34px; text-align: center; line-height: 34px; }
+  </style>
+</head>
+<body>
+  <div id="mapa"></div>
+  <div id="barra">📍 <span><b id="nombre">Viaje</b> en vivo</span><span id="estado">conectando…</span></div>
+  <div id="aviso"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+      authDomain: "pepe-conductores.firebaseapp.com",
+      projectId: "pepe-conductores",
+      storageBucket: "pepe-conductores.firebasestorage.app",
+      messagingSenderId: "443201366396",
+      appId: "1:443201366396:web:bca7754157145474fb9cf9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const id = new URLSearchParams(location.search).get('id');
+    const aviso = document.getElementById('aviso');
+    const estadoEl = document.getElementById('estado');
+    const nombreEl = document.getElementById('nombre');
+
+    function mostrarAviso(txt) { aviso.style.display = 'block'; aviso.textContent = txt; }
+
+    if (!id) {
+      mostrarAviso('Link inválido. Pedí que te compartan el viaje de nuevo.');
+    } else {
+      const mapa = L.map('mapa', { zoomControl: true }).setView([-24.7859, -65.4117], 14); // Salta por defecto
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© OpenStreetMap'
+      }).addTo(mapa);
+
+      const icono = L.divIcon({ className: '', html: '<div class="pin-emoji">🖐️</div>', iconSize: [34, 34], iconAnchor: [17, 17] });
+      let marcador = null;
+      let primero = true;
+
+      db.collection('tracking').doc(id).onSnapshot((snap) => {
+        if (!snap.exists) {
+          estadoEl.textContent = 'sin señal';
+          mostrarAviso('El viaje terminó o todavía no empezó a compartirse.');
+          return;
+        }
+        aviso.style.display = 'none';
+        const d = snap.data();
+        if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
+        const pos = [d.lat, d.lng];
+        if (d.nombre) nombreEl.textContent = d.nombre;
+        estadoEl.textContent = 'en vivo 🟢';
+        if (!marcador) marcador = L.marker(pos, { icon: icono }).addTo(mapa);
+        else marcador.setLatLng(pos);
+        if (primero) { mapa.setView(pos, 16); primero = false; }
+        else mapa.panTo(pos);
+      }, () => {
+        estadoEl.textContent = 'error';
+        mostrarAviso('No se pudo cargar el seguimiento.');
+      });
+    }
+  </script>
+</body>
+</html>
