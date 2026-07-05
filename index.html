@@ -1308,9 +1308,13 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // ⬇️⬇️ PEGÁ ACÁ LOS LINKS DE LOS APK CUANDO LOS SUBAS ⬇️⬇️
-  const URL_APK_PASAJEROS = '';   // ← link del APK de Pasajeros
-  const URL_APK_CONDUCTOR  = '';   // ← link del APK del Conductor
+  // Links de descarga: se administran desde el panel admin (superpepe → ⬇️ Descargas) y se
+  // guardan en Firestore (config/descargas). La web los toma solos, sin tocar código.
+  let URL_APK_PASAJEROS = '';
+  let URL_APK_CONDUCTOR  = '';
+  db.collection('config').doc('descargas').get().then(function(s){
+    if (s.exists) { const d = s.data() || {}; URL_APK_PASAJEROS = d.pasajeros || ''; URL_APK_CONDUCTOR = d.conductor || ''; }
+  }).catch(function(){});
   window.descargarApp = function(appTipo) {
     const url = appTipo === 'conductor' ? URL_APK_CONDUCTOR : URL_APK_PASAJEROS;
     if (!url) { alert('La app todavía no está disponible para descargar. ¡Muy pronto! 🙌'); return; }
