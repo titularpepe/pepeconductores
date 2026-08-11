@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidad — Pepe Conductores</title>
+<meta name="description" content="Política de Privacidad de Pepe Conductores y Pepe Pasajeros, conforme a la Ley 25.326 de Protección de Datos Personales de la República Argentina.">
+<style>
+  :root{
+    --bg:#0e1013;
+    --panel:#15181c;
+    --text:#e9ebee;
+    --muted:#9aa1ab;
+    --accent:#ff8a3d;
+    --accent-dim:#3a2a1c;
+    --line:#262a30;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+  }
+  a{color:var(--accent)}
+  header.top{
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    background:rgba(14,16,19,0.92);
+    backdrop-filter:blur(6px);
+    z-index:10;
+  }
+  header.top .brand{
+    font-weight:700;
+    letter-spacing:0.02em;
+    font-size:15px;
+  }
+  header.top .brand span{color:var(--accent)}
+  header.top a.back{
+    font-size:14px;
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid var(--line);
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  header.top a.back:hover{border-color:var(--accent);color:var(--accent)}
+
+  .hero{
+    padding:64px 24px 32px;
+    max-width:760px;
+    margin:0 auto;
+  }
+  .hero .eyebrow{
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-size:clamp(30px,5vw,44px);
+    line-height:1.1;
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  .hero .meta{
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .layout{
+    max-width:960px;
+    margin:0 auto;
+    padding:0 24px 100px;
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr}
+  }
+
+  nav.toc{
+    position:sticky;
+    top:88px;
+    font-size:13.5px;
+  }
+  nav.toc .toc-title{
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-size:11px;
+    margin-bottom:12px;
+    font-weight:700;
+  }
+  nav.toc ol{
+    list-style:none;
+    margin:0;
+    padding:0;
+    border-left:1px solid var(--line);
+  }
+  nav.toc li a{
+    display:block;
+    padding:6px 0 6px 14px;
+    color:var(--muted);
+    text-decoration:none;
+    border-left:2px solid transparent;
+    margin-left:-1px;
+  }
+  nav.toc li a:hover{color:var(--text);border-left-color:var(--accent)}
+
+  main.doc section{
+    padding-top:36px;
+    border-top:1px solid var(--line);
+    margin-top:36px;
+    scroll-margin-top:88px;
+  }
+  main.doc section:first-child{
+    border-top:none;
+    margin-top:0;
+    padding-top:0;
+  }
+  main.doc h2{
+    font-family:var(--serif);
+    font-size:22px;
+    margin:0 0 6px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  main.doc h2 .num{
+    color:var(--accent);
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.04em;
+  }
+  main.doc h3{
+    font-size:15px;
+    margin:22px 0 8px;
+    color:var(--text);
+  }
+  main.doc p{
+    color:#c7cbd1;
+    margin:10px 0;
+    font-size:15.5px;
+  }
+  main.doc ul{
+    margin:10px 0;
+    padding-left:20px;
+    color:#c7cbd1;
+    font-size:15.5px;
+  }
+  main.doc li{margin:5px 0}
+  main.doc strong{color:var(--text)}
+
+  table.permtable{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+    font-size:14.5px;
+  }
+  table.permtable th, table.permtable td{
+    border:1px solid var(--line);
+    padding:10px 12px;
+    text-align:left;
+    vertical-align:top;
+  }
+  table.permtable th{
+    background:var(--panel);
+    color:var(--accent);
+    font-weight:700;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  table.permtable td{color:#c7cbd1}
+
+  .callout{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    padding:16px 18px;
+    border-radius:6px;
+    margin:16px 0;
+    font-size:14.5px;
+    color:#c7cbd1;
+  }
+  .callout a{font-weight:600}
+
+  footer.pagefoot{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+    color:var(--muted);
+    font-size:13px;
+    border-top:1px solid var(--line);
+    margin-top:20px;
+  }
+  footer.pagefoot .wa{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+    margin-top:8px;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">PEPE <span>CONDUCTORES</span></div>
+  <a class="back" href="/">← Volver al sitio</a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Documento legal</div>
+  <h1>Política de Privacidad</h1>
+  <div class="meta">Última actualización: agosto de 2026 · Aplica a Pepe Conductores y Pepe Pasajeros</div>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-title">En este documento</div>
+    <ol>
+      <li><a href="#s1">Responsable del tratamiento</a></li>
+      <li><a href="#s2">Datos que recolectamos</a></li>
+      <li><a href="#s3">Finalidad del tratamiento</a></li>
+      <li><a href="#s4">Compartición de datos</a></li>
+      <li><a href="#s5">Permisos de las apps</a></li>
+      <li><a href="#s6">Conservación de datos</a></li>
+      <li><a href="#s7">Seguridad</a></li>
+      <li><a href="#s8">Derechos ARCO</a></li>
+      <li><a href="#s8b">Eliminación de cuenta</a></li>
+      <li><a href="#s9">Cookies</a></li>
+      <li><a href="#s10">Menores de edad</a></li>
+      <li><a href="#s11">Cambios en la Política</a></li>
+      <li><a href="#s12">Contacto</a></li>
+    </ol>
+  </nav>
+
+  <main class="doc">
+
+    <p style="margin-bottom:0;">Esta Política de Privacidad describe cómo Pepe Conductores ("nosotros", "la Plataforma") recolecta, usa, almacena y protege los datos personales de los usuarios de las aplicaciones <strong>Pepe Conductores</strong> y <strong>Pepe Pasajeros</strong>, y del sitio web pepeconductores.com, en cumplimiento de la <strong>Ley N° 25.326 de Protección de los Datos Personales</strong> de la República Argentina y su normativa reglamentaria.</p>
+    <p>Al registrarte o utilizar cualquiera de nuestros servicios, aceptás las prácticas descriptas en este documento.</p>
+
+    <section id="s1">
+      <h2><span class="num">01</span> Responsable del tratamiento de datos</h2>
+      <p>Pepe Conductores, con domicilio en Salta, República Argentina, es el responsable del tratamiento de los datos personales recolectados a través de sus aplicaciones y sitio web.</p>
+      <p>Contacto: <a href="https://wa.me/5493875157437">WhatsApp +54 9 387 515-7437</a></p>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span> Datos que recolectamos</h2>
+
+      <h3>Datos de identificación y contacto</h3>
+      <ul>
+        <li>Nombre y apellido</li>
+        <li>DNI</li>
+        <li>Género</li>
+        <li>Teléfono</li>
+        <li>Email</li>
+        <li>Domicilio real (para pasajeros)</li>
+      </ul>
+
+      <h3>Datos de verificación de identidad</h3>
+      <ul>
+        <li>Foto del DNI (frente y dorso)</li>
+        <li>Foto selfie de validación</li>
+        <li>Para conductores: licencia de conducir, datos del vehículo (patente, marca, color), cédula del vehículo, seguro, VTV</li>
+      </ul>
+
+      <h3>Datos de ubicación</h3>
+      <p>Recolectamos tu ubicación en tiempo real <strong>mientras solicitás o realizás un viaje</strong>, con el fin de calcular distancia y costo estimado, conectar pasajeros con conductores cercanos, y permitir el seguimiento del recorrido durante el viaje.</p>
+      <p>La ubicación deja de compartirse entre pasajero y conductor una vez finalizado el viaje. Podés revocar el permiso de ubicación desde la configuración de tu dispositivo, aunque esto puede limitar tu acceso a ciertas funciones de la app.</p>
+
+      <h3>Datos de uso</h3>
+      <ul>
+        <li>Historial de viajes</li>
+        <li>Calificaciones otorgadas y recibidas</li>
+        <li>Interacciones dentro de la app (chat, solicitudes, cancelaciones)</li>
+      </ul>
+
+      <h3>Datos de menores vinculados</h3>
+      <p>Un usuario adulto puede crear perfiles vinculados para menores a su cargo ("Mis hijos"). Estos datos (nombre, fecha de nacimiento, DNI opcional, relación) son visibles únicamente para el conductor durante el viaje correspondiente. El adulto titular de la cuenta es responsable de la veracidad de estos datos.</p>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span> Finalidad del tratamiento</h2>
+      <p>Usamos tus datos exclusivamente para:</p>
+      <ul>
+        <li>Crear y administrar tu cuenta</li>
+        <li>Verificar tu identidad y habilitarte como pasajero o conductor</li>
+        <li>Conectar pasajeros y conductores para coordinar viajes</li>
+        <li>Calcular tarifas y procesar cobros</li>
+        <li>Brindar soporte y atención al usuario</li>
+        <li>Cumplir obligaciones legales y regulatorias</li>
+        <li>Mejorar la seguridad de la Plataforma</li>
+      </ul>
+      <div class="callout"><strong>Todos los datos que recolectamos tienen como único fin garantizar la seguridad de pasajeros y conductores</strong> dentro de la Plataforma. No utilizamos tus datos con fines publicitarios ni de perfilado comercial.</div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span> Compartición de datos</h2>
+      <ul>
+        <li><strong>Entre usuarios:</strong> durante un viaje, el conductor ve el nombre y DNI del pasajero (o de la persona en cuyo nombre se solicita el viaje), y el pasajero ve el nombre, foto y datos del vehículo del conductor.</li>
+        <li><strong>Con terceros:</strong> no vendemos ni compartimos tus datos personales con terceros para fines comerciales. Solo compartimos información cuando existe un requerimiento judicial o de autoridad competente.</li>
+        <li><strong>Proveedores tecnológicos:</strong> utilizamos servicios de infraestructura (por ejemplo, mapas y notificaciones push) que pueden procesar datos técnicos limitados, como coordenadas de ubicación, únicamente para prestar esas funcionalidades, bajo relaciones contractuales que exigen confidencialidad.</li>
+      </ul>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span> Permisos utilizados por las apps</h2>
+      <table class="permtable">
+        <thead>
+          <tr><th>Permiso</th><th>Uso</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ubicación (primer y segundo plano)</td><td>Calcular tarifas, mostrar el mapa, conectar pasajeros y conductores, seguir el recorrido durante el viaje</td></tr>
+          <tr><td>Cámara / Galería</td><td>Tomar o subir la foto de verificación (DNI y selfie)</td></tr>
+          <tr><td>Notificaciones</td><td>Avisar sobre solicitudes de viaje, mensajes y novedades</td></tr>
+          <tr><td>Almacenamiento</td><td>Guardar temporalmente imágenes de verificación antes de subirlas</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span> Conservación de los datos</h2>
+      <p>Conservamos tus datos personales durante toda la vigencia de tu cuenta y hasta <strong>1 año después de la baja</strong>, transcurrido el cual se eliminan de nuestros sistemas, salvo que una norma legal exija un plazo distinto.</p>
+      <div class="callout">
+        <strong>Excepción — DNI:</strong> el número de DNI se conserva de forma <strong>indefinida</strong>, incluso después de eliminar la cuenta y de vencido el plazo de 1 año. Esta excepción tiene como único fin evitar que una misma persona física registre múltiples cuentas en la Plataforma. El DNI conservado bajo esta excepción <strong>nunca se comparte con terceros</strong>, salvo requerimiento de una autoridad judicial competente.
+      </div>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span> Seguridad de la información</h2>
+      <p>Tu información se almacena con <strong>cifrado</strong> en tránsito y en reposo. El acceso a los datos de verificación (DNI, selfies) está restringido a personal autorizado para el proceso de validación de identidad, que se realiza en un plazo de 24 a 48 horas hábiles.</p>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span> Tus derechos (Derechos ARCO)</h2>
+      <p>Como titular de tus datos, tenés derecho a:</p>
+      <ul>
+        <li><strong>Acceder</strong> a tus datos personales</li>
+        <li><strong>Rectificar</strong> datos inexactos o desactualizados</li>
+        <li><strong>Cancelar/Suprimir</strong> tus datos cuando corresponda</li>
+        <li><strong>Oponerte</strong> al tratamiento de tus datos en los casos previstos por la ley</li>
+      </ul>
+      <p>Podés ejercer estos derechos de forma gratuita escribiéndonos por WhatsApp, o desde la sección "Eliminar mi cuenta" dentro de la app.</p>
+      <div class="callout">
+        La <strong>Agencia de Acceso a la Información Pública (AAIP)</strong>, órgano de control de la Ley 25.326, es la autoridad ante la cual podés presentar reclamos si considerás que tus derechos no fueron respetados:
+        <a href="https://www.argentina.gob.ar/aaip" target="_blank" rel="noopener">www.argentina.gob.ar/aaip</a>
+      </div>
+    </section>
+
+    <section id="s8b">
+      <h2><span class="num">08.1</span> Eliminación de cuenta</h2>
+      <p>Podés eliminar tu cuenta <strong>sin restricciones</strong> en cualquier momento, a través de dos vías:</p>
+      <ul>
+        <li>Desde la app: sección "Configuración" → "Eliminar mi cuenta".</li>
+        <li>Desde la web: <a href="https://pepeconductores.com/perfil.html" target="_blank" rel="noopener">pepeconductores.com/perfil.html</a> → "Eliminar mi cuenta".</li>
+      </ul>
+      <p>Al eliminar tu cuenta, tus datos se conservan durante el plazo indicado en la sección 6 (1 año) y luego se eliminan, con la excepción del DNI descripta en esa misma sección.</p>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span> Cookies (sitio web)</h2>
+      <p>En nuestro sitio web utilizamos únicamente <strong>cookies técnicas esenciales</strong> para autenticación y seguridad. No usamos cookies publicitarias ni compartimos información de navegación con terceros.</p>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span> Menores de edad</h2>
+      <p>El uso directo de la Plataforma está reservado a mayores de 18 años. Los datos de menores vinculados a una cuenta ("Mis hijos") son tratados conforme a la sección 2 de esta Política y al artículo correspondiente de nuestros Términos y Condiciones.</p>
+    </section>
+
+    <section id="s11">
+      <h2><span class="num">11</span> Cambios en esta Política</h2>
+      <p>Podemos actualizar esta Política de Privacidad para reflejar cambios legales, técnicos o en nuestras prácticas. Notificaremos cambios significativos a través de la Plataforma con una antelación mínima de 15 días corridos.</p>
+    </section>
+
+    <section id="s12">
+      <h2><span class="num">12</span> Contacto</h2>
+      <p>Para consultas sobre esta Política de Privacidad o el tratamiento de tus datos personales, escribinos:</p>
+      <a class="wa" href="https://wa.me/5493875157437">💬 WhatsApp +54 9 387 515-7437</a>
+    </section>
+
+  </main>
+</div>
+
+<footer class="pagefoot">
+  Pepe Conductores · Salta, República Argentina
+</footer>
+
+</body>
+</html>
