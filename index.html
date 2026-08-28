@@ -321,6 +321,15 @@ h1 .out { -webkit-text-stroke: 2px rgba(247,244,238,0.25); color: transparent; }
 .service-desc { font-size: 0.8rem; color: var(--texto-apagado); line-height: 1.6; font-weight: 300; }
 .service-tag { display: inline-block; margin-top: 0.9rem; font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amarillo); background: rgba(245,216,0,0.1); border: 1px solid rgba(245,216,0,0.2); border-radius: 100px; padding: 3px 10px; }
 
+/* DESCARGAS */
+.downloads-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 2rem; }
+.download-card { background: var(--gris); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 2rem 1.6rem; text-align: center; transition: border-color 0.3s, transform 0.3s; display: flex; flex-direction: column; align-items: center; }
+.download-card:hover { border-color: rgba(245,216,0,0.35); transform: translateY(-5px); }
+.download-emoji { font-size: 2.4rem; margin-bottom: 1rem; display: block; line-height: 1; }
+.download-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.25rem; font-weight: 800; text-transform: uppercase; color: var(--blanco); margin-bottom: 0.5rem; }
+.download-desc { font-size: 0.82rem; color: var(--texto-apagado); line-height: 1.6; font-weight: 300; margin-bottom: 1.4rem; flex: 1; }
+@media (max-width: 900px) { .downloads-grid { grid-template-columns: 1fr; } }
+
 /* FOOTER */
 footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
 .footer-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--amarillo); }
@@ -351,7 +360,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
     <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
     <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
-    <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-box').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
+    <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-section').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
     <button class="tab-nav-btn" onclick="showPage('sponsors',this)">🤝 Sponsors</button>
     <button class="tab-nav-btn" onclick="window.open('/ladata.html','_blank')">📊 La Data</button>
   </div>
@@ -388,6 +397,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="hero-ctas" id="descargas-box" style="margin-top:1rem;">
         <button class="btn-main" id="dl-pasajeros" onclick="descargarApp('pasajeros')">📱 Descargar app Pasajeros</button>
         <button class="btn-main" id="dl-conductor" onclick="descargarApp('conductor')">🚗 Descargar app Conductor</button>
+        <button class="btn-main" id="dl-filtro" onclick="descargarApp('filtro')">🎯 Descargar Filtro de Viajes</button>
       </div>
       <div class="hero-stats">
         <div><div class="stat-num">$200</div><div class="stat-label">Costo fijo por solicitud</div></div>
@@ -479,6 +489,33 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="service-name">Transporte de áridos</div>
         <div class="service-desc">Traslado de materiales de construcción: arena, piedra, ripio y más, con camiones adecuados.</div>
         <span class="service-tag">🔜 Próximamente</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCARGAS -->
+  <div class="section" id="descargas-section" style="text-align:center;">
+    <div class="section-label">Nuestras apps</div>
+    <h2 class="section-title">Descargá lo que<br>necesitás</h2>
+    <p class="section-sub">Una app para pedir tu viaje, una para manejar y una herramienta extra para conductores que también usan otras plataformas.</p>
+    <div class="downloads-grid">
+      <div class="download-card">
+        <span class="download-emoji">📱</span>
+        <div class="download-name">App Pasajeros</div>
+        <div class="download-desc">Pedí tu viaje con tarifa fija por kilómetro, sin sorpresas ni comisiones abusivas. Seguimiento en vivo y pago como quieras.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('pasajeros')">Descargar</button>
+      </div>
+      <div class="download-card">
+        <span class="download-emoji">🚗</span>
+        <div class="download-name">App Conductor</div>
+        <div class="download-desc">Recibí solicitudes, manejá tu billetera virtual y llevá el control de tus viajes y ganancias en tiempo real. Comisión $0.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('conductor')">Descargar</button>
+      </div>
+      <div class="download-card">
+        <span class="download-emoji">🎯</span>
+        <div class="download-name">Filtro de Viajes</div>
+        <div class="download-desc">Herramienta extra para conductores: detecta automáticamente las ofertas de viaje que te tiran otras apps y te muestra el dato al toque, para que decidas rápido si te conviene.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('filtro')">Descargar</button>
       </div>
     </div>
   </div>
@@ -1312,11 +1349,12 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   // guardan en Firestore (config/descargas). La web los toma solos, sin tocar código.
   let URL_APK_PASAJEROS = '';
   let URL_APK_CONDUCTOR  = '';
+  let URL_APK_FILTRO  = '';
   db.collection('config').doc('descargas').get().then(function(s){
-    if (s.exists) { const d = s.data() || {}; URL_APK_PASAJEROS = d.pasajeros || ''; URL_APK_CONDUCTOR = d.conductor || ''; }
+    if (s.exists) { const d = s.data() || {}; URL_APK_PASAJEROS = d.pasajeros || ''; URL_APK_CONDUCTOR = d.conductor || ''; URL_APK_FILTRO = d.filtro || ''; }
   }).catch(function(){});
   window.descargarApp = function(appTipo) {
-    const url = appTipo === 'conductor' ? URL_APK_CONDUCTOR : URL_APK_PASAJEROS;
+    const url = appTipo === 'conductor' ? URL_APK_CONDUCTOR : (appTipo === 'filtro' ? URL_APK_FILTRO : URL_APK_PASAJEROS);
     if (!url) { alert('La app todavía no está disponible para descargar. ¡Muy pronto! 🙌'); return; }
     window.open(url, '_blank');
   };
