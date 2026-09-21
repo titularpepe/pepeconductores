@@ -1383,6 +1383,49 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     } catch(e) { cont.innerHTML = '<p style="color:#ff7755;">Error al cargar: ' + (e.message || e) + '</p>'; return; }
     if (!lista.length) { cont.innerHTML = '<p style="color:var(--texto-apagado);">Pronto vas a ver promos acá. 🤝</p>'; return; }
     const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    // (2026-09-21, Problema 13) descripcionHtml venía sin escapar ni sanitizar: cualquier admin
+    // nombrado (no solo el dueño) puede escribir sponsors (ver firestore.rules) y esto se
+    // mostraba tal cual en la web pública -> podía meter <script> u onerror= y correr JS en el
+    // navegador de cualquier visitante. A diferencia del resto de los campos, este SÍ está
+    // pensado para llevar HTML (negrita, links) — por eso no se escapa como los demás, se
+    // sanitiza: se permite un puñado de etiquetas de formato y se saca todo lo demás (incluidos
+    // atributos como onerror=, y cualquier link que no sea http/https).
+    const sanitizarDescripcionHtml = html => {
+      const PERMITIDAS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'BR', 'A']);
+      const tpl = document.createElement('template');
+      tpl.innerHTML = String(html || ''); // <template> nunca ejecuta <script> ni carga recursos
+      const limpiar = contenedor => {
+        Array.from(contenedor.childNodes).forEach(nodo => {
+          if (nodo.nodeType === Node.TEXT_NODE) return;
+          if (nodo.nodeType !== Node.ELEMENT_NODE) { nodo.remove(); return; }
+          if (!PERMITIDAS.has(nodo.tagName)) {
+            // Etiqueta no permitida (script, img, div, etc.): se saca la etiqueta pero se
+            // conserva el texto/hijos de adentro — no se pierde contenido, solo el riesgo.
+            while (nodo.firstChild) contenedor.insertBefore(nodo.firstChild, nodo);
+            contenedor.removeChild(nodo);
+            return;
+          }
+          const hrefOriginal = nodo.tagName === 'A' ? nodo.getAttribute('href') : null;
+          Array.from(nodo.attributes).forEach(a => nodo.removeAttribute(a.name));
+          if (nodo.tagName === 'A') {
+            if (hrefOriginal && /^https?:\/\//i.test(hrefOriginal.trim())) {
+              nodo.setAttribute('href', hrefOriginal.trim());
+              nodo.setAttribute('target', '_blank');
+              nodo.setAttribute('rel', 'noopener noreferrer');
+            } else {
+              // Sin link http(s) válido (podría ser "javascript:..."): se saca la etiqueta,
+              // se conserva el texto.
+              while (nodo.firstChild) contenedor.insertBefore(nodo.firstChild, nodo);
+              contenedor.removeChild(nodo);
+              return;
+            }
+          }
+          limpiar(nodo);
+        });
+      };
+      limpiar(tpl.content);
+      return tpl.innerHTML;
+    };
     cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;">' +
       lista.map(s => {
         const conHttp = u => /^https?:\/\//i.test(u) ? u : 'https://' + u;
@@ -1397,7 +1440,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         (s.imagen ? '<img src="' + esc(s.imagen) + '" style="width:100%;height:150px;object-fit:cover;">' : '') +
         '<div style="padding:1rem;"><div style="font-weight:700;font-size:1rem;">' + esc(s.nombre || '') + '</div>' +
         (s.rubro ? '<div style="font-size:0.8rem;color:var(--amarillo);margin-top:2px;">' + esc(s.rubro) + '</div>' : '') +
-        (s.descripcionHtml ? '<div style="font-size:0.85rem;color:#ccc;margin-top:8px;line-height:1.5;">' + s.descripcionHtml + '</div>' : '') +
+        (s.descripcionHtml ? '<div style="font-size:0.85rem;color:#ccc;margin-top:8px;line-height:1.5;">' + sanitizarDescripcionHtml(s.descripcionHtml) + '</div>' : '') +
         (s.horarios ? '<div style="font-size:0.8rem;color:var(--texto-apagado);margin-top:6px;">🕐 ' + esc(s.horarios) + '</div>' : '') +
         (acc ? '<div style="margin-top:0.8rem;">' + acc + '</div>' : '') +
         '</div></div>';
