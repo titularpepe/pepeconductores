@@ -431,7 +431,12 @@ function renderRol(col) {
 
   const foto = d.fotoPerfil || (d.fotosConductor && d.fotosConductor.selfie) || '';
   const av = document.getElementById('perfil-avatar');
-  if (foto) { av.innerHTML = '<img src="' + foto + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;" onerror="this.parentNode.textContent=\'' + (col === 'conductores' ? '🚗' : '🧍') + '\'">'; }
+  // (2026-09-22, hallazgo de la auditoría) foto sale de un campo que el propio dueño de la
+  // cuenta puede escribir (fotoPerfil) -- sin escapar, un valor armado a mano (ej. cerrando el
+  // atributo src y agregando onerror=...) ejecutaba HTML/JS en la propia sesión del dueño al
+  // ver su perfil (self-XSS). Se escapa con escH(), mismo criterio que ya usa este archivo para
+  // nombre/apodo/meta en renderMenores().
+  if (foto) { av.innerHTML = '<img src="' + escH(foto) + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;" onerror="this.parentNode.textContent=\'' + (col === 'conductores' ? '🚗' : '🧍') + '\'">'; }
   else { av.textContent = col === 'conductores' ? '🚗' : '🧍'; }
   document.getElementById('perfil-nombre').textContent = nombre;
   document.getElementById('perfil-email').textContent = user.email;
@@ -797,7 +802,9 @@ window.subirFotoPerfil = async function(e) {
     const url = await ref.getDownloadURL();
     await db.collection(_col).doc(_uid).set({ fotoPerfil: url }, { merge: true });
     if (_docs[_col]) _docs[_col].fotoPerfil = url;
-    av.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">';
+    // url sale de Firebase Storage (getDownloadURL) -- de por si no la controla directamente
+    // el usuario, pero se escapa igual por las dudas, mismo criterio que la vista de arriba.
+    av.innerHTML = '<img src="' + escH(url) + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">';
   } catch(err) {
     av.innerHTML = prev;
     alert('No se pudo subir la foto. Intentá de nuevo.');
