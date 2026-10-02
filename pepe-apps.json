@@ -1,0 +1,16 @@
+{
+  "_ayuda": "Catalogo de la app Pepe (hub). Cada app instalada lo lee al abrirse: cambiar aca 'disponible', 'estado' (oficial | beta) o 'linkBeta' y todos lo ven sin actualizar Pepe. pepe.versionCode = ultima version de Pepe en Play (si es mayor a la instalada, muestra el aviso de actualizar).",
+  "apps": [
+    { "id": "conductores", "disponible": true, "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/testing/com.pepeconductores.app" },
+    { "id": "pasajeros", "disponible": true, "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/testing/com.pepepasajeros.app" },
+    { "id": "gastos", "disponible": true, "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/testing/com.pepeconductores.gastos" },
+    { "id": "filtro", "disponible": true, "estado": "beta", "packageName": "com.taxifilter",
+      "descripcion": "Te avisa al instante si un viaje te conviene según tu objetivo de $ por kilómetro.",
+      "linkBeta": "https://play.google.com/apps/testing/com.taxifilter" },
+    { "id": "camara", "disponible": false }
+  ],
+  "pepe": { "versionCode": 2, "mensaje": "Hay una versión nueva de Pepe" }
+}
