@@ -27,7 +27,10 @@
     },
     {
       "id": "camara",
-      "disponible": false
+      "disponible": true,
+      "estado": "beta",
+      "packageName": "com.yiodavid.camara_de_seguridad_android_casa",
+      "linkBeta": "https://play.google.com/apps/testing/com.yiodavid.camara_de_seguridad_android_casa"
     }
   ],
   "pepe": {
