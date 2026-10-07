@@ -399,21 +399,21 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <button class="btn-main" id="dl-filtro" onclick="descargarApp('filtro')">🎯 Descargar Filtro de Viajes</button>
       </div>
       <div class="hero-stats">
-        <div><div class="stat-num">$200</div><div class="stat-label">Costo fijo por solicitud</div></div>
-        <div><div class="stat-num">$1.100</div><div class="stat-label">Tarifa por kilómetro</div></div>
+        <div><div class="stat-num"><span data-tarifa="servicio_efectivo">$200</span></div><div class="stat-label">Costo fijo por solicitud</div></div>
+        <div><div class="stat-num"><span data-tarifa="auto">$1.300</span></div><div class="stat-label">Tarifa por kilómetro</div></div>
         <div><div class="stat-num">0%</div><div class="stat-label">Comisión al conductor</div></div>
       </div>
     </div>
     <div class="hero-visual">
-      <div class="float float-1"><div class="float-val">$1.300</div><div class="float-lbl">Primer km total</div></div>
+      <div class="float float-1"><div class="float-val"><span data-tarifa="primer_km">$1.500</span></div><div class="float-lbl">Primer km total</div></div>
       <div class="app-card">
         <div class="app-card-header"><div class="app-card-logo">PEPE</div><div class="live-badge"><span class="live-dot"></span>EN VIVO</div></div>
         <div class="map-box"><div class="map-lines"></div><div class="route-line"></div><div class="pin pin-start"></div><div class="pin pin-end"></div><div class="car-dot">🚗</div></div>
         <div class="trip-info">
           <div class="trip-item"><div class="trip-item-label">Distancia</div><div class="trip-item-val">3.2 km</div></div>
-          <div class="trip-item"><div class="trip-item-label">Costo total</div><div class="trip-item-val y">$3.720</div></div>
+          <div class="trip-item"><div class="trip-item-label">Costo total</div><div class="trip-item-val y"><span data-tarifa="ejemplo_3_2km">$4.360</span></div></div>
           <div class="trip-item"><div class="trip-item-label">ETA</div><div class="trip-item-val">4 min</div></div>
-          <div class="trip-item"><div class="trip-item-label">Solicitud</div><div class="trip-item-val y">$200</div></div>
+          <div class="trip-item"><div class="trip-item-label">Solicitud</div><div class="trip-item-val y"><span data-tarifa="servicio_efectivo">$200</span></div></div>
         </div>
         <button class="confirm-btn">Confirmar viaje</button>
       </div>
@@ -553,28 +553,28 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:540px;margin:2rem auto 0;">
       <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(245,216,0,0.12);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;">
         <span style="font-size:1.1rem;">🚖 Auto / Taxi / Remis</span>
-        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde $1.100/km</span>
+        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde <span data-tarifa="auto">$1.300</span>/km</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(245,216,0,0.12);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;">
         <span style="font-size:1.1rem;">🏍️ Moto</span>
-        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde $600/km</span>
+        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde <span data-tarifa="moto">$600</span>/km</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(245,216,0,0.12);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;">
         <span style="font-size:1.1rem;">📦 Cadetería</span>
-        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde $600/km</span>
+        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde <span data-tarifa="cadeteria">$600</span>/km</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(245,216,0,0.12);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;">
         <span style="font-size:1.1rem;">👔 Conductor Designado</span>
-        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde $1.100/km</span>
+        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde <span data-tarifa="conductor_desig">$1.300</span>/km</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(245,216,0,0.12);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;">
         <span style="font-size:1.1rem;">🚐 Taxiflet</span>
-        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde $2.000</span>
+        <span style="color:#f5d800;font-weight:700;font-size:1rem;white-space:nowrap;">desde <span data-tarifa="taxiflet">$1.300</span>/km</span>
       </div>
     </div>
     <div style="margin:2rem auto 0;max-width:540px;background:rgba(245,216,0,0.08);border:1px solid rgba(245,216,0,0.3);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;font-size:0.95rem;line-height:1.6;color:rgba(255,255,255,0.85);">
       <span style="color:#f5d800;font-weight:700;">Costo del servicio Pepe:</span><br>
-      $200 si pagás en efectivo o transferencia al conductor · $400 si pagás con QR o tarjeta
+      <span data-tarifa="servicio_efectivo">$200</span> si pagás en efectivo o transferencia al conductor · <span data-tarifa="servicio_digital">$400</span> si pagás con QR o tarjeta
     </div>
     <p style="margin:1.2rem auto 0;max-width:540px;font-family:'Barlow',sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.35);text-align:left;">* Los precios por kilómetro pueden ser modificados según criterios de Pepe Conductores.</p>
   </div>
@@ -616,21 +616,21 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="compare-card ours">
         <span class="compare-badge good">Pepe Conductores</span>
         <div class="compare-title">La diferencia real</div>
-        <div class="compare-row gr"><span class="ic">✓</span> Por solicitud $200 que paga el solicitante</div>
+        <div class="compare-row gr"><span class="ic">✓</span> Por solicitud <span data-tarifa="servicio_efectivo">$200</span> que paga el solicitante</div>
         <div class="compare-row gr"><span class="ic">✓</span> Tarifa fija por km, sin precio dinámico</div>
         <div class="compare-row gr"><span class="ic">✓</span> Podés cancelar por mal comportamiento</div>
         <div class="compare-row gr"><span class="ic">✓</span> Registrá viajes y ganancias en tiempo real</div>
         <div class="compare-row gr"><span class="ic">✓</span> Billetera virtual propia en la app</div>
-        <div class="big-diff">En ese mismo viaje de $3.000 el usuario paga<br><span class="amount good-a">solo $200</span></div>
+        <div class="big-diff">En ese mismo viaje de $3.000 el usuario paga<br><span class="amount good-a">solo <span data-tarifa="servicio_efectivo">$200</span></span></div>
       </div>
     </div>
     <div class="divider"></div>
     <div class="section-label">Tarifas</div>
     <h2 class="section-title">Claro y sin letra chica</h2>
     <div class="tarifa-box">
-      <div class="tarifa-row"><span class="tarifa-nombre">💡 Costo de solicitud (lo paga el pasajero)</span><span class="tarifa-valor">$200</span></div>
-      <div class="tarifa-row"><span class="tarifa-nombre">📍 Tarifa por kilómetro</span><span class="tarifa-valor">$1.100</span></div>
-      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor">$1.300</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">💡 Costo de solicitud (lo paga el pasajero)</span><span class="tarifa-valor"><span data-tarifa="servicio_efectivo">$200</span></span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">📍 Tarifa por kilómetro</span><span class="tarifa-valor"><span data-tarifa="auto">$1.300</span></span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor"><span data-tarifa="primer_km">$1.500</span></span></div>
       <div class="tarifa-row"><span class="tarifa-nombre">💰 Comisión de la app al conductor</span><span class="tarifa-valor" style="color:#4cff91;">$0</span></div>
       <div class="tarifa-nota">⚠️ Todos los valores están sujetos a cambios derivados del precio del litro de combustible. El primer kilómetro no puede fraccionarse.</div>
     </div>
@@ -682,9 +682,9 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <div class="section-label">Tarifas para el pasajero</div>
     <h2 class="section-title">Precio fijo, siempre</h2>
     <div class="tarifa-box">
-      <div class="tarifa-row"><span class="tarifa-nombre">💡 Solicitud del vehículo</span><span class="tarifa-valor">$200</span></div>
-      <div class="tarifa-row"><span class="tarifa-nombre">📍 Por cada kilómetro</span><span class="tarifa-valor">$1.100</span></div>
-      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor">$1.300</span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">💡 Solicitud del vehículo</span><span class="tarifa-valor"><span data-tarifa="servicio_efectivo">$200</span></span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">📍 Por cada kilómetro</span><span class="tarifa-valor"><span data-tarifa="auto">$1.300</span></span></div>
+      <div class="tarifa-row"><span class="tarifa-nombre">🚗 Primer kilómetro total</span><span class="tarifa-valor"><span data-tarifa="primer_km">$1.500</span></span></div>
       <div class="tarifa-nota">⚠️ No existe tarifa dinámica en Pepe Conductores. El precio no sube por lluvia, hora pico ni alta demanda. Todos los valores están sujetos a cambios derivados del precio del combustible.</div>
     </div>
     <div class="divider"></div>
@@ -1364,6 +1364,28 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // Links de descarga: se administran desde el panel admin (superpepe → ⬇️ Descargas) y se
   // guardan en Firestore (config/descargas). La web los toma solos, sin tocar código.
+  // (2026-10-07) Tarifas en vivo: todo precio de la página va en <span data-tarifa="clave">, con el
+  // valor actual escrito como respaldo. Al abrir la web se leen de config/tarifas (las mismas que
+  // cambia superpepe → Tarifas y que usan las apps), así nunca quedan precios viejos.
+  // Claves directas: auto, moto, cadeteria, taxiflet, conductor_desig, servicio_efectivo,
+  // servicio_digital... Calculadas: primer_km (solicitud + 1 km de auto) y ejemplo_3_2km
+  // (la tarjeta de ejemplo del inicio: solicitud + 3,2 km de auto).
+  db.collection('config').doc('tarifas').get().then(function(s){
+    if (!s.exists) return;
+    const t = s.data() || {};
+    const num = function(v){ return typeof v === 'number' && isFinite(v) ? v : null; };
+    const auto = num(t.auto), serv = num(t.servicio_efectivo);
+    const valores = Object.assign({}, t);
+    if (auto !== null && serv !== null) {
+      valores.primer_km = serv + auto;
+      valores.ejemplo_3_2km = serv + Math.round(3.2 * auto);
+    }
+    document.querySelectorAll('[data-tarifa]').forEach(function(el){
+      const v = num(valores[el.getAttribute('data-tarifa')]);
+      if (v !== null) el.textContent = '$' + v.toLocaleString('es-AR');
+    });
+  }).catch(function(){});
+
   // (2026-10-07) Una clave por app: pasajeros, conductor, filtro, pepe, gastos, camara, ludami.
   // Las tarjetas marcadas con data-app solo se muestran si su link está cargado.
   let LINKS_DESCARGA = {};
