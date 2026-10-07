@@ -496,8 +496,16 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   <div class="section" id="descargas-section" style="text-align:center;">
     <div class="section-label">Nuestras apps</div>
     <h2 class="section-title">Descargá lo que<br>necesitás</h2>
-    <p class="section-sub">Una app para pedir tu viaje, una para manejar y una herramienta extra para conductores que también usan otras plataformas.</p>
+    <p class="section-sub">Una app para pedir tu viaje, una para manejar y más herramientas de la familia Pepe.</p>
+    <!-- Las tarjetas con data-app y display:none aparecen solas cuando se carga su link en
+         superpepe → ⬇️ Descargas (config/descargas). Pasajeros, Conductor y Filtro se ven siempre. -->
     <div class="downloads-grid">
+      <div class="download-card" data-app="pepe" style="display:none;">
+        <span class="download-emoji">⭐</span>
+        <div class="download-name">Pepe</div>
+        <div class="download-desc">La app madre de la familia: todas las apps de Pepe en un solo lugar, para instalarlas y tenerlas al día.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('pepe')">Descargar</button>
+      </div>
       <div class="download-card">
         <span class="download-emoji">📱</span>
         <div class="download-name">App Pasajeros</div>
@@ -515,6 +523,24 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <div class="download-name">Filtro de Viajes</div>
         <div class="download-desc">Herramienta extra para conductores: detecta automáticamente las ofertas de viaje que te tiran otras apps y te muestra el dato al toque, para que decidas rápido si te conviene.</div>
         <button class="btn-main" style="width:100%;" onclick="descargarApp('filtro')">Descargar</button>
+      </div>
+      <div class="download-card" data-app="gastos" style="display:none;">
+        <span class="download-emoji">💰</span>
+        <div class="download-name">Pepe Gastos</div>
+        <div class="download-desc">Sabé cuánto te falta pagar hasta fin de mes: gastos fijos, cuotas y tarjetas, todo en una pantalla.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('gastos')">Descargar</button>
+      </div>
+      <div class="download-card" data-app="camara" style="display:none;">
+        <span class="download-emoji">📷</span>
+        <div class="download-name">Cámara de Seguridad</div>
+        <div class="download-desc">Convertí un celular en una cámara de seguridad que graba aunque la app esté minimizada o la pantalla apagada.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('camara')">Descargar</button>
+      </div>
+      <div class="download-card" data-app="ludami" style="display:none;">
+        <span class="download-emoji">🛍️</span>
+        <div class="download-name">LUDAMI</div>
+        <div class="download-desc">Tienda online de Salta: comprá desde el celular y recibilo en tu casa.</div>
+        <button class="btn-main" style="width:100%;" onclick="descargarApp('ludami')">Descargar</button>
       </div>
     </div>
   </div>
@@ -1338,14 +1364,17 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 
   // Links de descarga: se administran desde el panel admin (superpepe → ⬇️ Descargas) y se
   // guardan en Firestore (config/descargas). La web los toma solos, sin tocar código.
-  let URL_APK_PASAJEROS = '';
-  let URL_APK_CONDUCTOR  = '';
-  let URL_APK_FILTRO  = '';
+  // (2026-10-07) Una clave por app: pasajeros, conductor, filtro, pepe, gastos, camara, ludami.
+  // Las tarjetas marcadas con data-app solo se muestran si su link está cargado.
+  let LINKS_DESCARGA = {};
   db.collection('config').doc('descargas').get().then(function(s){
-    if (s.exists) { const d = s.data() || {}; URL_APK_PASAJEROS = d.pasajeros || ''; URL_APK_CONDUCTOR = d.conductor || ''; URL_APK_FILTRO = d.filtro || ''; }
+    LINKS_DESCARGA = (s.exists && s.data()) || {};
+    document.querySelectorAll('.download-card[data-app]').forEach(function(card){
+      if (LINKS_DESCARGA[card.getAttribute('data-app')]) card.style.display = '';
+    });
   }).catch(function(){});
   window.descargarApp = function(appTipo) {
-    const url = appTipo === 'conductor' ? URL_APK_CONDUCTOR : (appTipo === 'filtro' ? URL_APK_FILTRO : URL_APK_PASAJEROS);
+    const url = LINKS_DESCARGA[appTipo] || '';
     if (!url) { alert('La app todavía no está disponible para descargar. ¡Muy pronto! 🙌'); return; }
     window.open(url, '_blank');
   };
