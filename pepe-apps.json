@@ -1,5 +1,5 @@
 {
-  "_ayuda": "Catalogo de la app Pepe (hub). Cada app instalada lo lee al abrirse: cambiar aca 'disponible', 'estado' (oficial | beta) o 'linkBeta' y todos lo ven sin actualizar Pepe. pepe.versionCode = ultima version de Pepe en Play (si es mayor a la instalada, muestra el aviso de actualizar).",
+  "_ayuda": "Catalogo de la app Pepe (hub). Cada app instalada lo lee al abrirse: cambiar aca 'disponible', 'estado' (oficial | beta) o 'linkBeta' y todos lo ven sin actualizar Pepe. pepe.versionCode = ultima version de Pepe en Play (si es mayor a la instalada, muestra el aviso de actualizar). (2026-10-08) Cada app puede llevar \"versionCode\" = ultima version APROBADA en Play: si la que tiene instalada el usuario es mas vieja, Pepe le muestra HAY VERSION NUEVA en esa app. Cambiarlo recien cuando Play la aprobo.",
   "apps": [
     {
       "id": "conductores",
