@@ -31,6 +31,17 @@
       "estado": "beta",
       "packageName": "com.yiodavid.camara_de_seguridad_android_casa",
       "linkBeta": "https://play.google.com/apps/testing/com.yiodavid.camara_de_seguridad_android_casa"
+    },
+    {
+      "id": "ludami",
+      "nombre": "LUDAMI",
+      "descripcion": "Tienda online de Salta: todo lo que buscás, en un solo lugar. Envíos a todo el país.",
+      "emoji": "🛍️",
+      "imagenUrl": "https://ludami-tienda.web.app/iconos/ludami-512.png",
+      "packageName": "com.ludami.tienda",
+      "disponible": true,
+      "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/internaltest/4700517440290887601"
     }
   ],
   "pepe": {
