@@ -34,6 +34,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
@@ -45,6 +46,7 @@
       appId: "1:443201366396:web:bca7754157145474fb9cf9"
     };
     firebase.initializeApp(firebaseConfig);
+    firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfHkfEtAAAAAGmQsxm3pGZTKFvBmE4UdMEVLtz1'), true); // (2026-10-15) App Check: prueba ante Firebase que el pedido viene de esta página de Pepe (reCAPTCHA / Fraud Defense, invisible)
     const db = firebase.firestore();
 
     const id = new URLSearchParams(location.search).get('id');
