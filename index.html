@@ -818,6 +818,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="mfg"><label>Email</label><input type="email" id="login-email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="mfg"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="modal-btn" id="btn-login-submit" onclick="doLogin()">Ingresar →</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:1rem 0;color:var(--texto-apagado);font-size:0.8rem;"><span style="flex:1;height:1px;background:rgba(255,255,255,0.12);"></span>o<span style="flex:1;height:1px;background:rgba(255,255,255,0.12);"></span></div>
+      <button type="button" id="btn-login-google" onclick="doGoogleLogin()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:none;border-radius:10px;padding:0.85rem;font-family:'Barlow',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+        Continuar con Google
+      </button>
     </div>
 
     <!-- REGISTRO -->
@@ -1756,74 +1761,34 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   // ── Detectar si es móvil ──
   const esMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
 
+  // (2026-10-15) Entrar con la cuenta de Google, igual que en las apps: de Google se usa SOLO la
+  // cuenta (no se guarda nombre ni foto). La ficha ya existe en conductores/pasajeros (la crea la app);
+  // perfil.html la busca por uid. Si la persona no tiene ficha, perfil.html le muestra lo que falta.
   window.doGoogleLogin = async function() {
-    if (!localStorage.getItem('pepe_terminos')) {
-      window._pendingAfterTerminos = window.doGoogleLogin;
-      verTerminos();
-      return;
-    }
-    const err = document.getElementById('modal-error');
-    if (err) err.style.display = 'none';
+    clearMsgs();
+    sessionStorage.removeItem('pepe_logout'); // que el login no se deshaga por la marca de logout
+    const btn = document.getElementById('btn-login-google');
+    if (btn) btn.disabled = true;
     try {
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
       if (esMobile) {
-        // En móvil usar redirect (más compatible)
-        await signInWithRedirect(auth, provider);
-      } else {
-        // En desktop usar popup
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        await setDoc(doc(db, "usuarios", user.uid), {
-          nombre: user.displayName || '',
-          email: user.email,
-          foto: user.photoURL || '',
-          rol: 'pasajero',
-          fechaRegistro: new Date().toISOString()
-        }, { merge: true });
-        closeLogin();
-        window.location.href = '/perfil.html';
-        const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-        const _ex1 = (typeof userDoc.exists === 'function') ? userDoc.exists() : userDoc.exists;
-        if (!_ex1 || !userDoc.data() || !userDoc.data().dni) {
-          const bienvenida = document.getElementById('modal-bienvenida');
-          const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-          if (bienvenida && bienvenidaNombre) {
-            bienvenidaNombre.textContent = 'Bienvenido, ' + (user.displayName || 'usuario') + '. Tu cuenta fue creada con Google.';
-            setTimeout(() => bienvenida.classList.add('open'), 800);
-          }
-        }
+        await signInWithRedirect(auth, provider); // vuelve a esta página y lo agarra getRedirectResult
+        return;
       }
+      await signInWithPopup(auth, provider);
+      closeLogin();
+      window.location.href = '/perfil.html';
     } catch(e) {
-      if (err) {
-        err.textContent = '❌ ' + (e.message || 'Error al iniciar con Google');
-        err.style.display = 'block';
-      }
+      if (btn) btn.disabled = false;
+      if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
+      showError(e && e.code ? firebaseError(e.code) : 'No se pudo entrar con Google. Probá de nuevo.');
     }
   };
 
-  // ── Manejar resultado del redirect (móvil) ──
-  getRedirectResult(auth).then(async (result) => {
-    if (result && result.user) {
-      const user = result.user;
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nombre: user.displayName || '',
-        email: user.email,
-        foto: user.photoURL || '',
-        rol: 'pasajero',
-        fechaRegistro: new Date().toISOString()
-      }, { merge: true });
-      await cargarYMostrarPanel(user, true);
-      const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-      const _ex2 = (typeof userDoc.exists === 'function') ? userDoc.exists() : userDoc.exists;
-      if (!_ex2 || !userDoc.data() || !userDoc.data().dni) {
-        const bienvenida = document.getElementById('modal-bienvenida');
-        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
-        if (bienvenida && bienvenidaNombre) {
-          bienvenidaNombre.textContent = '¡Bienvenido, ' + (user.displayName || 'usuario') + '! Tu cuenta fue creada con Google.';
-          setTimeout(() => bienvenida.classList.add('open'), 800);
-        }
-      }
-    }
+  // ── Vuelta del login con Google en celular (redirect) ──
+  getRedirectResult(auth).then((result) => {
+    if (result && result.user) window.location.href = '/perfil.html';
   }).catch((e) => console.warn('Redirect result error:', e.message));
 
   // ── Cookies ──
