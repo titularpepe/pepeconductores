@@ -1772,11 +1772,15 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      if (esMobile) {
-        await signInWithRedirect(auth, provider); // vuelve a esta página y lo agarra getRedirectResult
-        return;
+      // (2026-10-16) Ventanita (popup) también en el celular: la redirección ya no anda en Chrome porque
+      // la web (pepeconductores.com) y el dominio de login (firebaseapp.com) son distintos y Chrome bloquea
+      // el almacenamiento de terceros. Solo si el navegador bloquea la ventanita se usa la redirección.
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (ePop) {
+        if (ePop && ePop.code === 'auth/popup-blocked') { await signInWithRedirect(auth, provider); return; }
+        throw ePop;
       }
-      await signInWithPopup(auth, provider);
       closeLogin();
       window.location.href = '/perfil.html';
     } catch(e) {
