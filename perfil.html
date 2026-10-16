@@ -160,6 +160,7 @@ nav {
         <button class="tab-btn" id="rs-conductor" onclick="cambiarRol('conductor')">🚗 Conductor</button>
         <button class="tab-btn" id="rs-pasajero" onclick="cambiarRol('pasajero')">🧍 Pasajero</button>
       </div>
+      <div id="rol-aviso" style="display:none;margin-top:8px;padding:0.6rem 0.8rem;border-radius:10px;background:rgba(245,216,0,0.08);border:1px solid rgba(245,216,0,0.3);font-size:0.82rem;line-height:1.5;"></div>
     </div>
   </div>
 
@@ -408,7 +409,8 @@ async function cargarPerfil(user) {
 
   const tieneC = !!_docs.conductores, tieneP = !!_docs.pasajeros;
   const sw = document.getElementById('rol-switch');
-  if (sw) sw.style.display = (tieneC && tieneP) ? 'flex' : 'none';
+  // (2026-10-16) las dos solapas se ven siempre; si falta una ficha, esa solapa explica cómo crearla
+  if (sw) sw.style.display = 'flex';
 
   renderRol(tieneC ? 'conductores' : 'pasajeros');
 }
@@ -418,6 +420,19 @@ function renderRol(col) {
   _col = col;
   _rolLabel = col === 'conductores' ? 'Conductor' : 'Pasajero';
   const d = _docs[col] || {};
+  // (2026-10-16) solapa activa + aviso cuando esta cuenta no tiene ficha de ese rol
+  const rsC = document.getElementById('rs-conductor'), rsP = document.getElementById('rs-pasajero');
+  if (rsC) rsC.classList.toggle('active', col === 'conductores');
+  if (rsP) rsP.classList.toggle('active', col === 'pasajeros');
+  const aviso = document.getElementById('rol-aviso');
+  if (aviso) {
+    if (_docs[col]) { aviso.style.display = 'none'; }
+    else {
+      const app = col === 'conductores' ? 'Pepe Conductores' : 'Pepe Pasajeros';
+      aviso.textContent = 'Con esta cuenta todavía no usaste la app ' + app + '. Bajala desde Google Play y entrá con el mismo correo (' + user.email + '): ahí se crea tu ficha y la vas a ver acá.';
+      aviso.style.display = 'block';
+    }
+  }
   let nomComp = (d.nombre || '').trim();
   const ap = (d.apellido || '').trim();
   if (ap && !nomComp.toLowerCase().includes(ap.toLowerCase())) nomComp += ' ' + ap;
@@ -709,6 +724,8 @@ function toggleEdit() {
 }
 
 async function guardarDatos() {
+  // (2026-10-16) sin ficha de este rol no se crea una a medias desde la web (la crea la app al registrarse)
+  if (!_docs[_col]) { alert('Primero registrate en la app ' + (_col === 'conductores' ? 'Pepe Conductores' : 'Pepe Pasajeros') + ' con este mismo correo.'); return; }
   const nombre = document.getElementById('e-nombre').value.trim();
   const apodo  = document.getElementById('e-apodo').value.trim();
   const tel    = document.getElementById('e-tel').value.trim();
@@ -793,6 +810,7 @@ async function doVerificacion() {
 
 // FOTO DE PERFIL
 window.subirFotoPerfil = async function(e) {
+  if (!_docs[_col]) { alert('Primero registrate en la app ' + (_col === 'conductores' ? 'Pepe Conductores' : 'Pepe Pasajeros') + ' con este mismo correo.'); return; }
   const file = e.target.files[0];
   if (!file) return;
   const av = document.getElementById('perfil-avatar');
