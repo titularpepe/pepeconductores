@@ -149,8 +149,7 @@ nav {
   <div class="perfil-header">
     <div style="position:relative;">
       <div class="perfil-avatar" id="perfil-avatar">👤</div>
-      <button onclick="document.getElementById('foto-input').click()" title="Cambiar foto" style="position:absolute;bottom:-6px;right:-6px;width:28px;height:28px;border-radius:50%;background:var(--amarillo);border:2px solid var(--negro);color:var(--negro);cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;">📷</button>
-      <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="subirFotoPerfil(event)">
+      <!-- (2026-10-16) la foto de perfil NO se cambia desde la web: vale la que se sacó en la app al registrarse -->
     </div>
     <div>
       <div class="perfil-nombre" id="perfil-nombre">—</div>
@@ -446,7 +445,8 @@ function renderRol(col) {
   const fecha = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-AR') : '—';
   const verificado = user.emailVerified ? '✓ Verificado' : '⚠ Sin verificar';
 
-  const foto = d.fotoPerfil || (d.fotosConductor && d.fotosConductor.selfie) || '';
+  // (2026-10-16) foto permanente: la del registro en la app (conductor = selfie; pasajero = la del registro)
+  const foto = (col === 'conductores' ? ((d.fotosConductor && d.fotosConductor.selfie) || d.fotoPerfil) : d.fotoPerfil) || '';
   const av = document.getElementById('perfil-avatar');
   // (2026-09-22, hallazgo de la auditoría) foto sale de un campo que el propio dueño de la
   // cuenta puede escribir (fotoPerfil) -- sin escapar, un valor armado a mano (ej. cerrando el
@@ -810,6 +810,7 @@ async function doVerificacion() {
 
 // FOTO DE PERFIL
 window.subirFotoPerfil = async function(e) {
+  return; // (2026-10-16) deshabilitado: la foto de perfil es la que se sacó en la app
   if (!_docs[_col]) { alert('Primero registrate en la app ' + (_col === 'conductores' ? 'Pepe Conductores' : 'Pepe Pasajeros') + ' con este mismo correo.'); return; }
   const file = e.target.files[0];
   if (!file) return;
