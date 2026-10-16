@@ -133,16 +133,18 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapa);
       const icono = L.divIcon({ className: '', html: HTML_AUTO, iconSize: [48, 48], iconAnchor: [24, 24] });
       const detalleEl = document.getElementById('detalle');
-      let marcador = null, ultimaPos = null, rumbo = 0, primero = true, ultimoDato = 0, venceEn = 0;
+      let marcador = null, ultimaPos = null, rumbo = 0, primero = true, ultimoDato = 0, venceEn = 0, terminado = false;
+      function terminar(txt) {
+        terminado = true;
+        estadoEl.textContent = 'terminó';
+        if (marcador) { mapa.removeLayer(marcador); marcador = null; }
+        mostrarAviso(txt);
+      }
       const hhmm = ms => new Date(ms).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
       function pintarEstado() {
-        if (!ultimoDato) return;
-        if (venceEn && Date.now() > venceEn) {
-          estadoEl.textContent = 'terminó';
-          mostrarAviso('Pasó la hora: el conductor ya no comparte su ubicación.');
-          return;
-        }
+        if (!ultimoDato || terminado) return;
+        if (venceEn && Date.now() > venceEn) { terminar('Pasó la hora: el conductor ya no comparte su ubicación.'); return; }
         const seg = Math.round((Date.now() - ultimoDato) / 1000);
         estadoEl.textContent = seg <= 90 ? ('en vivo 🟢 · hace ' + (seg < 10 ? 'unos segundos' : seg + ' s'))
                                          : ('sin señal desde las ' + hhmm(ultimoDato) + ' 🟠');
@@ -150,12 +152,9 @@
       setInterval(pintarEstado, 5000);
 
       db.collection('ubicacionConductor').doc(codigo).onSnapshot((snap) => {
-        if (!snap.exists) {
-          estadoEl.textContent = 'terminó';
-          mostrarAviso('El conductor dejó de compartir su ubicación.');
-          return;
-        }
+        if (!snap.exists) { terminar('El conductor dejó de compartir su ubicación.'); return; }
         aviso.style.display = 'none';
+        terminado = false;
         const d = snap.data();
         nombreEl.textContent = (d.apodo || 'Conductor') + (d.numero ? ' (#' + d.numero + ')' : '');
         detalleEl.textContent = d.vehiculo ? '🚗 ' + d.vehiculo : '';
@@ -182,8 +181,7 @@
         if (primero) { mapa.setView(pos, 16); primero = false; } else mapa.panTo(pos);
       }, () => {
         // sin permiso = ya pasó la hora (las reglas lo cierran) o el link está mal
-        estadoEl.textContent = 'terminó';
-        mostrarAviso('Este link ya no está activo: el conductor dejó de compartir o pasó la hora.');
+        terminar('Este link ya no está activo: el conductor dejó de compartir o pasó la hora.');
       });
     }
   </script>
