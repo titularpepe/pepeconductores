@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' *.googleapis.com *.gstatic.com *.firebaseapp.com *.firebase.com https://www.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src *.firebaseio.com *.googleapis.com *.firebase.com *.gstatic.com *.firebaseapp.com wss://*.firebaseio.com https://www.google.com; img-src 'self' data: blob: *.googleapis.com *.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com https://pepe-conductores.firebaseapp.com https://accounts.google.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' *.googleapis.com *.gstatic.com *.firebaseapp.com *.firebase.com https://www.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src *.firebaseio.com *.googleapis.com *.firebase.com *.gstatic.com *.firebaseapp.com wss://*.firebaseio.com https://www.google.com https://*.cloudfunctions.net https://*.run.app; img-src 'self' data: blob: *.googleapis.com *.gstatic.com; frame-src https://www.google.com https://recaptcha.google.com https://pepe-conductores.firebaseapp.com https://accounts.google.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pepe Conductores — La app de transporte argentina</title>
 <meta name="description" content="Pepe Conductores: la app argentina de transporte. Auto, taxi, remis, moto, cadete y conductor designado. Tarifas fijas, sin comisiones abusivas, conductores verificados. Pedí tu viaje en Salta.">
@@ -848,6 +848,22 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         ⚠ Para registrarte necesitás aceptar los <button onclick="verTerminos()" style="background:none;border:none;color:#f5d800;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:'Barlow',sans-serif;">Términos y Condiciones</button>.
       </div>
       <button class="modal-btn" id="btn-reg-submit" onclick="doRegister()">Crear cuenta →</button>
+      <!-- (2026-10-17) RECUPERAR CUENTA: si el DNI ya tiene cuenta, el botón cambia y se muestra esto -->
+      <div id="reg-recuperar" style="display:none;margin-top:1rem;background:rgba(245,216,0,0.06);border:1.5px solid #f5d800;border-radius:12px;padding:1rem;font-size:0.9rem;line-height:1.55;">
+        <div style="font-weight:800;color:#f5d800;font-size:1.05rem;margin-bottom:0.4rem;">Recuperar cuenta</div>
+        <div id="rec-texto">Buscando la cuenta de este DNI…</div>
+        <div id="rec-correo" style="display:none;text-align:center;font-weight:800;font-size:1.05rem;background:rgba(0,0,0,0.35);border-radius:8px;padding:0.5rem;margin:0.6rem 0;"></div>
+        <div id="rec-acciones" style="display:none;flex-direction:column;gap:0.5rem;">
+          <button class="modal-btn" id="rec-google" style="display:none;" onclick="doGoogleLogin()">Entrar con Google</button>
+          <button class="modal-btn" id="rec-clave" style="display:none;" onclick="recEntrarConClave()">Entrar con mi contraseña</button>
+          <div id="rec-olvido" style="display:none;">
+            <input type="email" id="rec-email" placeholder="Correo completo de esa cuenta" style="width:100%;margin:0.3rem 0;">
+            <button class="modal-btn" style="background:transparent;border:1.5px solid #f5d800;color:#f5d800;" onclick="recMandarMail()">No me acuerdo la contraseña: mandame el mail</button>
+          </div>
+          <div style="font-size:0.82rem;color:var(--texto-apagado);">¿Ya no tenés ese correo? Escribinos a <b style="user-select:all;">titular@pepeconductores.com</b> con tu DNI y teléfono y lo resolvemos.</div>
+        </div>
+        <div id="rec-msj" style="margin-top:0.5rem;color:#9be7b0;"></div>
+      </div>
     </div>
 
     <!-- VERIFICAR EMAIL (paso 2 del registro) -->
@@ -1322,6 +1338,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <script>
   // Compat aliases para que el resto del código funcione igual
   const initializeApp = (config) => firebase.initializeApp(config);
@@ -1679,13 +1696,22 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       const colRol = _regRol === 'conductor' ? 'conductores' : 'pasajeros';
       const yaRol = await getDoc(doc(db, colRol, cred.user.uid));
       if (yaRol.exists) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; return showError('Ya tenés una cuenta de ' + (_regRol === 'conductor' ? 'conductor' : 'pasajero') + ' con este email.'); }
-      // 3) DNI no usado en esta colección. Si lo tiene OTRO, la regla deniega el get → ya usado.
+      // 3) DNI (2026-10-17): lo valida y lo reserva el SERVIDOR (reclamarDni), igual que las apps. Así se
+      // respeta que el DNI nunca se pisa (la deuda queda con el DNI) y que una cuenta bloqueada no lo libera.
       let dniTomado = false;
-      try { const snap = await getDoc(doc(db, dniCol, dniId)); if (snap.exists) dniTomado = true; }
-      catch (e2) { if (e2.code === 'permission-denied') dniTomado = true; }
+      try {
+        await firebase.app().functions('us-central1').httpsCallable('reclamarDni')({ coleccion: dniCol, dni, genero });
+      } catch (e2) {
+        if (e2 && (e2.code === 'already-exists' || e2.code === 'functions/already-exists')) dniTomado = true;
+        else throw e2;
+      }
       if (dniTomado) {
-        if (cuentaNueva) { try { await cred.user.delete(); } catch(e3) {} }
-        btn.disabled = false; btn.textContent = 'Crear cuenta →';
+        // Antes de soltar la cuenta recién creada, se busca la cuenta del DNI (correo a medias)
+        let info = null;
+        try { info = (await firebase.app().functions('us-central1').httpsCallable('infoCuentaPorDni')({ coleccion: dniCol, dni, genero })).data; } catch (e4) {}
+        if (cuentaNueva) { try { await cred.user.delete(); } catch(e3) {} } else { try { await signOut(auth); } catch(e5) {} }
+        btn.disabled = false;
+        mostrarRecuperar(info);
         return showError('Ya existe una cuenta con este DNI.');
       }
       _regDatos = { uid: cred.user.uid, rol: _regRol, nombre, apellido, apodo, dni, genero, tel, email, dniCol, dniId };
@@ -1788,6 +1814,44 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
       showError(e && e.code ? firebaseError(e.code) : 'No se pudo entrar con Google. Probá de nuevo.');
     }
+  };
+
+  // ── (2026-10-17) RECUPERAR CUENTA (registro con un DNI que ya tiene cuenta) ──
+  function mostrarRecuperar(info) {
+    const btn = document.getElementById('btn-reg-submit');
+    btn.textContent = 'Recuperar cuenta →';
+    btn.onclick = () => document.getElementById('reg-recuperar').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const box = document.getElementById('reg-recuperar'); box.style.display = 'block';
+    const txt = document.getElementById('rec-texto'), correo = document.getElementById('rec-correo'), acc = document.getElementById('rec-acciones');
+    document.getElementById('rec-msj').textContent = '';
+    if (!info) { txt.textContent = 'Este DNI ya tiene una cuenta. Entrá con esa cuenta o escribinos para recuperarla.'; acc.style.display = 'flex'; document.getElementById('rec-clave').style.display = 'block'; return; }
+    if (info.sinAcceso) { txt.textContent = 'La cuenta de este DNI está bloqueada o dada de baja. Escribinos a titular@pepeconductores.com para revisarlo.'; correo.style.display = 'none'; acc.style.display = 'none'; return; }
+    txt.textContent = 'Este DNI ya tiene una cuenta de Pepe con el correo:';
+    correo.textContent = info.correoOculto || '(sin correo)'; correo.style.display = 'block';
+    acc.style.display = 'flex';
+    document.getElementById('rec-google').style.display = info.conGoogle ? 'block' : 'none';
+    document.getElementById('rec-clave').style.display = info.conClave ? 'block' : 'none';
+    document.getElementById('rec-olvido').style.display = info.conClave ? 'block' : 'none';
+  }
+  function ocultarRecuperar() {
+    const box = document.getElementById('reg-recuperar'); if (box) box.style.display = 'none';
+    const btn = document.getElementById('btn-reg-submit');
+    if (btn) { btn.textContent = 'Crear cuenta →'; btn.onclick = () => doRegister(); }
+  }
+  // si cambia el DNI o el género, vuelve a "Crear cuenta"
+  ['reg-dni', 'reg-genero'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', ocultarRecuperar); if (el) el.addEventListener('change', ocultarRecuperar); });
+  window.recEntrarConClave = function() {
+    ocultarRecuperar(); clearMsgs();
+    const tab = document.querySelector('.modal-tabs .modal-tab');
+    if (tab) switchLoginTab('login', tab);
+  };
+  window.recMandarMail = async function() {
+    const c = (document.getElementById('rec-email').value || '').trim().toLowerCase();
+    const msj = document.getElementById('rec-msj');
+    if (!c.includes('@')) { msj.style.color = '#ff8a80'; msj.textContent = 'Escribí el correo completo de esa cuenta.'; return; }
+    try { await auth.sendPasswordResetEmail(c); } catch (e) { /* no se dice si el correo existe */ }
+    msj.style.color = '#9be7b0';
+    msj.textContent = 'Si ' + c + ' es el correo de esa cuenta, te llegó un mail para poner una contraseña nueva (mirá en Spam). Después entrá con esa contraseña.';
   };
 
   // ── Vuelta del login con Google en celular (redirect) ──
