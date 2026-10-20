@@ -20,10 +20,10 @@
     {
       "id": "filtro",
       "disponible": true,
-      "estado": "beta",
+      "estado": "oficial",
       "packageName": "com.taxifilter",
       "descripcion": "Te avisa al instante si un viaje te conviene según tu objetivo de $ por kilómetro.",
-      "linkBeta": "https://play.google.com/apps/testing/com.taxifilter"
+      "versionCode": 24
     },
     {
       "id": "camara",
