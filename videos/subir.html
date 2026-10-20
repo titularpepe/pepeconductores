@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.github.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.github.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Pepe — Subir videos</title>
@@ -59,7 +59,7 @@ input[type=file] { width: 100%; color: var(--texto-apagado); }
       Se pone una sola vez en cada teléfono o compu. Para sacarla:
       <ol>
         <li>Entrá a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → nuevo token</a> con la cuenta <b>titularpepe</b>.</li>
-        <li>Nombre: “Subir videos”. Vencimiento: el que quieras.</li>
+        <li>Nombre: “Subir videos”. Vencimiento: <b>90 días</b> (si se pierde un teléfono, la llave deja de servir sola).</li>
         <li>En “Repository access” elegí <b>Only select repositories</b> → <b>pepeconductores</b>.</li>
         <li>En “Permissions” → “Contents” poné <b>Read and write</b>.</li>
         <li>Generalo, copialo y pegalo acá abajo.</li>
@@ -67,7 +67,8 @@ input[type=file] { width: 100%; color: var(--texto-apagado); }
     </div>
     <label for="clave">Llave</label>
     <input type="password" id="clave" autocomplete="off" placeholder="github_pat_…">
-    <button class="btn" id="btnClave">Guardar llave</button>
+    <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="recordar"> Recordarla en este equipo (solo en tu teléfono o tu compu)</label>
+    <button class="btn" id="btnClave">Entrar</button>
     <div class="estado" id="estadoClave"></div>
   </div>
 
@@ -101,7 +102,8 @@ const SITIO = 'https://pepeconductores.com';
 const MAX_BYTES = 95 * 1024 * 1024;
 const $ = id => document.getElementById(id);
 let llave = '';
-try { llave = localStorage.getItem('pepeVideosLlave') || ''; } catch (e) {}
+// Sin "Recordarla" la llave vive solo mientras la pestaña está abierta (sessionStorage).
+try { llave = localStorage.getItem('pepeVideosLlave') || sessionStorage.getItem('pepeVideosLlave') || ''; } catch (e) {}
 
 function estado(el, txt, error) { el.textContent = txt; el.classList.toggle('error', !!error); }
 
@@ -184,6 +186,67 @@ function miniaturaDeVideo(file) {
     v.onerror = () => fin(null);
   });
 }
+// Los videos grabados con el celular guardan adentro la ubicación GPS (©xyz, loci, o la de
+// iPhone com.apple.quicktime.location.ISO6709), con el formato "+DD.DDDD-DDD.DDDD". Se busca ese
+// texto en la cabecera del video (moov) y se le ponen ceros, sin cambiar el largo: el video
+// sigue andando igual y ya no dice dónde se grabó. Las fotos no hace falta: se vuelven a
+// dibujar en un canvas y salen sin datos adentro.
+async function borrarUbicacion(file) {
+  const u8 = new Uint8Array(await file.arrayBuffer());
+  const dv = new DataView(u8.buffer);
+  let pos = 0, cambios = 0;
+  while (pos + 8 <= u8.length) {
+    let tam = dv.getUint32(pos);
+    const tipo = String.fromCharCode(u8[pos + 4], u8[pos + 5], u8[pos + 6], u8[pos + 7]);
+    let cab = 8;
+    if (tam === 1) { tam = Number(dv.getBigUint64(pos + 8)); cab = 16; }
+    else if (tam === 0) tam = u8.length - pos;
+    if (tam < cab) break;
+    if (tipo === 'moov') {
+      const fin = Math.min(pos + tam, u8.length);
+      let txt = '';
+      for (let i = pos; i < fin; i += 0x8000) txt += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + 0x8000, fin)));
+      const re = /[+-]\d{1,2}\.\d+[+-]\d{1,3}\.\d+/g;
+      let m;
+      while ((m = re.exec(txt))) {
+        for (let k = 0; k < m[0].length; k++) {
+          const ch = m[0][k];
+          if (ch >= '1' && ch <= '9') u8[pos + m.index + k] = 48; // '0'
+        }
+        cambios++;
+      }
+    }
+    pos += tam;
+  }
+  return { blob: new Blob([u8], { type: file.type || 'video/mp4' }), cambios };
+}
+
+// Vista previa 1200x630 para WhatsApp/Facebook (solo muestran grande las apaisadas): la imagen
+// desenfocada de fondo, la imagen entera al medio, botón de play y "PEPE". Igual que og_videos.py.
+async function ogDe(miniBlob, conPlay) {
+  const img = await cargarImagen(miniBlob);
+  const W = 1200, H = 630;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  let r = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+  ctx.filter = 'blur(30px) brightness(0.45)';
+  ctx.drawImage(img, (W - img.naturalWidth * r) / 2, (H - img.naturalHeight * r) / 2, img.naturalWidth * r, img.naturalHeight * r);
+  ctx.filter = 'none';
+  r = Math.min((H - 60) / img.naturalHeight, 1000 / img.naturalWidth);
+  const w = img.naturalWidth * r, h = img.naturalHeight * r, x = (W - w) / 2, y = (H - h) / 2;
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 22); ctx.clip(); ctx.drawImage(img, x, y, w, h); ctx.restore();
+  if (conPlay) {
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, 62, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(12,12,12,0.7)'; ctx.fill();
+    ctx.lineWidth = 6; ctx.strokeStyle = '#f5d800'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W / 2 - 20, H / 2 - 33); ctx.lineTo(W / 2 - 20, H / 2 + 33); ctx.lineTo(W / 2 + 36, H / 2); ctx.closePath();
+    ctx.fillStyle = '#f5d800'; ctx.fill();
+  }
+  await document.fonts.load('900 64px "Barlow Condensed"').catch(() => {});
+  ctx.font = '900 64px "Barlow Condensed", Impact, sans-serif'; ctx.fillStyle = '#f5d800'; ctx.textBaseline = 'top';
+  ctx.fillText('PEPE', 34, 22);
+  return canvasAJpg(c, 0.84);
+}
 function cargarImagen(file) {
   return new Promise((ok, mal) => {
     const img = new Image(); const url = URL.createObjectURL(file);
@@ -197,7 +260,7 @@ function cargarImagen(file) {
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function paginaDe(item) {
   const destino = '/' + CARPETA + '/?v=' + encodeURIComponent(item.id);
-  const imagen = SITIO + '/' + CARPETA + '/archivos/' + (item.miniatura || item.archivo);
+  const imagen = SITIO + '/' + CARPETA + '/archivos/' + (item.og || item.miniatura || item.archivo);
   const desc = item.texto ? item.texto.slice(0, 200) : 'Miralo y compartilo en tus redes.';
   let og = '';
   if (item.tipo === 'video') {
@@ -209,10 +272,12 @@ function paginaDe(item) {
   return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
     '<title>' + esc(item.titulo || 'Pepe') + '</title>\n' +
-    '<meta property="og:title" content="' + esc(item.titulo || 'Pepe') + '">\n' +
+    '<meta property="og:title" content="🎬 ' + esc(item.titulo || 'Pepe') + '">\n' +
     '<meta property="og:description" content="' + esc(desc) + '">\n' +
     '<meta property="og:image" content="' + esc(imagen) + '">\n' +
-    '<meta property="og:url" content="' + esc(SITIO + '/' + CARPETA + '/v/' + item.id + '.html') + '">\n' + og +
+    (item.og ? '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n' : '') +
+    '<meta property="og:url" content="' + esc(SITIO + '/' + CARPETA + '/v/' + item.id + '.html') + '">\n' +
+    '<meta property="og:site_name" content="Pepe">\n' + og +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<meta http-equiv="refresh" content="0; url=' + esc(destino) + '">\n' +
     '</head>\n<body style="background:#0c0c0c;color:#f7f4ee;font-family:sans-serif">\n' +
@@ -255,8 +320,12 @@ $('btnSubir').onclick = async () => {
       const ext = ((f.name.match(/\.([a-z0-9]{2,4})$/i) || [])[1] || 'mp4').toLowerCase();
       item.archivo = id + '.' + ext;
       const mini = await miniaturaDeVideo(f);
-      if (mini) { item.miniatura = id + '-mini.jpg'; archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: await blobABase64(mini) }); }
-      archivos.unshift({ ruta: CARPETA + '/archivos/' + item.archivo, base64: await blobABase64(f) });
+      if (mini) {
+        item.miniatura = id + '-mini.jpg'; archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: await blobABase64(mini) });
+        try { const og = await ogDe(mini, true); item.og = id + '-og.jpg'; archivos.push({ ruta: CARPETA + '/archivos/' + item.og, base64: await blobABase64(og) }); } catch (e) {}
+      }
+      const limpio = await borrarUbicacion(f);
+      archivos.unshift({ ruta: CARPETA + '/archivos/' + item.archivo, base64: await blobABase64(limpio.blob) });
     } else {
       const img = await cargarImagen(f);
       const grande = await canvasAJpg(dibujar(img, img.naturalWidth, img.naturalHeight, 1920), 0.88);
@@ -264,6 +333,7 @@ $('btnSubir').onclick = async () => {
       item.archivo = id + '.jpg'; item.miniatura = id + '-mini.jpg';
       archivos.push({ ruta: CARPETA + '/archivos/' + item.archivo, base64: await blobABase64(grande) });
       archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: await blobABase64(mini) });
+      try { const og = await ogDe(mini, false); item.og = id + '-og.jpg'; archivos.push({ ruta: CARPETA + '/archivos/' + item.og, base64: await blobABase64(og) }); } catch (e) {}
     }
 
     const lista = await leerLista();
@@ -322,6 +392,7 @@ async function borrarItem(item, boton) {
       { ruta: CARPETA + '/lista.json', base64: textoABase64(JSON.stringify(lista, null, 2) + '\n') },
     ];
     if (item.miniatura) archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: null });
+    if (item.og) archivos.push({ ruta: CARPETA + '/archivos/' + item.og, base64: null });
     await commit(archivos, 'Videos: borra "' + item.titulo + '"');
     mostrarLista(lista);
   } catch (e) {
@@ -342,7 +413,7 @@ $('btnClave').onclick = async () => {
   try {
     const r = await api('');
     if (!r.permissions || !r.permissions.push) throw new Error('la llave no tiene permiso para escribir (Contents: Read and write)');
-    try { localStorage.setItem('pepeVideosLlave', v); } catch (e) {}
+    try { ($('recordar').checked ? localStorage : sessionStorage).setItem('pepeVideosLlave', v); } catch (e) {}
     $('clave').value = ''; estado(est, '');
     mostrarPanel();
   } catch (e) {
@@ -352,7 +423,7 @@ $('btnClave').onclick = async () => {
 $('btnOlvidar').onclick = e => {
   e.preventDefault();
   if (!confirm('¿Borrar la llave de este equipo? Para volver a subir vas a tener que pegarla de nuevo.')) return;
-  try { localStorage.removeItem('pepeVideosLlave'); } catch (er) {}
+  try { localStorage.removeItem('pepeVideosLlave'); sessionStorage.removeItem('pepeVideosLlave'); } catch (er) {}
   llave = ''; mostrarPanel();
 };
 $('btnRecargar').onclick = cargarPublicados;
