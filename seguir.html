@@ -151,6 +151,17 @@
       }
       setInterval(pintarEstado, 5000);
 
+      // (2026-10-20) El teléfono manda su ubicación SOLO mientras alguien tiene esta página abierta:
+      // cada 30 s (con la pestaña a la vista) se avisa "estoy mirando". Ver firestore.rules.
+      const avisarQueMiro = () => {
+        if (document.visibilityState !== 'visible' || terminado) return;
+        db.collection('ubicacionConductor').doc(codigo)
+          .update({ vistoEn: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {});
+      };
+      avisarQueMiro();
+      setInterval(avisarQueMiro, 30000);
+      document.addEventListener('visibilitychange', avisarQueMiro);
+
       db.collection('ubicacionConductor').doc(codigo).onSnapshot((snap) => {
         if (!snap.exists) { terminar('El conductor dejó de compartir su ubicación.'); return; }
         aviso.style.display = 'none';
@@ -162,7 +173,7 @@
         venceEn = d.expiraEn || 0;
         pintarEstado();
         if (typeof d.lat !== 'number' || typeof d.lng !== 'number') {
-          if (primero) mostrarAviso('Esperando la primera ubicación del conductor…');
+          if (primero) mostrarAviso('Avisándole al teléfono del conductor… la ubicación aparece en unos segundos.');
           return;
         }
         const pos = [d.lat, d.lng];
