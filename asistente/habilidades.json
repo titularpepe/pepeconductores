@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1298,6 +1298,322 @@
         }
       ],
       "v4": true
+    },
+    {
+      "nombre": "Sensación térmica",
+      "frases": [
+        "sensacion termica",
+        "que sensacion hay",
+        "se siente frio",
+        "se siente calor"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&current=relative_humidity_2m,wind_speed_10m,apparent_temperature&daily=uv_index_max&timezone=auto&forecast_days=1",
+          "campo": "current.apparent_temperature",
+          "plantilla": "La sensación térmica en Salta es de {} grados."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Humedad",
+      "frases": [
+        "humedad",
+        "cuanta humedad hay",
+        "esta humedo"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&current=relative_humidity_2m,wind_speed_10m,apparent_temperature&daily=uv_index_max&timezone=auto&forecast_days=1",
+          "campo": "current.relative_humidity_2m",
+          "plantilla": "La humedad en Salta es del {} por ciento."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Viento",
+      "frases": [
+        "hay viento",
+        "cuanto viento hay",
+        "como esta el viento",
+        "velocidad del viento"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&current=relative_humidity_2m,wind_speed_10m,apparent_temperature&daily=uv_index_max&timezone=auto&forecast_days=1",
+          "campo": "current.wind_speed_10m",
+          "plantilla": "El viento en Salta está a {} kilómetros por hora."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Índice UV",
+      "frases": [
+        "indice uv",
+        "rayos uv",
+        "necesito protector",
+        "me pongo protector",
+        "protector solar"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&current=relative_humidity_2m,wind_speed_10m,apparent_temperature&daily=uv_index_max&timezone=auto&forecast_days=1",
+          "campo": "daily.uv_index_max.0",
+          "plantilla": "El índice UV máximo hoy es {}."
+        },
+        {
+          "tipo": "decir",
+          "texto": "Si pasa de 6, ponete protector y gorra al mediodía."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Calidad del aire",
+      "frases": [
+        "calidad del aire",
+        "como esta el aire",
+        "contaminacion"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=-24.79&longitude=-65.41&current=us_aqi",
+          "campo": "current.us_aqi",
+          "plantilla": "La calidad del aire en Salta tiene un índice de {}."
+        },
+        {
+          "tipo": "decir",
+          "texto": "Hasta 50 es buena, de 50 a 100 aceptable, más de 100 conviene cuidarse."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Bitcoin en pesos",
+      "frases": [
+        "bitcoin en pesos",
+        "cuantos pesos es un bitcoin"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=ars",
+          "campo": "bitcoin.ars",
+          "plantilla": "Un bitcoin son {} pesos."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Violencia de género 144",
+      "frases": [
+        "violencia de genero",
+        "llama al 144",
+        "linea 144"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.DIAL",
+          "datos": "tel:144"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te dejé marcado el 144 (violencia de género, gratis y las 24 horas). Tocá el botón verde para llamar."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Defensa Civil 103",
+      "frases": [
+        "defensa civil",
+        "llama al 103"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.DIAL",
+          "datos": "tel:103"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te dejé marcado el 103 (Defensa Civil). Tocá el botón verde para llamar."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Emergencias en general",
+      "frases": [
+        "numeros de emergencia",
+        "telefonos de emergencia"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Policía 911, ambulancia 107, bomberos 100, Defensa Civil 103 y violencia de género 144. Decime cuál y te lo dejo marcado."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Pepe Conductores en Play",
+      "frases": [
+        "bajar pepe conductores",
+        "descargar pepe conductores",
+        "pepe conductores en play"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://play.google.com/store/apps/details?id=com.pepeconductores.app"
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Pepe Pasajeros en Play",
+      "frases": [
+        "bajar pepe pasajeros",
+        "descargar pepe pasajeros",
+        "pepe pasajeros en play"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://play.google.com/store/apps/details?id=com.pepepasajeros.app"
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Filtro de viajes en Play",
+      "frases": [
+        "bajar el filtro",
+        "descargar el filtro",
+        "filtro en play"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://play.google.com/store/apps/details?id=com.taxifilter"
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "¿Qué es Pepe?",
+      "frases": [
+        "que es pepe",
+        "contame de pepe",
+        "para que sirve pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Pepe es la app de transporte de Salta: autos, motos, taxis, remises y cadetería, con tarifas justas. Arranca el 17 de noviembre."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Otro chiste",
+      "frases": [
+        "otro chiste",
+        "contame otro",
+        "uno mas"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "—¿Por qué los pájaros no usan Facebook? —Porque ya tienen Twitter."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Chiste de Salta",
+      "frases": [
+        "chiste de salta",
+        "chiste salteno"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Un salteño le dice a otro: —Che, ¿vamos a comer empanadas? —Bueno, pero salteñas, ¿eh? —¿Y cuáles van a ser? ¿Tucumanas?"
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Dato curioso de Salta",
+      "frases": [
+        "dato curioso",
+        "contame algo de salta",
+        "sabias que"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¿Sabías que el Tren a las Nubes llega a más de 4.200 metros de altura? Es uno de los trenes más altos del mundo, y sale de Salta."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Consejo para manejar",
+      "frases": [
+        "consejo para manejar",
+        "dame un consejo",
+        "tip para el auto"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Revisá la presión de las gomas una vez por semana: ahorrás nafta y frenás mejor. Y nunca el celular en la mano mientras manejás: para eso estoy yo."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Gracias Pepe",
+      "frases": [
+        "sos un genio",
+        "que bien",
+        "excelente pepe",
+        "muy bien pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Gracias! Me pone contento ayudarte."
+        }
+      ],
+      "v5": true
+    },
+    {
+      "nombre": "Perdón",
+      "frases": [
+        "te equivocaste",
+        "eso esta mal",
+        "no era eso"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Perdón. Decímelo de otra forma, y si no lo sé hacer, se lo anoto a Claude para que me lo enseñe."
+        }
+      ],
+      "v5": true
     }
   ]
 }
