@@ -290,6 +290,14 @@ function abrir(i, cambiarUrl) {
   if (item.tipo === 'video') {
     const v = document.createElement('video');
     v.playsInline = true; v.loop = true; v.preload = 'auto'; v.src = src;
+    // (20/10) Si se lo abrió antes de que GitHub lo publicara, el navegador se guarda el "no existe" y
+    // después no lo reproduce aunque ya esté. Al fallar se pide de nuevo salteando esa copia vieja.
+    v.onerror = () => {
+      if (v.dataset.reintento || actual !== item) { if (actual === item) avisar('Este video se está publicando: probá en un par de minutos.'); return; }
+      v.dataset.reintento = '1';
+      v.src = src + '?r=' + Date.now();
+      v.play().catch(() => {});
+    };
     if (item.miniatura) v.poster = 'archivos/' + item.miniatura;
     v.ontimeupdate = () => {
       if (v.duration) $('barra').style.width = (v.currentTime * 100 / v.duration) + '%';
