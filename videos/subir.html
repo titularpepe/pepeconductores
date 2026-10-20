@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.github.com;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Pepe — Subir videos</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --negro: #0c0c0c;
+  --blanco: #f7f4ee;
+  --amarillo: #f5d800;
+  --naranja: #ff4d00;
+  --gris: #161616;
+  --gris2: #222;
+  --texto-apagado: rgba(247,244,238,0.6);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--negro); color: var(--blanco); font-family: 'Barlow', sans-serif; }
+main { max-width: 640px; margin: 0 auto; padding: 1.4rem 16px 3rem; }
+h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 900; color: var(--amarillo); }
+h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: .7rem; }
+.sub { color: var(--texto-apagado); margin: .2rem 0 1.2rem; }
+.sub a, .caja a { color: var(--amarillo); }
+.caja { background: var(--gris); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+label { display: block; font-weight: 600; font-size: .9rem; margin: .8rem 0 .3rem; }
+input[type=text], input[type=password], textarea { width: 100%; background: var(--gris2); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: var(--blanco); font: inherit; padding: .7rem; }
+textarea { min-height: 90px; resize: vertical; }
+input[type=file] { width: 100%; color: var(--texto-apagado); }
+.btn { border: none; border-radius: 10px; padding: .85rem 1rem; font: inherit; font-weight: 700; cursor: pointer; background: var(--amarillo); color: var(--negro); width: 100%; margin-top: 1rem; font-size: 1rem; }
+.btn:disabled { opacity: .5; cursor: wait; }
+.btn-chico { width: auto; margin: 0; padding: .45rem .8rem; font-size: .85rem; background: var(--gris2); color: var(--blanco); }
+.btn-borrar { background: #5a1a1a; color: #ffd6d6; }
+.estado { margin-top: .8rem; font-size: .92rem; color: var(--amarillo); min-height: 1.2em; white-space: pre-wrap; }
+.estado.error { color: #ff8a80; }
+.ayuda { font-size: .85rem; color: var(--texto-apagado); line-height: 1.5; }
+.ayuda ol { padding-left: 1.2rem; margin-top: .4rem; }
+.previa { margin-top: .8rem; max-width: 100%; max-height: 260px; border-radius: 8px; display: block; }
+.item { display: flex; gap: 10px; align-items: center; padding: .6rem 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.item:first-child { border-top: none; }
+.item img { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; background: var(--gris2); flex-shrink: 0; }
+.item .info { flex: 1; min-width: 0; }
+.item .info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .info small { color: var(--texto-apagado); }
+.fila { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Subir videos y fotos</h1>
+  <p class="sub">Lo que subas aparece en <a href="./" target="_blank">pepeconductores.com/videos</a> (tarda 1 o 2 minutos).</p>
+
+  <div class="caja" id="cajaClave" hidden>
+    <h2>Llave de GitHub</h2>
+    <div class="ayuda">
+      Se pone una sola vez en cada teléfono o compu. Para sacarla:
+      <ol>
+        <li>Entrá a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → nuevo token</a> con la cuenta <b>titularpepe</b>.</li>
+        <li>Nombre: “Subir videos”. Vencimiento: el que quieras.</li>
+        <li>En “Repository access” elegí <b>Only select repositories</b> → <b>pepeconductores</b>.</li>
+        <li>En “Permissions” → “Contents” poné <b>Read and write</b>.</li>
+        <li>Generalo, copialo y pegalo acá abajo.</li>
+      </ol>
+    </div>
+    <label for="clave">Llave</label>
+    <input type="password" id="clave" autocomplete="off" placeholder="github_pat_…">
+    <button class="btn" id="btnClave">Guardar llave</button>
+    <div class="estado" id="estadoClave"></div>
+  </div>
+
+  <div id="panel" hidden>
+    <div class="caja">
+      <h2>Nuevo</h2>
+      <label for="archivo">Video o foto</label>
+      <input type="file" id="archivo" accept="video/*,image/*">
+      <div id="previa"></div>
+      <label for="titulo">Título (se ve en la página)</label>
+      <input type="text" id="titulo" maxlength="80" placeholder="Ej: Pepe llega a Salta">
+      <label for="texto">Texto para la publicación (opcional)</label>
+      <textarea id="texto" placeholder="Lo que la gente va a pegar en Instagram, TikTok, etc. Podés poner #hashtags y el link de la app."></textarea>
+      <button class="btn" id="btnSubir">Subir</button>
+      <div class="estado" id="estado"></div>
+    </div>
+
+    <div class="caja">
+      <div class="fila"><h2>Publicados</h2><button class="btn btn-chico" id="btnRecargar">Actualizar</button></div>
+      <div id="publicados"><p class="ayuda">Cargando…</p></div>
+    </div>
+
+    <p class="ayuda">Límite por archivo: 95 MB. En total conviene no pasar de unos 900 MB entre todo lo publicado. <a href="#" id="btnOlvidar">Borrar la llave de este equipo</a></p>
+  </div>
+</main>
+
+<script>
+const DUENO = 'titularpepe', REPO = 'pepeconductores', RAMA = 'main';
+const CARPETA = 'videos';
+const SITIO = 'https://pepeconductores.com';
+const MAX_BYTES = 95 * 1024 * 1024;
+const $ = id => document.getElementById(id);
+let llave = '';
+try { llave = localStorage.getItem('pepeVideosLlave') || ''; } catch (e) {}
+
+function estado(el, txt, error) { el.textContent = txt; el.classList.toggle('error', !!error); }
+
+async function api(ruta, opciones = {}) {
+  const r = await fetch('https://api.github.com/repos/' + DUENO + '/' + REPO + ruta, {
+    ...opciones,
+    headers: { 'Authorization': 'Bearer ' + llave, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+  });
+  if (!r.ok) {
+    let msg = r.status + '';
+    try { msg += ' ' + (await r.json()).message; } catch (e) {}
+    const err = new Error(msg); err.status = r.status; throw err;
+  }
+  return r.status === 204 ? null : r.json();
+}
+
+// ---- texto/bytes <-> base64 ----
+function textoABase64(txt) {
+  const bytes = new TextEncoder().encode(txt); let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function base64ATexto(b64) {
+  const bin = atob(b64.replace(/\s/g, ''));
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+function blobABase64(blob) {
+  return new Promise((ok, mal) => {
+    const fr = new FileReader();
+    fr.onload = () => ok(fr.result.slice(fr.result.indexOf(',') + 1));
+    fr.onerror = () => mal(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+
+// ---- lista.json directo del repo (no de la página, que tarda en actualizarse) ----
+async function leerLista() {
+  const r = await api('/contents/' + CARPETA + '/lista.json?ref=' + RAMA + '&t=' + Date.now());
+  return JSON.parse(base64ATexto(r.content));
+}
+
+// Un solo commit con todos los cambios. archivos: [{ ruta, base64 }] (base64 null = borrar)
+async function commit(archivos, mensaje, alAvanzar) {
+  const ref = await api('/git/ref/heads/' + RAMA);
+  const padre = ref.object.sha;
+  const cpadre = await api('/git/commits/' + padre);
+  const arbol = [];
+  for (const a of archivos) {
+    if (a.base64 === null) { arbol.push({ path: a.ruta, mode: '100644', type: 'blob', sha: null }); continue; }
+    if (alAvanzar) alAvanzar(a.ruta);
+    const b = await api('/git/blobs', { method: 'POST', body: JSON.stringify({ content: a.base64, encoding: 'base64' }) });
+    arbol.push({ path: a.ruta, mode: '100644', type: 'blob', sha: b.sha });
+  }
+  const t = await api('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: cpadre.tree.sha, tree: arbol }) });
+  const c = await api('/git/commits', { method: 'POST', body: JSON.stringify({ message: mensaje, tree: t.sha, parents: [padre] }) });
+  await api('/git/refs/heads/' + RAMA, { method: 'PATCH', body: JSON.stringify({ sha: c.sha }) });
+}
+
+// ---- miniaturas ----
+function canvasAJpg(canvas, calidad) { return new Promise(ok => canvas.toBlob(ok, 'image/jpeg', calidad)); }
+function dibujar(fuente, ancho, alto, max) {
+  const esc = Math.min(1, max / Math.max(ancho, alto));
+  const c = document.createElement('canvas');
+  c.width = Math.round(ancho * esc); c.height = Math.round(alto * esc);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(fuente, 0, 0, c.width, c.height);
+  return c;
+}
+function miniaturaDeVideo(file) {
+  return new Promise(ok => {
+    const v = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    const fin = r => { clearTimeout(tope); URL.revokeObjectURL(url); ok(r); };
+    const tope = setTimeout(() => fin(null), 15000);
+    v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url;
+    v.onloadedmetadata = () => { v.currentTime = Math.min(1, (v.duration || 2) / 3); };
+    v.onseeked = async () => {
+      try { fin(await canvasAJpg(dibujar(v, v.videoWidth, v.videoHeight, 720), 0.82)); } catch (e) { fin(null); }
+    };
+    v.onerror = () => fin(null);
+  });
+}
+function cargarImagen(file) {
+  return new Promise((ok, mal) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); mal(new Error('No se pudo leer la foto')); };
+    img.src = url;
+  });
+}
+
+// ---- página por video: da la vista previa (foto + título) cuando se manda el link por WhatsApp/Facebook ----
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function paginaDe(item) {
+  const destino = '/' + CARPETA + '/?v=' + encodeURIComponent(item.id);
+  const imagen = SITIO + '/' + CARPETA + '/archivos/' + (item.miniatura || item.archivo);
+  const desc = item.texto ? item.texto.slice(0, 200) : 'Miralo y compartilo en tus redes.';
+  let og = '';
+  if (item.tipo === 'video') {
+    og = '<meta property="og:type" content="video.other">\n' +
+      '<meta property="og:video" content="' + esc(SITIO + '/' + CARPETA + '/archivos/' + item.archivo) + '">\n';
+  } else {
+    og = '<meta property="og:type" content="website">\n';
+  }
+  return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<title>' + esc(item.titulo || 'Pepe') + '</title>\n' +
+    '<meta property="og:title" content="' + esc(item.titulo || 'Pepe') + '">\n' +
+    '<meta property="og:description" content="' + esc(desc) + '">\n' +
+    '<meta property="og:image" content="' + esc(imagen) + '">\n' +
+    '<meta property="og:url" content="' + esc(SITIO + '/' + CARPETA + '/v/' + item.id + '.html') + '">\n' + og +
+    '<meta name="twitter:card" content="summary_large_image">\n' +
+    '<meta http-equiv="refresh" content="0; url=' + esc(destino) + '">\n' +
+    '</head>\n<body style="background:#0c0c0c;color:#f7f4ee;font-family:sans-serif">\n' +
+    '<p><a style="color:#f5d800" href="' + esc(destino) + '">Ver ' + esc(item.titulo || 'el video') + '</a></p>\n' +
+    '</body>\n</html>\n';
+}
+
+// ---- subir ----
+$('archivo').onchange = () => {
+  const f = $('archivo').files[0]; const p = $('previa'); p.innerHTML = '';
+  if (!f) return;
+  const el = document.createElement(f.type.startsWith('video') ? 'video' : 'img');
+  el.className = 'previa'; el.src = URL.createObjectURL(f);
+  if (el.tagName === 'VIDEO') { el.controls = true; el.muted = true; el.playsInline = true; }
+  p.appendChild(el);
+  if (!$('titulo').value) $('titulo').value = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').slice(0, 80);
+  if (f.size > MAX_BYTES && f.type.startsWith('video')) estado($('estado'), 'Este video pesa ' + (f.size / 1048576).toFixed(0) + ' MB y el máximo es 95 MB. Achicalo antes de subirlo.', true);
+  else estado($('estado'), '');
+};
+
+$('btnSubir').onclick = async () => {
+  const f = $('archivo').files[0]; const est = $('estado');
+  if (!f) return estado(est, 'Elegí un video o una foto.', true);
+  const esVideo = f.type.startsWith('video');
+  if (!esVideo && !f.type.startsWith('image')) return estado(est, 'Ese archivo no es un video ni una foto.', true);
+  if (esVideo && f.size > MAX_BYTES) return estado(est, 'El video pesa más de 95 MB. Achicalo antes de subirlo.', true);
+  const titulo = $('titulo').value.trim();
+  const texto = $('texto').value.trim();
+  if (!titulo) return estado(est, 'Poné un título.', true);
+
+  $('btnSubir').disabled = true;
+  try {
+    const d = new Date(); const dos = n => String(n).padStart(2, '0');
+    const id = d.getFullYear() + dos(d.getMonth() + 1) + dos(d.getDate()) + '-' + dos(d.getHours()) + dos(d.getMinutes()) + dos(d.getSeconds()) + '-' + Math.random().toString(36).slice(2, 6);
+    const item = { id, tipo: esVideo ? 'video' : 'foto', titulo, texto, fecha: d.toISOString() };
+    const archivos = [];
+
+    estado(est, 'Preparando…');
+    if (esVideo) {
+      const ext = ((f.name.match(/\.([a-z0-9]{2,4})$/i) || [])[1] || 'mp4').toLowerCase();
+      item.archivo = id + '.' + ext;
+      const mini = await miniaturaDeVideo(f);
+      if (mini) { item.miniatura = id + '-mini.jpg'; archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: await blobABase64(mini) }); }
+      archivos.unshift({ ruta: CARPETA + '/archivos/' + item.archivo, base64: await blobABase64(f) });
+    } else {
+      const img = await cargarImagen(f);
+      const grande = await canvasAJpg(dibujar(img, img.naturalWidth, img.naturalHeight, 1920), 0.88);
+      const mini = await canvasAJpg(dibujar(img, img.naturalWidth, img.naturalHeight, 720), 0.82);
+      item.archivo = id + '.jpg'; item.miniatura = id + '-mini.jpg';
+      archivos.push({ ruta: CARPETA + '/archivos/' + item.archivo, base64: await blobABase64(grande) });
+      archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: await blobABase64(mini) });
+    }
+
+    const lista = await leerLista();
+    lista.unshift(item);
+    archivos.push({ ruta: CARPETA + '/v/' + id + '.html', base64: textoABase64(paginaDe(item)) });
+    archivos.push({ ruta: CARPETA + '/lista.json', base64: textoABase64(JSON.stringify(lista, null, 2) + '\n') });
+
+    await commit(archivos, 'Videos: sube "' + titulo + '"', ruta => {
+      estado(est, ruta.endsWith(item.archivo) ? 'Subiendo ' + (esVideo ? 'el video' : 'la foto') + '… (puede tardar)' : 'Guardando…');
+    });
+    estado(est, '¡Listo! En 1 o 2 minutos aparece en la página.');
+    $('archivo').value = ''; $('previa').innerHTML = ''; $('titulo').value = ''; $('texto').value = '';
+    mostrarLista(lista);
+  } catch (e) {
+    if (e.status === 401) estado(est, 'La llave no sirve o venció. Borrala abajo y poné una nueva.', true);
+    else if (e.status === 403 || e.status === 404) estado(est, 'La llave no tiene permiso para escribir. Sacá una nueva con Contents: Read and write.', true);
+    else if (e.status === 422 || e.status === 409) estado(est, 'Justo hubo otro cambio en la página. Tocá Subir de nuevo.', true);
+    else estado(est, 'No se pudo subir: ' + e.message, true);
+  } finally {
+    $('btnSubir').disabled = false;
+  }
+};
+
+// ---- publicados ----
+function mostrarLista(lista) {
+  const cont = $('publicados'); cont.innerHTML = '';
+  if (!lista.length) { cont.innerHTML = '<p class="ayuda">Todavía no subiste nada.</p>'; return; }
+  for (const item of lista) {
+    const fila = document.createElement('div'); fila.className = 'item';
+    const img = document.createElement('img'); img.alt = '';
+    if (item.miniatura) img.src = 'archivos/' + item.miniatura;
+    const info = document.createElement('div'); info.className = 'info';
+    const b = document.createElement('b'); b.textContent = item.titulo;
+    const s = document.createElement('small'); s.textContent = (item.tipo === 'video' ? 'Video' : 'Foto') + ' · ' + new Date(item.fecha).toLocaleDateString('es-AR');
+    info.append(b, s);
+    const borrar = document.createElement('button'); borrar.className = 'btn btn-chico btn-borrar'; borrar.textContent = 'Borrar';
+    borrar.onclick = () => borrarItem(item, borrar);
+    fila.append(img, info, borrar);
+    cont.appendChild(fila);
+  }
+}
+
+async function cargarPublicados() {
+  try { mostrarLista(await leerLista()); }
+  catch (e) { $('publicados').innerHTML = '<p class="ayuda">No se pudo leer la lista (' + esc(e.message) + ').</p>'; }
+}
+
+async function borrarItem(item, boton) {
+  if (!confirm('¿Borrar "' + item.titulo + '" de la página?')) return;
+  boton.disabled = true; boton.textContent = 'Borrando…';
+  try {
+    const lista = (await leerLista()).filter(x => x.id !== item.id);
+    const archivos = [
+      { ruta: CARPETA + '/archivos/' + item.archivo, base64: null },
+      { ruta: CARPETA + '/v/' + item.id + '.html', base64: null },
+      { ruta: CARPETA + '/lista.json', base64: textoABase64(JSON.stringify(lista, null, 2) + '\n') },
+    ];
+    if (item.miniatura) archivos.push({ ruta: CARPETA + '/archivos/' + item.miniatura, base64: null });
+    await commit(archivos, 'Videos: borra "' + item.titulo + '"');
+    mostrarLista(lista);
+  } catch (e) {
+    alert('No se pudo borrar: ' + e.message);
+    boton.disabled = false; boton.textContent = 'Borrar';
+  }
+}
+
+// ---- llave ----
+function mostrarPanel() {
+  $('cajaClave').hidden = !!llave; $('panel').hidden = !llave;
+  if (llave) cargarPublicados();
+}
+$('btnClave').onclick = async () => {
+  const v = $('clave').value.trim(); const est = $('estadoClave');
+  if (!v) return estado(est, 'Pegá la llave.', true);
+  llave = v; estado(est, 'Probando…');
+  try {
+    const r = await api('');
+    if (!r.permissions || !r.permissions.push) throw new Error('la llave no tiene permiso para escribir (Contents: Read and write)');
+    try { localStorage.setItem('pepeVideosLlave', v); } catch (e) {}
+    $('clave').value = ''; estado(est, '');
+    mostrarPanel();
+  } catch (e) {
+    llave = ''; estado(est, 'No funcionó: ' + e.message, true);
+  }
+};
+$('btnOlvidar').onclick = e => {
+  e.preventDefault();
+  if (!confirm('¿Borrar la llave de este equipo? Para volver a subir vas a tener que pegarla de nuevo.')) return;
+  try { localStorage.removeItem('pepeVideosLlave'); } catch (er) {}
+  llave = ''; mostrarPanel();
+};
+$('btnRecargar').onclick = cargarPublicados;
+
+mostrarPanel();
+</script>
+</body>
+</html>
