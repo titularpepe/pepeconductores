@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1614,6 +1614,45 @@
         }
       ],
       "v5": true
+    },
+    {
+      "nombre": "¿Dónde está Zoe? (Life360)",
+      "frases": [
+        "donde esta zoe",
+        "donde esta la zoe",
+        "donde esta mi hija",
+        "donde anda zoe",
+        "donde anda la zoe",
+        "abri life 360",
+        "abri life360"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.life360.android.safetymapd"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro Life 360 para que veas dónde está Zoe."
+        }
+      ],
+      "v6": true
+    },
+    {
+      "nombre": "Sacar foto",
+      "frases": [
+        "saca foto",
+        "sacame foto",
+        "saca fotos",
+        "una foto"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "saca una foto"
+        }
+      ],
+      "v6": true
     }
   ]
 }
