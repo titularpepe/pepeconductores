@@ -1,27 +1,128 @@
 {
-  "version": 1,
+  "version": 2,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
-      "frases": ["bitcoin", "precio del bitcoin", "cuanto esta el bitcoin"],
+      "frases": [
+        "bitcoin",
+        "precio del bitcoin",
+        "cuanto esta el bitcoin"
+      ],
       "acciones": [
-        {"tipo": "consultar", "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", "campo": "bitcoin.usd", "plantilla": "El bitcoin está a {} dólares."}
+        {
+          "tipo": "consultar",
+          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+          "campo": "bitcoin.usd",
+          "plantilla": "El bitcoin está a {} dólares."
+        }
       ]
     },
     {
       "nombre": "Propina",
       "regex": "propina (?:de|para|sobre) ([0-9]+)",
       "acciones": [
-        {"tipo": "orden", "texto": "cuanto es 10 por ciento de {1}"},
-        {"tipo": "decir", "texto": "Eso es el 10 por ciento."}
+        {
+          "tipo": "orden",
+          "texto": "cuanto es 10 por ciento de {1}"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Eso es el 10 por ciento."
+        }
       ]
     },
     {
       "nombre": "Modo dormir",
-      "frases": ["me voy a dormir", "modo dormir", "buenas noches pepe"],
+      "frases": [
+        "me voy a dormir",
+        "modo dormir",
+        "buenas noches pepe"
+      ],
       "acciones": [
-        {"tipo": "orden", "texto": "pone en vibrar"},
-        {"tipo": "decir", "texto": "Que descanses, mañana seguimos."}
+        {
+          "tipo": "orden",
+          "texto": "pone en vibrar"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Que descanses, mañana seguimos."
+        }
+      ]
+    },
+    {
+      "nombre": "Clima de pasado mañana (Salta)",
+      "regex": "^(?:y )?(?:el clima |que tiempo va a hacer |como esta el clima )?pasado manana$|clima (?:de |para )?pasado manana|pasado manana (?:va a llover|hace frio|hace calor)",
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FArgentina%2FSalta&forecast_days=3",
+          "campo": "daily.temperature_2m_max.2",
+          "plantilla": "Pasado mañana en Salta: máxima de {} grados,"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FArgentina%2FSalta&forecast_days=3",
+          "campo": "daily.temperature_2m_min.2",
+          "plantilla": "mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.79&longitude=-65.41&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FArgentina%2FSalta&forecast_days=3",
+          "campo": "daily.precipitation_probability_max.2",
+          "plantilla": "y {} por ciento de chance de lluvia."
+        }
+      ]
+    },
+    {
+      "nombre": "¿De qué ciudad es el clima?",
+      "frases": [
+        "de que ciudad",
+        "que ciudad",
+        "de donde es el clima",
+        "de que lugar"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "El clima te lo doy de donde está tu teléfono. Si no tengo tu ubicación, uso Salta capital."
+        }
+      ]
+    },
+    {
+      "nombre": "¿Claude es nene o nena?",
+      "frases": [
+        "claude es nene",
+        "claude es nena",
+        "es nene o nena",
+        "claude es hombre",
+        "claude es mujer",
+        "quien es claude",
+        "nena o nene",
+        "nene o nena",
+        "claude es neno",
+        "es varon o mujer"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Claude es una inteligencia artificial: no es ni nene ni nena. Es el que me programa y me enseña cosas nuevas."
+        }
+      ]
+    },
+    {
+      "nombre": "Cerrar todas las apps",
+      "frases": [
+        "cerra todas las aplicaciones",
+        "cierra todas las aplicaciones",
+        "cerra las apps",
+        "cierra las apps",
+        "cerra todo"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Android no me deja cerrar otras apps por mi cuenta. Tocá el botón cuadrado de abajo y después la cruz para cerrar todas."
+        }
       ]
     }
   ]
