@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1653,6 +1653,29 @@
         }
       ],
       "v6": true
+    },
+    {
+      "nombre": "¿Qué cocino hoy?",
+      "frases": [
+        "que puedo cocinar",
+        "que cocino hoy",
+        "cocinar hoy",
+        "que hago de comer",
+        "que como hoy",
+        "una receta",
+        "dame una receta"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Unas ideas fáciles: fideos con salsa, milanesas con puré, tarta de verdura, guiso de arroz o empanadas. Te abro recetas para que elijas."
+        },
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?q=recetas+faciles+y+rapidas+argentinas"
+        }
+      ],
+      "v7": true
     }
   ]
 }
