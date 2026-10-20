@@ -227,7 +227,11 @@ function pintarCifras(id) {
 }
 
 // ---- Avisos y helpers ----
+// (20/10) En la compu Chrome dice que puede compartir archivos, pero abre el "Compartir" de Windows y
+// no manda nada: en la compu se manda el LINK (WhatsApp Web / Facebook) y el video se descarga.
+const esCompu = !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 const puedeCompartirArchivos = (() => {
+  if (esCompu) return false;
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.mp4', { type: 'video/mp4' })] })); }
   catch (e) { return false; }
 })();
@@ -428,8 +432,10 @@ function abrirHoja() {
   } else {
     $('btnCompartir').textContent = 'Copiar link';
     $('btnCompartir').disabled = false;
-    $('ayuda').innerHTML = (navegadorDeApp ? 'Desde adentro de Facebook o Instagram no se puede mandar ' + que + ': abrí esta página en Safari o Chrome. ' : '')
-      + 'Para mandar ' + que + ' entrá a esta página desde el celular. Desde acá: <b>Descargar</b> y subilo a la app, o con WhatsApp y Facebook mandás el link.';
+    $('ayuda').innerHTML = esCompu
+      ? 'Desde la compu, <b>WhatsApp</b> y <b>Facebook</b> mandan el link con la vista previa ' + (item.tipo === 'video' ? 'del video' : 'de la foto') + '. Para subir ' + que + ' a Instagram o TikTok: <b>Descargar</b> y subilo desde la app.'
+      : (navegadorDeApp ? 'Desde adentro de Facebook o Instagram no se puede mandar ' + que + ': abrí esta página en Safari o Chrome. ' : '')
+        + 'Para mandar ' + que + ' entrá a esta página desde el celular. Desde acá: <b>Descargar</b> y subilo a la app, o con WhatsApp y Facebook mandás el link.';
   }
   const v = videoActual(); if (v && !v.paused) { v.pause(); }
   $('hojaFondo').classList.add('abierta');
@@ -492,7 +498,7 @@ $('btnCompartir').onclick = async () => {
     catch (e) { if (e.name !== 'AbortError') avisar('No se pudo compartir. Probá con Descargar.'); }
     return;
   }
-  if (navigator.share) {
+  if (navigator.share && !esCompu) {
     try { await navigator.share({ title: actual.titulo, text: txt || undefined, url: linkDe(actual) }); contarCompartido(); } catch (e) {}
     return;
   }
