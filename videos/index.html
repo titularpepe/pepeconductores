@@ -292,7 +292,13 @@ function abrir(i, cambiarUrl) {
       if (v.currentTime >= 2 && !vistasContadas.has(item.id)) { vistasContadas.add(item.id); sumar(item.id, 'vistas', 1); }
     };
     escena.appendChild(v);
-    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); $('sonido').style.display = 'block'; });
+    // (20/10) Siempre con sonido. Solo si el navegador lo PROHÍBE (NotAllowedError: abrieron un link sin
+    // tocar nada) arranca mudo con el botón. Antes cualquier corte de carga (AbortError) lo dejaba mudo.
+    v.muted = false;
+    v.play().catch(e => {
+      if (!e || e.name !== 'NotAllowedError' || actual !== item) return;
+      v.muted = true; v.play().catch(() => {}); $('sonido').style.display = 'block';
+    });
   } else {
     const img = document.createElement('img'); img.src = src; img.alt = item.titulo || ''; escena.appendChild(img);
     if (!vistasContadas.has(item.id)) { vistasContadas.add(item.id); setTimeout(() => { if (actual === item) sumar(item.id, 'vistas', 1); }, 1500); }
@@ -355,6 +361,8 @@ window.addEventListener('popstate', () => {
 // Toque: uno = pausa, dos seguidos = me gusta. Deslizar arriba/abajo = otro video.
 function alternarPausa() {
   const v = videoActual(); if (!v) return;
+  // Si estaba mudo, el primer toque en cualquier lado le pone sonido (no hace falta apuntarle al botón)
+  if (v.muted) { v.muted = false; v.play().catch(() => {}); $('sonido').style.display = 'none'; $('pausa').style.display = 'none'; return; }
   if (v.paused) { v.play().catch(() => {}); $('pausa').style.display = 'none'; }
   else { v.pause(); $('pausa').style.display = 'block'; }
 }
