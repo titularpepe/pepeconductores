@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -124,6 +124,862 @@
           "texto": "Android no me deja cerrar otras apps por mi cuenta. Tocá el botón cuadrado de abajo y después la cruz para cerrar todas."
         }
       ]
+    },
+    {
+      "nombre": "Clima en Buenos Aires",
+      "frases": [
+        "clima en buenos aires",
+        "clima de buenos aires",
+        "temperatura en buenos aires"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Buenos Aires ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-34.61&longitude=-58.38&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Córdoba",
+      "frases": [
+        "clima en cordoba",
+        "clima de cordoba",
+        "temperatura en cordoba"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-31.42&longitude=-64.18&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Córdoba ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-31.42&longitude=-64.18&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-31.42&longitude=-64.18&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-31.42&longitude=-64.18&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Tucumán",
+      "frases": [
+        "clima en tucuman",
+        "clima de tucuman",
+        "temperatura en tucuman"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.82&longitude=-65.22&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Tucumán ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.82&longitude=-65.22&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.82&longitude=-65.22&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.82&longitude=-65.22&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Jujuy",
+      "frases": [
+        "clima en jujuy",
+        "clima de jujuy",
+        "temperatura en jujuy"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.19&longitude=-65.3&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Jujuy ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.19&longitude=-65.3&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.19&longitude=-65.3&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-24.19&longitude=-65.3&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Mendoza",
+      "frases": [
+        "clima en mendoza",
+        "clima de mendoza",
+        "temperatura en mendoza"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.89&longitude=-68.84&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Mendoza ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.89&longitude=-68.84&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.89&longitude=-68.84&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.89&longitude=-68.84&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Cafayate",
+      "frases": [
+        "clima en cafayate",
+        "clima de cafayate"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.07&longitude=-65.98&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Cafayate ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.07&longitude=-65.98&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.07&longitude=-65.98&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-26.07&longitude=-65.98&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Rosario",
+      "frases": [
+        "clima en rosario",
+        "clima de rosario"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.95&longitude=-60.64&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Rosario ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.95&longitude=-60.64&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.95&longitude=-60.64&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-32.95&longitude=-60.64&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Clima en Mar del Plata",
+      "frases": [
+        "clima en mar del plata",
+        "clima de mar del plata"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-38.0&longitude=-57.56&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "current.temperature_2m",
+          "plantilla": "En Mar del Plata ahora hay {} grados."
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-38.0&longitude=-57.56&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_max.0",
+          "plantilla": "Hoy la máxima es de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-38.0&longitude=-57.56&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.temperature_2m_min.0",
+          "plantilla": "la mínima de {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=-38.0&longitude=-57.56&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1",
+          "campo": "daily.precipitation_probability_max.0",
+          "plantilla": "y hay {} por ciento de chance de lluvia."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Precio del ethereum",
+      "frases": [
+        "ethereum",
+        "precio del ethereum"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,tether&vs_currencies=usd",
+          "campo": "ethereum.usd",
+          "plantilla": "El ethereum está a {} dólares."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Riesgo país",
+      "frases": [
+        "riesgo pais"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais/ultimo",
+          "campo": "valor",
+          "plantilla": "El riesgo país está en {} puntos."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Próximo feriado",
+      "frases": [
+        "proximo feriado",
+        "cuando es el feriado",
+        "cuando hay feriado",
+        "hay feriado",
+        "que feriado viene"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://date.nager.at/api/v3/NextPublicHolidays/AR",
+          "campo": "0.localName",
+          "plantilla": "El próximo feriado es {},"
+        },
+        {
+          "tipo": "consultar",
+          "url": "https://date.nager.at/api/v3/NextPublicHolidays/AR",
+          "campo": "0.date",
+          "plantilla": "el {} (año, mes y día)."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Policía 911",
+      "frases": [
+        "emergencia",
+        "llama a la policia",
+        "llama al 911",
+        "marca al 911",
+        "policia"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.DIAL",
+          "datos": "tel:911"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te dejé marcado el 911 (policía). Tocá el botón verde para llamar."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Ambulancia 107",
+      "frases": [
+        "ambulancia",
+        "llama a la ambulancia",
+        "llama al 107",
+        "emergencia medica"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.DIAL",
+          "datos": "tel:107"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te dejé marcado el 107 (ambulancia, SAME). Tocá el botón verde para llamar."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Bomberos 100",
+      "frases": [
+        "bomberos",
+        "llama a los bomberos",
+        "llama al 100"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.DIAL",
+          "datos": "tel:100"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te dejé marcado el 100 (bomberos). Tocá el botón verde para llamar."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Ajustes del teléfono",
+      "frases": [
+        "abri ajustes",
+        "abri la configuracion",
+        "configuracion del telefono",
+        "ajustes del telefono"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.SETTINGS"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Consumo de batería",
+      "frases": [
+        "ajustes de bateria",
+        "que gasta bateria",
+        "que me consume la bateria",
+        "consumo de bateria"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.POWER_USAGE_SUMMARY"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro el consumo de batería."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Ajustes de sonido",
+      "frases": [
+        "ajustes de sonido",
+        "configuracion de sonido",
+        "tono de llamada"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.SOUND_SETTINGS"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "No molestar",
+      "frases": [
+        "no molestar",
+        "modo no molestar"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.ZEN_MODE_SETTINGS"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro No molestar: activalo ahí."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Prender la ubicación",
+      "frases": [
+        "prende la ubicacion",
+        "activa la ubicacion",
+        "ajustes de ubicacion",
+        "prende el gps",
+        "activa el gps"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.LOCATION_SOURCE_SETTINGS"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro la ubicación: prendela ahí."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Espacio libre",
+      "frases": [
+        "cuanto espacio tengo",
+        "espacio libre",
+        "memoria del telefono",
+        "almacenamiento"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.INTERNAL_STORAGE_SETTINGS"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro el almacenamiento."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Grabar un audio",
+      "frases": [
+        "graba un audio",
+        "grabar audio",
+        "grabadora",
+        "nota de voz"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.provider.MediaStore.RECORD_SOUND"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Abrir Pepe Conductores",
+      "frases": [
+        "abri pepe conductores",
+        "abri conductores",
+        "abri la app de conductores"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.pepeconductores.app"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Abrir Pepe Pasajeros",
+      "frases": [
+        "abri pepe pasajeros",
+        "abri pasajeros",
+        "abri la app de pasajeros"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.pepepasajeros.app"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Abrir el Filtro de viajes",
+      "frases": [
+        "abri el filtro",
+        "abri filtro de viajes",
+        "abri taxi filter",
+        "prende el filtro",
+        "activa el filtro"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.taxifilter"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro el Filtro de viajes: tocá Iniciar."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Abrir la app Pepe",
+      "frases": [
+        "abri la app pepe",
+        "abri el catalogo de pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.pepeconductores.pepe"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Arranco a trabajar",
+      "frases": [
+        "arranco a trabajar",
+        "voy a trabajar",
+        "empiezo a trabajar",
+        "salgo a trabajar"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "modo manejo"
+        },
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.pepeconductores.app"
+        },
+        {
+          "tipo": "decir",
+          "texto": "¡Buen laburo! Que vengan muchos viajes."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Terminé de trabajar",
+      "frases": [
+        "termine de trabajar",
+        "deje de trabajar",
+        "fin del laburo",
+        "me vuelvo a casa"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "termine de manejar"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Bien ahí, a descansar."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Videos de Pepe",
+      "frases": [
+        "videos de pepe",
+        "pagina de videos",
+        "abri los videos"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://pepeconductores.com/videos/"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Página de Pepe",
+      "frases": [
+        "pagina de pepe",
+        "abri pepeconductores",
+        "la web de pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://pepeconductores.com/"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Superpepe",
+      "frases": [
+        "superpepe",
+        "super pepe",
+        "panel de pepe",
+        "panel de administracion"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://pepe-conductores.web.app/superpepe.html"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Play Console",
+      "frases": [
+        "play console",
+        "consola de play"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://play.google.com/console"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Firebase",
+      "frases": [
+        "firebase",
+        "consola de firebase"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://console.firebase.google.com/project/pepe-conductores/overview"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "¿Quién te creó?",
+      "frases": [
+        "quien te creo",
+        "quien te hizo",
+        "quien es tu creador",
+        "quien te programo"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Me hizo mi dueño, el creador de Pepe, con ayuda de Claude. Soy el asistente de la familia Pepe."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "¿Cómo te llamás?",
+      "frases": [
+        "como te llamas",
+        "cual es tu nombre",
+        "quien sos"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Soy Pepe, tu asistente. Decí \"qué sabés hacer\" para ver todo lo que puedo hacer."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Te quiero",
+      "frases": [
+        "te quiero",
+        "sos lo mas",
+        "sos el mejor",
+        "te amo"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Yo también te banco! Acá estoy para lo que necesites."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Motivación",
+      "frases": [
+        "motivame",
+        "dame animo",
+        "estoy cansado",
+        "dame fuerza",
+        "decime algo lindo"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Cada viaje es un paso más. Lo que estás armando con Pepe es enorme: el 17 de noviembre arranca todo. ¡Vamos que se puede!"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "¿Cuándo sale Pepe?",
+      "frases": [
+        "cuando es el lanzamiento",
+        "cuando sale pepe",
+        "cuando se lanza pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto falta para el lanzamiento"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Frase del día",
+      "frases": [
+        "frase del dia",
+        "decime una frase",
+        "una frase linda"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "El que no arriesga no gana, y vos arriesgaste en grande. Que hoy sea un gran día."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Chiste de taxistas",
+      "frases": [
+        "chiste de taxistas",
+        "chiste de taxi",
+        "chiste de remis"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Un pasajero le toca el hombro al taxista y el taxista pega un grito. —¡Perdón! —dice el pasajero. —No, perdón yo: es mi primer día de taxista, antes manejaba un coche fúnebre."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Unos mates",
+      "frases": [
+        "tomamos unos mates",
+        "cebame un mate",
+        "quiero un mate"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Ojalá pudiera cebarte uno… ¡pero sin manos no puedo! Prendé la pava y que no hierva."
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Fútbol",
+      "frases": [
+        "de que equipo sos",
+        "sos de boca",
+        "sos de river",
+        "de que cuadro sos"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Yo soy hincha del equipo que vos quieras… ¡y de Pepe, que va primero!"
+        }
+      ],
+      "v3": true
+    },
+    {
+      "nombre": "Feliz cumpleaños",
+      "regex": "(?:cantale|canta|decile) (?:el )?feliz cumpleanos a (.+)$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Que los cumplas feliz, que los cumplas feliz, que los cumplas {1}, que los cumplas feliz!"
+        }
+      ],
+      "v3": true
     }
   ]
 }
