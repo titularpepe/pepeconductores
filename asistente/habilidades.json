@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -980,6 +980,324 @@
         }
       ],
       "v3": true
+    },
+    {
+      "nombre": "Tarifa de auto",
+      "frases": [
+        "tarifa de auto",
+        "cuanto sale el kilometro",
+        "precio del kilometro",
+        "tarifa del auto",
+        "cuanto cobra pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas",
+          "campo": "fields.auto.integerValue",
+          "plantilla": "En Pepe el auto sale {} pesos por kilómetro."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Tarifa de moto",
+      "frases": [
+        "tarifa de moto",
+        "cuanto sale la moto",
+        "precio de la moto"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas",
+          "campo": "fields.moto.integerValue",
+          "plantilla": "En Pepe la moto sale {} pesos por kilómetro."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Tarifa de cadetería",
+      "frases": [
+        "tarifa de cadeteria",
+        "cuanto sale un cadete",
+        "precio del cadete"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas",
+          "campo": "fields.cadeteria.integerValue",
+          "plantilla": "La cadetería sale {} pesos por kilómetro."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Tarifa de espera",
+      "frases": [
+        "tarifa de espera",
+        "cuanto sale la espera",
+        "precio de la espera"
+      ],
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas",
+          "campo": "fields.espera_por_minuto.integerValue",
+          "plantilla": "La espera sale {} pesos por minuto."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Cuánto sale un viaje",
+      "regex": "cuanto (?:sale|cuesta|cobro|cobras) (?:un viaje de )?([0-9]+(?:[.,][0-9]+)?) (?:km|kilometros|kilometro)",
+      "acciones": [
+        {
+          "tipo": "consultar",
+          "url": "https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas",
+          "campo": "fields.auto.integerValue",
+          "plantilla": "El kilómetro en auto está a {} pesos."
+        },
+        {
+          "tipo": "decir",
+          "texto": "Para {1} kilómetros multiplicá por esa tarifa, o decime \"cuánto es {1} por\" y la tarifa."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Agregar IVA",
+      "regex": "(?:agregale|sumale|ponele|con) (?:el )?iva (?:a )?([0-9]+)",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} por 1.21"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Eso es con el 21 por ciento de IVA."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Sacar IVA",
+      "regex": "(?:sacale|quitale|sin) (?:el )?iva (?:a )?([0-9]+)",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} dividido 1.21"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Eso es sin el IVA."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Kilómetros a millas",
+      "regex": "([0-9]+) (?:km|kilometros) (?:en|a) millas",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} por 0.621"
+        },
+        {
+          "tipo": "decir",
+          "texto": "millas."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Millas a kilómetros",
+      "regex": "([0-9]+) millas (?:en|a) (?:km|kilometros)",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} por 1.609"
+        },
+        {
+          "tipo": "decir",
+          "texto": "kilómetros."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Dividir la cuenta",
+      "regex": "dividi ([0-9]+) entre ([0-9]+)",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} dividido {2}"
+        },
+        {
+          "tipo": "decir",
+          "texto": "le toca a cada uno."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Fideos",
+      "frases": [
+        "puse los fideos",
+        "pone los fideos",
+        "temporizador de fideos",
+        "hago fideos"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "temporizador de 9 minutos"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te aviso en 9 minutos para los fideos al dente."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Huevo duro",
+      "frases": [
+        "huevo duro",
+        "huevos duros"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "temporizador de 10 minutos"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Diez minutos desde que hierve el agua."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Pizza al horno",
+      "frases": [
+        "meti la pizza",
+        "puse la pizza",
+        "pizza al horno"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "temporizador de 15 minutos"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te aviso en 15 minutos, fijate que no se queme."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Asado",
+      "frases": [
+        "puse el asado",
+        "prendi el fuego",
+        "temporizador del asado"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "temporizador de 1 hora"
+        },
+        {
+          "tipo": "decir",
+          "texto": "En una hora le pegás una mirada al asado."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Siesta",
+      "frases": [
+        "me voy a echar una siesta",
+        "siesta de 20 minutos",
+        "despertame en 20 minutos",
+        "una siestita"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "temporizador de 20 minutos"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Dormí tranquilo, en 20 minutos te despierto."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Soporte de Pepe",
+      "frases": [
+        "soporte de pepe",
+        "whatsapp de pepe",
+        "contacto de pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://wa.me/5493875157437"
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "¿Qué hacés?",
+      "frases": [
+        "que haces pepe",
+        "en que andas",
+        "que contas"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Acá, esperando que me pidas algo. ¿Te pongo música, te digo el clima o te ayudo con otra cosa?"
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Buenas noches",
+      "frases": [
+        "hasta manana",
+        "chau pepe",
+        "nos vemos pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Chau! Cualquier cosa, acá estoy."
+        }
+      ],
+      "v4": true
+    },
+    {
+      "nombre": "Aburrido",
+      "frases": [
+        "estoy aburrido",
+        "me aburro",
+        "que hago"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Te puedo contar un chiste, decirte las noticias o ponerte música. ¿Qué preferís?"
+        }
+      ],
+      "v4": true
     }
   ]
 }
