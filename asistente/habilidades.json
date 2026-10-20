@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "habilidades": [
+    {
+      "nombre": "Precio del bitcoin",
+      "frases": ["bitcoin", "precio del bitcoin", "cuanto esta el bitcoin"],
+      "acciones": [
+        {"tipo": "consultar", "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", "campo": "bitcoin.usd", "plantilla": "El bitcoin está a {} dólares."}
+      ]
+    },
+    {
+      "nombre": "Propina",
+      "regex": "propina (?:de|para|sobre) ([0-9]+)",
+      "acciones": [
+        {"tipo": "orden", "texto": "cuanto es 10 por ciento de {1}"},
+        {"tipo": "decir", "texto": "Eso es el 10 por ciento."}
+      ]
+    },
+    {
+      "nombre": "Modo dormir",
+      "frases": ["me voy a dormir", "modo dormir", "buenas noches pepe"],
+      "acciones": [
+        {"tipo": "orden", "texto": "pone en vibrar"},
+        {"tipo": "decir", "texto": "Que descanses, mañana seguimos."}
+      ]
+    }
+  ]
+}
