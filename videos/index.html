@@ -91,6 +91,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.2rem 16px 3rem; }
 .btn-principal { grid-column: 1 / -1; background: var(--amarillo); color: var(--negro); font-size: 1.05rem; padding: 1rem; }
 .btn-wa { background: #25d366; color: #0c0c0c; }
 .btn-fb { background: #1877f2; color: #fff; }
+.btn-ig { background: linear-gradient(45deg, #f9a825, #e1306c 55%, #833ab4); color: #fff; }
+.btn-tt { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.25); }
+.btn[hidden] { display: none; }
 .btn-gris { background: var(--gris2); color: var(--blanco); }
 .ayuda { margin-top: 12px; font-size: .85rem; color: var(--texto-apagado); line-height: 1.45; }
 .ayuda b { color: var(--blanco); }
@@ -136,9 +139,12 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.2rem 16px 3rem; }
     <div class="agarre"></div>
     <h3>Compartir</h3>
     <div class="botones">
+      <a class="btn btn-principal" id="btnChrome" hidden>Abrir en Chrome para mandar el video</a>
       <button class="btn btn-principal" id="btnCompartir">Compartir</button>
-      <a class="btn btn-wa" id="btnWa" target="_blank" rel="noopener">WhatsApp</a>
-      <a class="btn btn-fb" id="btnFb" target="_blank" rel="noopener">Facebook</a>
+      <button class="btn btn-wa app" data-app="WhatsApp">WhatsApp</button>
+      <button class="btn btn-fb app" data-app="Facebook">Facebook</button>
+      <button class="btn btn-ig app solo-archivo" data-app="Instagram">Instagram</button>
+      <button class="btn btn-tt app solo-archivo" data-app="TikTok">TikTok</button>
       <a class="btn btn-gris" id="btnBajar" download>Descargar</a>
       <button class="btn btn-gris" id="btnCopiar">Copiar texto</button>
     </div>
@@ -219,6 +225,8 @@ const puedeCompartirArchivos = (() => {
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.mp4', { type: 'video/mp4' })] })); }
   catch (e) { return false; }
 })();
+const navegadorDeApp = /FBAN|FBAV|FB_IAB|Instagram|Messenger|TikTok|musical_ly|BytedanceWebview/i.test(navigator.userAgent);
+const esAndroid = /Android/i.test(navigator.userAgent);
 function avisar(txt) {
   const a = $('aviso'); a.textContent = txt; a.style.display = 'block';
   clearTimeout(avisar.t); avisar.t = setTimeout(() => a.style.display = 'none', 2600);
@@ -387,19 +395,27 @@ function abrirHoja() {
   const item = actual; if (!item) return;
   const txt = textoDe(item);
   const src = 'archivos/' + item.archivo;
-  $('btnWa').href = 'https://wa.me/?text=' + encodeURIComponent((txt ? txt + '\n\n' : '') + linkDe(item));
-  $('btnFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(linkDe(item));
   $('btnBajar').href = src;
   $('btnBajar').setAttribute('download', item.archivo);
   $('btnCopiar').hidden = !txt;
   const que = item.tipo === 'video' ? 'el video' : 'la foto';
+  document.querySelectorAll('.app.solo-archivo').forEach(b => b.hidden = !puedeCompartirArchivos);
+  $('btnChrome').hidden = true;
+  $('btnCompartir').hidden = false;
   if (puedeCompartirArchivos) {
-    $('ayuda').innerHTML = '<b>Instagram o TikTok:</b> tocá el botón amarillo y elegí la app. El texto se copia solo: pegalo en la descripción.<br><b>WhatsApp o Facebook:</b> con el amarillo mandás ' + que + '; con el verde o el azul mandás el link.';
+    $('ayuda').innerHTML = 'Se manda <b>' + que + '</b>, no un link. Tocá la app y en la lista que aparece elegila de nuevo. El texto se copia solo: pegalo en la descripción.';
     prepararArchivo(item);
+  } else if (navegadorDeApp && esAndroid) {
+    // Navegador interno de Facebook/Instagram: no deja mandar archivos. Chrome sí.
+    $('btnChrome').href = 'intent://' + location.host + '/videos/?v=' + encodeURIComponent(item.id) + '#Intent;scheme=https;package=com.android.chrome;end';
+    $('btnChrome').hidden = false;
+    $('btnCompartir').hidden = true;
+    $('ayuda').innerHTML = 'Desde adentro de Facebook o Instagram no se puede mandar ' + que + '. Tocá <b>Abrir en Chrome</b> y compartilo desde ahí. Con los botones de abajo se manda solo el link.';
   } else {
     $('btnCompartir').textContent = 'Copiar link';
     $('btnCompartir').disabled = false;
-    $('ayuda').innerHTML = '<b>Instagram o TikTok:</b> tocá <b>Descargar</b> y subí ' + que + ' desde la app (o entrá a esta página desde el celular).<br><b>WhatsApp o Facebook:</b> usá los botones verde y azul.';
+    $('ayuda').innerHTML = (navegadorDeApp ? 'Desde adentro de Facebook o Instagram no se puede mandar ' + que + ': abrí esta página en Safari o Chrome. ' : '')
+      + 'Para mandar ' + que + ' entrá a esta página desde el celular. Desde acá: <b>Descargar</b> y subilo a la app, o con WhatsApp y Facebook mandás el link.';
   }
   const v = videoActual(); if (v && !v.paused) { v.pause(); }
   $('hojaFondo').classList.add('abierta');
@@ -418,6 +434,8 @@ $('hojaFondo').addEventListener('click', e => { if (e.target === $('hojaFondo'))
 // rechaza el share por falta de "gesto del usuario"). Se baja apenas se abre la hoja.
 async function prepararArchivo(item) {
   const b = $('btnCompartir');
+  const apps = document.querySelectorAll('.app');
+  apps.forEach(x => x.disabled = true);
   b.disabled = true; b.textContent = 'Preparando…';
   archivoListo = null;
   if (descarga) descarga.abort();
@@ -437,9 +455,11 @@ async function prepararArchivo(item) {
     const tipo = r.headers.get('content-type') || (item.tipo === 'video' ? 'video/mp4' : 'image/jpeg');
     archivoListo = new File(partes, item.archivo, { type: tipo.split(';')[0] });
     b.disabled = false; b.textContent = item.tipo === 'video' ? 'Compartir video' : 'Compartir foto';
+    apps.forEach(x => x.disabled = false);
   } catch (e) {
     if (e.name === 'AbortError' || actual !== item) return;
     b.disabled = false; b.textContent = 'Compartir link';
+    apps.forEach(x => x.disabled = false);
   }
 }
 
@@ -464,8 +484,28 @@ $('btnCompartir').onclick = async () => {
   }
   if (await copiar((txt ? txt + '\n\n' : '') + linkDe(actual))) { avisar('Link copiado. Pegalo donde quieras.'); contarCompartido(); }
 };
-$('btnWa').addEventListener('click', contarCompartido);
-$('btnFb').addEventListener('click', contarCompartido);
+// Botones de cada app: mandan el ARCHIVO (la web no puede elegir la app sola: se abre la lista
+// del teléfono y ahí se toca la app). Sin poder mandar archivos (compu, navegador interno de
+// Facebook/Instagram), WhatsApp y Facebook mandan el link.
+document.querySelectorAll('.app').forEach(boton => {
+  boton.onclick = async () => {
+    if (!actual) return;
+    const app = boton.dataset.app;
+    const txt = textoDe(actual);
+    if (archivoListo && navigator.canShare && navigator.canShare({ files: [archivoListo] })) {
+      copiar(txt);
+      avisar('Elegí ' + app + ' en la lista');
+      try { await navigator.share({ files: [archivoListo], text: txt || undefined }); contarCompartido(); }
+      catch (e) { if (e.name !== 'AbortError') avisar('No se pudo compartir. Probá con Descargar.'); }
+      return;
+    }
+    const link = linkDe(actual);
+    if (app === 'WhatsApp') window.open('https://wa.me/?text=' + encodeURIComponent((txt ? txt + '\n\n' : '') + link), '_blank', 'noopener');
+    else if (app === 'Facebook') window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(link), '_blank', 'noopener');
+    else return;
+    contarCompartido();
+  };
+});
 $('btnBajar').addEventListener('click', contarCompartido);
 $('btnCopiar').onclick = async () => {
   if (await copiar(textoDe(actual))) avisar('Texto copiado'); else avisar('No se pudo copiar');
