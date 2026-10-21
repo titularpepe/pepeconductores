@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1679,11 +1679,28 @@
       "acciones": [
         {
           "tipo": "decir",
-          "texto": "Unas ideas fáciles: fideos con salsa, milanesas con puré, tarta de verdura, guiso de arroz o empanadas. Te abro recetas para que elijas."
-        },
-        {
-          "tipo": "abrir_url",
-          "url": "https://www.google.com/search?q=recetas+faciles+y+rapidas+argentinas"
+          "textos": [
+            "¿Qué tal unas milanesas con puré? Si querés más ideas, decime \"dame una receta\".",
+            "Hoy pinta un guiso de lentejas. Si querés más ideas, decime \"dame una receta\".",
+            "¿Unas empanadas salteñas? Si querés más ideas, decime \"dame una receta\".",
+            "Pollo al horno con papas, fácil y rico. Si querés más ideas, decime \"dame una receta\".",
+            "Una tarta de verdura o de jamón y queso. Si querés más ideas, decime \"dame una receta\".",
+            "¿Unos tallarines con tuco? Si querés más ideas, decime \"dame una receta\".",
+            "Arroz con pollo, un clásico. Si querés más ideas, decime \"dame una receta\".",
+            "Unas hamburguesas caseras con ensalada. Si querés más ideas, decime \"dame una receta\".",
+            "Pizza casera, ¿te animás? Si querés más ideas, decime \"dame una receta\".",
+            "Locro, si hace frío. Si querés más ideas, decime \"dame una receta\".",
+            "Bife con ensalada mixta. Si querés más ideas, decime \"dame una receta\".",
+            "Fideos con manteca y queso, para algo rápido. Si querés más ideas, decime \"dame una receta\".",
+            "Tortilla de papas. Si querés más ideas, decime \"dame una receta\".",
+            "Zapallitos rellenos. Si querés más ideas, decime \"dame una receta\".",
+            "Pastel de papas. Si querés más ideas, decime \"dame una receta\".",
+            "Sándwiches de milanesa. Si querés más ideas, decime \"dame una receta\".",
+            "Ñoquis, y si es 29, mejor. Si querés más ideas, decime \"dame una receta\".",
+            "Ensalada César con pollo. Si querés más ideas, decime \"dame una receta\".",
+            "Albóndigas con salsa. Si querés más ideas, decime \"dame una receta\".",
+            "Humita en olla. Si querés más ideas, decime \"dame una receta\"."
+          ]
         }
       ],
       "v7": true
@@ -1721,11 +1738,25 @@
       "acciones": [
         {
           "tipo": "decir",
-          "texto": "Sin pasta: milanesas con puré, pollo al horno con papas, tarta de jamón y queso, guiso de lentejas, arroz con pollo o empanadas salteñas. Te abro recetas."
-        },
-        {
-          "tipo": "abrir_url",
-          "url": "https://www.google.com/search?q=recetas+faciles+sin+pasta"
+          "textos": [
+            "¿Qué tal unas milanesas con puré?",
+            "Hoy pinta un guiso de lentejas.",
+            "¿Unas empanadas salteñas?",
+            "Pollo al horno con papas, fácil y rico.",
+            "Una tarta de verdura o de jamón y queso.",
+            "Arroz con pollo, un clásico.",
+            "Unas hamburguesas caseras con ensalada.",
+            "Pizza casera, ¿te animás?",
+            "Locro, si hace frío.",
+            "Bife con ensalada mixta.",
+            "Tortilla de papas.",
+            "Zapallitos rellenos.",
+            "Pastel de papas.",
+            "Sándwiches de milanesa.",
+            "Ensalada César con pollo.",
+            "Albóndigas con salsa.",
+            "Humita en olla."
+          ]
         }
       ],
       "v8": true
@@ -2219,6 +2250,75 @@
         }
       ],
       "v10": true
+    },
+    {
+      "nombre": "Recetas",
+      "frases": [
+        "dame una receta",
+        "busca recetas",
+        "mostrame recetas",
+        "abri recetas"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?q=recetas+faciles+y+rapidas+argentinas"
+        }
+      ],
+      "v11": true
+    },
+    {
+      "nombre": "Tengo hambre",
+      "frases": [
+        "tengo hambre",
+        "me muero de hambre",
+        "que hay de comer",
+        "tengo ganas de comer"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "¡A comer! ¿Qué tal unas milanesas con puré?",
+            "¡A comer! Hoy pinta un guiso de lentejas.",
+            "¡A comer! ¿Unas empanadas salteñas?",
+            "¡A comer! Pollo al horno con papas, fácil y rico.",
+            "¡A comer! Una tarta de verdura o de jamón y queso.",
+            "¡A comer! ¿Unos tallarines con tuco?",
+            "¡A comer! Arroz con pollo, un clásico.",
+            "¡A comer! Unas hamburguesas caseras con ensalada.",
+            "¡A comer! Pizza casera, ¿te animás?",
+            "¡A comer! Locro, si hace frío.",
+            "¡A comer! Bife con ensalada mixta.",
+            "¡A comer! Fideos con manteca y queso, para algo rápido.",
+            "¡A comer! Tortilla de papas.",
+            "¡A comer! Zapallitos rellenos.",
+            "¡A comer! Pastel de papas.",
+            "¡A comer! Sándwiches de milanesa.",
+            "¡A comer! Ñoquis, y si es 29, mejor.",
+            "¡A comer! Ensalada César con pollo.",
+            "¡A comer! Albóndigas con salsa.",
+            "¡A comer! Humita en olla."
+          ]
+        }
+      ],
+      "v11": true
+    },
+    {
+      "nombre": "Me duele la cabeza",
+      "frases": [
+        "me duele la cabeza",
+        "dolor de cabeza",
+        "me siento mal",
+        "estoy mal"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Uh, cuidate. Tomá agua, descansá un rato con poca luz y si manejás, pará. Si es muy fuerte o no se pasa, consultá a un médico; para una urgencia, decime \"llamá a la ambulancia\"."
+        }
+      ],
+      "v11": true
     }
   ]
 }
