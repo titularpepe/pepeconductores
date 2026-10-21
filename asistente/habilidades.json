@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 23,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2568,6 +2568,37 @@
         }
       ],
       "v22": true
+    },
+    {
+      "nombre": "Cerrar WhatsApp",
+      "frases": [
+        "cerrar whatsapp",
+        "cerra whatsapp",
+        "cierra whatsapp",
+        "cerrame whatsapp",
+        "cerrame el whatsapp",
+        "cerra el whatsapp",
+        "cierra el whatsapp",
+        "cerrar el whatsapp",
+        "salir de whatsapp",
+        "sali de whatsapp",
+        "salir del whatsapp",
+        "sali del whatsapp",
+        "cerra el wasap",
+        "cerrar wasap",
+        "cerra wasap"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.home"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Listo, saqué WhatsApp de la pantalla. Para cerrarlo del todo, tocá el botón cuadrado de abajo y deslizalo."
+        }
+      ],
+      "v23": true
     }
   ]
 }
