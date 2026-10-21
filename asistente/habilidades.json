@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2319,6 +2319,52 @@
         }
       ],
       "v11": true
+    },
+    {
+      "nombre": "Tránsito hasta un lugar",
+      "regex": "^(?:como esta |como anda |hay mucho )?(?:el )?(?:transito|trafico) (?:para ir |para llegar )?(?:a|al|a la|hasta) (.+)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.VIEW",
+          "datos": "google.navigation:q={1}"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro el camino a {1}; el mapa te muestra la demora con el tránsito de ahora."
+        }
+      ],
+      "v12": true
+    },
+    {
+      "nombre": "Cómo está el tránsito",
+      "frases": [
+        "como esta el transito",
+        "como esta el trafico",
+        "como anda el transito",
+        "como anda el trafico",
+        "hay mucho transito",
+        "hay mucho trafico",
+        "transito",
+        "trafico",
+        "el transito",
+        "estado del transito",
+        "mostrame el transito",
+        "mostrame el trafico",
+        "como estan las calles",
+        "hay embotellamiento"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/@?api=1&map_action=map&layer=traffic"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro el tránsito en el mapa: verde es fluido, naranja lento y rojo trabado."
+        }
+      ],
+      "v12": true
     }
   ]
 }
