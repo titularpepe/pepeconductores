@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2552,6 +2552,22 @@
           "texto": "borra las notificaciones"
         }
       ]
+    },
+    {
+      "nombre": "Qué onda",
+      "regex": "^(?:hola |ey |eh )?(?:pepe )?(?:que onda|que tal|que hay|como va|como andamos|todo bien|todo tranqui|que contas|que se cuenta)(?: pepe)?(?: todo bien)?$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "¡Qué onda, David! Todo tranqui por acá. ¿En qué te doy una mano?",
+            "¡Todo bien! Acá ando, listo para lo que necesites.",
+            "¡Buenas! Todo en orden. ¿Qué hacemos?",
+            "¡Qué onda! Bien, bien. Decime qué precisás."
+          ]
+        }
+      ],
+      "v22": true
     }
   ]
 }
