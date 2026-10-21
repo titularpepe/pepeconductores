@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 21,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2505,6 +2505,53 @@
         }
       ],
       "v19": true
+    },
+    {
+      "nombre": "Borrar notificaciones de una app",
+      "regex": "(?:^|\\b)(?:borrar|borro|borre|borrale|limpiar|limpio|limpie|eliminar|elimina|sacar|quitar|quitame|eliminame)(?: todas)? (?:las )?notificaciones(?: push)? de (?:la |el )?(.+)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "borra las notificaciones de {1}"
+        }
+      ]
+    },
+    {
+      "nombre": "Borrar notificaciones",
+      "frases": [
+        "borrale las notificaciones",
+        "borrale todas las notificaciones",
+        "borrar las notificaciones",
+        "borrar todas las notificaciones",
+        "borre las notificaciones",
+        "borre todas las notificaciones",
+        "borro las notificaciones",
+        "borro todas las notificaciones",
+        "elimina las notificaciones",
+        "elimina todas las notificaciones",
+        "eliminame las notificaciones",
+        "eliminame todas las notificaciones",
+        "eliminar las notificaciones",
+        "eliminar todas las notificaciones",
+        "limpiar las notificaciones",
+        "limpiar todas las notificaciones",
+        "limpie las notificaciones",
+        "limpie todas las notificaciones",
+        "limpio las notificaciones",
+        "limpio todas las notificaciones",
+        "quitame las notificaciones",
+        "quitame todas las notificaciones",
+        "quitar las notificaciones",
+        "quitar todas las notificaciones",
+        "sacar las notificaciones",
+        "sacar todas las notificaciones"
+      ],
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "borra las notificaciones"
+        }
+      ]
     }
   ]
 }
