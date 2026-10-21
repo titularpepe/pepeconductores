@@ -1,5 +1,5 @@
 {
-  "version": 24,
+  "version": 25,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -133,7 +133,20 @@
         "cerrar aplicaciones abiertas",
         "cerra las aplicaciones abiertas",
         "limpiar aplicaciones",
-        "limpia las aplicaciones"
+        "limpia las aplicaciones",
+        "cerrar todos los programas",
+        "cerra todos los programas",
+        "cierra todos los programas",
+        "cerrame todos los programas",
+        "cerrar los programas",
+        "cerra los programas",
+        "cierra los programas",
+        "cerrar programas abiertos",
+        "cerra los programas abiertos",
+        "cerrar todas las ventanas",
+        "cerra todas las ventanas",
+        "cierra todas las ventanas",
+        "cerrar todas las pestanas"
       ],
       "acciones": [
         {
@@ -145,7 +158,8 @@
           "texto": "Android no me deja cerrar otras apps por mi cuenta. Te dejé en el inicio: tocá el botón cuadrado de abajo y después la cruz para cerrar todas."
         }
       ],
-      "v24": true
+      "v24": true,
+      "v25": true
     },
     {
       "nombre": "Clima en Buenos Aires",
@@ -1737,7 +1751,24 @@
         "anda al inicio",
         "volve al inicio",
         "pantalla de inicio",
-        "anda al escritorio"
+        "anda al escritorio",
+        "boton de inicio",
+        "boton inicio",
+        "boton del inicio",
+        "boton home",
+        "toca el boton de inicio",
+        "toca inicio",
+        "apreta inicio",
+        "apreta el boton de inicio",
+        "ir al inicio",
+        "anda a inicio",
+        "volve a inicio",
+        "volver al inicio",
+        "ir a la pantalla de inicio",
+        "pantalla principal",
+        "anda a la pantalla principal",
+        "ir al escritorio",
+        "volve al escritorio"
       ],
       "acciones": [
         {
@@ -1745,7 +1776,8 @@
           "paquete": "com.miui.home"
         }
       ],
-      "v8": true
+      "v8": true,
+      "v25": true
     },
     {
       "nombre": "Cocinar sin pasta",
