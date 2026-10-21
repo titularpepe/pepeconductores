@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1676,6 +1676,48 @@
         }
       ],
       "v7": true
+    },
+    {
+      "nombre": "Minimizar",
+      "frases": [
+        "minimizar la app",
+        "minimiza la app",
+        "minimizate",
+        "minimizar",
+        "anda al inicio",
+        "volve al inicio",
+        "pantalla de inicio",
+        "anda al escritorio"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.home"
+        }
+      ],
+      "v8": true
+    },
+    {
+      "nombre": "Cocinar sin pasta",
+      "frases": [
+        "que otra cosa puedo cocinar",
+        "que no sea pasta",
+        "algo que no sea pasta",
+        "otra comida",
+        "otra receta",
+        "sin fideos"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Sin pasta: milanesas con puré, pollo al horno con papas, tarta de jamón y queso, guiso de lentejas, arroz con pollo o empanadas salteñas. Te abro recetas."
+        },
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?q=recetas+faciles+sin+pasta"
+        }
+      ],
+      "v8": true
     }
   ]
 }
