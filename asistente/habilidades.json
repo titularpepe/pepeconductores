@@ -1,5 +1,5 @@
 {
-  "version": 23,
+  "version": 24,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -116,14 +116,36 @@
         "cierra todas las aplicaciones",
         "cerra las apps",
         "cierra las apps",
-        "cerra todo"
+        "cerra todo",
+        "cerrar todas las aplicaciones",
+        "cerrar todas las apps",
+        "cerra todas las apps",
+        "cierra todas las apps",
+        "cerrame todas las aplicaciones",
+        "cerrame todas las apps",
+        "cerrar las aplicaciones",
+        "cerra las aplicaciones",
+        "cierra las aplicaciones",
+        "cerrar las apps",
+        "cerrar todo",
+        "cierra todo",
+        "cerrame todo",
+        "cerrar aplicaciones abiertas",
+        "cerra las aplicaciones abiertas",
+        "limpiar aplicaciones",
+        "limpia las aplicaciones"
       ],
       "acciones": [
         {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.home"
+        },
+        {
           "tipo": "decir",
-          "texto": "Android no me deja cerrar otras apps por mi cuenta. Tocá el botón cuadrado de abajo y después la cruz para cerrar todas."
+          "texto": "Android no me deja cerrar otras apps por mi cuenta. Te dejé en el inicio: tocá el botón cuadrado de abajo y después la cruz para cerrar todas."
         }
-      ]
+      ],
+      "v24": true
     },
     {
       "nombre": "Clima en Buenos Aires",
@@ -2599,6 +2621,35 @@
         }
       ],
       "v23": true
+    },
+    {
+      "nombre": "Ajustes del sistema",
+      "frases": [
+        "boton sistema",
+        "boton de sistema",
+        "boton del sistema",
+        "sistema del telefono",
+        "sistema del celular",
+        "ajustes del sistema",
+        "ajustes de sistema",
+        "configuracion del sistema",
+        "configuracion de sistema",
+        "abri sistema",
+        "abrir sistema",
+        "abri el sistema",
+        "abrir el sistema"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.settings.SETTINGS"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abrí los ajustes del sistema."
+        }
+      ],
+      "v24": true
     }
   ]
 }
