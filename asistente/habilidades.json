@@ -1,5 +1,5 @@
 {
-  "version": 26,
+  "version": 27,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1785,7 +1785,23 @@
         "pantalla principal",
         "anda a la pantalla principal",
         "ir al escritorio",
-        "volve al escritorio"
+        "volve al escritorio",
+        "ponete el segundo plano",
+        "ponete en segundo plano",
+        "pasate a segundo plano",
+        "pasa a segundo plano",
+        "segundo plano",
+        "en segundo plano",
+        "quedate en segundo plano",
+        "anda a segundo plano",
+        "andate a segundo plano",
+        "pone en segundo plano",
+        "ponerte en segundo plano",
+        "ponete atras",
+        "ocultate",
+        "escondete",
+        "sali de la pantalla",
+        "salite de la pantalla"
       ],
       "acciones": [
         {
@@ -1794,7 +1810,8 @@
         }
       ],
       "v8": true,
-      "v25": true
+      "v25": true,
+      "v27": true
     },
     {
       "nombre": "Cocinar sin pasta",
