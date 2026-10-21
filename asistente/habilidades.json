@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2471,6 +2471,34 @@
         }
       ],
       "v17": true
+    },
+    {
+      "nombre": "Claro Pay (billetera)",
+      "frases": [
+        "claro app",
+        "clara app",
+        "claro ap",
+        "claro pay",
+        "claro pei",
+        "claro pai",
+        "claro paid",
+        "claropay",
+        "claro play",
+        "abri claro pay",
+        "abri claro app",
+        "billetera de claro",
+        "abri la billetera de claro",
+        "abri la billetera",
+        "mi billetera",
+        "la billetera"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.ar.claropay.app"
+        }
+      ],
+      "v19": true
     }
   ]
 }
