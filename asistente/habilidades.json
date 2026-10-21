@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2398,6 +2398,35 @@
         }
       ],
       "v13": true
+    },
+    {
+      "nombre": "¿Cuáles son las apps de Pepe?",
+      "frases": [
+        "cuales son todas las app de pepe",
+        "cuales son todas las apps de pepe",
+        "cuales son las apps de pepe",
+        "cuales son las app de pepe",
+        "que apps tiene pepe",
+        "que app tiene pepe",
+        "que aplicaciones tiene pepe",
+        "cuales son las aplicaciones de pepe",
+        "apps de pepe",
+        "app de pepe",
+        "aplicaciones de pepe",
+        "todas las apps de pepe",
+        "las apps de pepe",
+        "cuantas apps tiene pepe",
+        "que apps hay de pepe",
+        "decime las apps de pepe",
+        "nombrame las apps de pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Las apps de Pepe son cuatro: Pepe Conductores, para los choferes; Pepe Pasajeros, para pedir viajes; el Filtro de viajes; y la app Pepe, el catálogo. Decime \"abrí pepe conductores\", \"abrí pepe pasajeros\", \"abrí el filtro\" o \"abrí la app pepe\"."
+        }
+      ],
+      "v14": true
     }
   ]
 }
