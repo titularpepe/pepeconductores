@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1657,13 +1657,24 @@
     {
       "nombre": "¿Qué cocino hoy?",
       "frases": [
-        "que puedo cocinar",
-        "que cocino hoy",
         "cocinar hoy",
-        "que hago de comer",
+        "dame una receta",
+        "que almuerzo",
+        "que ceno",
+        "que cocino hoy",
+        "que cocino manana",
+        "que comemos",
+        "que comemos hoy",
+        "que comemos manana",
         "que como hoy",
-        "una receta",
-        "dame una receta"
+        "que como manana",
+        "que hago de cenar",
+        "que hago de comer",
+        "que hago de comer manana",
+        "que puedo cocinar",
+        "que puedo comer",
+        "que puedo comer manana",
+        "una receta"
       ],
       "acciones": [
         {
