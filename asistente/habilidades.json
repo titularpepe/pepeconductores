@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1905,10 +1905,10 @@
     {
       "nombre": "Archivos",
       "frases": [
-        "archivos",
         "mis archivos",
         "abri los archivos",
-        "descargas"
+        "abri mis archivos",
+        "abri las descargas"
       ],
       "acciones": [
         {
