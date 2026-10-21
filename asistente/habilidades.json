@@ -1,5 +1,5 @@
 {
-  "version": 25,
+  "version": 26,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1660,7 +1660,23 @@
         "donde anda zoe",
         "donde anda la zoe",
         "abri life 360",
-        "abri life360"
+        "abri life360",
+        "vuelve a fijarte donde esta",
+        "volve a fijarte donde esta",
+        "fijate de nuevo donde esta",
+        "fijate otra vez donde esta",
+        "fijate donde esta",
+        "fijate donde esta zoe",
+        "fijate donde anda zoe",
+        "vuelve a fijarte donde esta zoe",
+        "volve a fijarte donde esta zoe",
+        "volve a mirar donde esta",
+        "mira de nuevo donde esta",
+        "mira donde esta zoe",
+        "revisa donde esta zoe",
+        "donde esta ahora",
+        "donde esta zoe ahora",
+        "por donde anda zoe"
       ],
       "acciones": [
         {
@@ -1672,7 +1688,8 @@
           "texto": "Te abro Life 360 para que veas dónde está Zoe."
         }
       ],
-      "v6": true
+      "v6": true,
+      "v26": true
     },
     {
       "nombre": "Sacar foto",
