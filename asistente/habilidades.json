@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2456,6 +2456,39 @@
         }
       ],
       "v15": true
+    },
+    {
+      "nombre": "Precio del GNC",
+      "frases": [
+        "cuanto sale cargar el tubo de gnc",
+        "cuanto sale cargar el tubo",
+        "cuanto sale llenar el tubo",
+        "cuanto sale cargar gnc",
+        "cuanto cuesta cargar gnc",
+        "cuanto sale el gnc",
+        "cuanto esta el gnc",
+        "cuanto cuesta el gnc",
+        "a cuanto esta el gnc",
+        "precio del gnc",
+        "precio de gnc",
+        "cuanto sale el metro de gnc",
+        "cuanto sale el metro cubico de gnc",
+        "cuanto sale cargar gas",
+        "cuanto sale el gas del auto",
+        "cuanto sale el tubo",
+        "precio del metro de gnc"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?q=precio+GNC+hoy+Salta+metro+c%C3%BAbico"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te busco el precio del metro cúbico de GNC en Salta. Multiplicalo por la capacidad de tu tubo y sabés cuánto sale llenarlo."
+        }
+      ],
+      "v16": true
     }
   ]
 }
