@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1729,6 +1729,496 @@
         }
       ],
       "v8": true
+    },
+    {
+      "nombre": "Calculadora",
+      "frases": [
+        "calculadora",
+        "abri la calculadora",
+        "abrir calculadora"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.calculator"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Galería",
+      "frases": [
+        "galeria",
+        "abri la galeria",
+        "mis fotos",
+        "mostrame las fotos",
+        "ver fotos"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.gallery"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Contactos",
+      "frases": [
+        "contactos",
+        "abri los contactos",
+        "agenda de contactos"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.google.android.contacts"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Reloj",
+      "frases": [
+        "reloj",
+        "abri el reloj",
+        "cronometro",
+        "abri el cronometro",
+        "mis alarmas"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.android.deskclock"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Calendario",
+      "frases": [
+        "calendario",
+        "abri el calendario",
+        "mi agenda"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.google.android.calendar"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Notas de Xiaomi",
+      "frases": [
+        "abri las notas",
+        "app de notas",
+        "bloc de notas"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.notes"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Brújula",
+      "frases": [
+        "brujula",
+        "abri la brujula",
+        "nivel",
+        "donde esta el norte"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.compass"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Escáner",
+      "frases": [
+        "escaner",
+        "escanear",
+        "leer un qr",
+        "escanea un qr",
+        "codigo qr"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.xiaomi.scanner"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Grabadora",
+      "frases": [
+        "grabadora",
+        "abri la grabadora"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.android.soundrecorder"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Archivos",
+      "frases": [
+        "archivos",
+        "mis archivos",
+        "abri los archivos",
+        "descargas"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.mi.android.globalFileexplorer"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Mapa",
+      "frases": [
+        "mapa",
+        "abri el mapa",
+        "google maps"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.google.android.apps.maps"
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Cómo llegar",
+      "regex": "^(?:llevame|como llego|como voy|navega|ir) (?:a|al|a la|hasta) (.+)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.VIEW",
+          "datos": "google.navigation:q={1}"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te armo el camino a {1}."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Farmacias",
+      "frases": [
+        "farmacia",
+        "farmacia cerca",
+        "farmacia de turno",
+        "una farmacia"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/farmacia/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro farmacias en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Estaciones de GNC",
+      "frases": [
+        "gnc cerca",
+        "donde cargo gnc",
+        "estacion de gnc",
+        "cargar gas",
+        "cargar gnc"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/estacion+de+GNC/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro estaciones de gnc en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Estaciones de servicio",
+      "frases": [
+        "estacion de servicio",
+        "cargar nafta",
+        "donde cargo nafta",
+        "nafta cerca"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/estacion+de+servicio/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro estaciones de servicio en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Cajeros",
+      "frases": [
+        "cajero",
+        "cajero cerca",
+        "cajero automatico",
+        "sacar plata"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/cajero+automatico/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro cajeros en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Hospitales",
+      "frases": [
+        "hospital",
+        "hospital cerca",
+        "guardia",
+        "clinica cerca"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/hospital/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro hospitales en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Gomerías",
+      "frases": [
+        "gomeria",
+        "gomeria cerca",
+        "pinche una goma",
+        "se me pincho la goma"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/gomeria/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro gomerías en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Lavaderos de autos",
+      "frases": [
+        "lavadero",
+        "lavar el auto",
+        "lavadero de autos"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/lavadero+de+autos/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro lavaderos de autos en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Talleres mecánicos",
+      "frases": [
+        "taller mecanico",
+        "mecanico cerca",
+        "un mecanico"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/taller+mecanico/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro talleres mecánicos en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Supermercados",
+      "frases": [
+        "supermercado",
+        "super cerca",
+        "supermercado cerca"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/supermercado/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro supermercados en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Panaderías",
+      "frases": [
+        "panaderia",
+        "panaderia cerca"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/panaderia/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro panaderías en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Restaurantes",
+      "frases": [
+        "donde como",
+        "restaurante cerca",
+        "lugar para comer",
+        "rotiseria"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/maps/search/restaurante/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te muestro restaurantes en el mapa."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "¿Cuántos años tenés?",
+      "frases": [
+        "cuantos anos tenes",
+        "que edad tenes"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Nací el 20 de octubre de 2026, así que soy un bebé. Pero aprendo rápido."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "¿De dónde sos?",
+      "frases": [
+        "de donde sos",
+        "donde naciste"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Soy salteño, como vos. Vivo en tu teléfono."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "¿Sos humano?",
+      "frases": [
+        "sos humano",
+        "sos una persona",
+        "sos un robot",
+        "sos inteligencia artificial"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Soy un asistente: hago lo que aprendí. No soy una persona, pero te banco igual."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "¿Me escuchás?",
+      "frases": [
+        "me escuchas",
+        "estas ahi",
+        "hola pepe estas"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Acá estoy! Decime."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Te extrañé",
+      "frases": [
+        "te extrane",
+        "me extranaste"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Yo también! Acá estuve esperando."
+        }
+      ],
+      "v10": true
+    },
+    {
+      "nombre": "Buenas tardes",
+      "frases": [
+        "buenas tardes pepe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "¡Buenas tardes! ¿En qué te ayudo?"
+        }
+      ],
+      "v10": true
     }
   ]
 }
