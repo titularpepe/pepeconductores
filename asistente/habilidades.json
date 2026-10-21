@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2365,6 +2365,39 @@
         }
       ],
       "v12": true
+    },
+    {
+      "nombre": "Cuánto falta para la carga completa",
+      "frases": [
+        "cuanto falta para que cargue",
+        "cuanto falta para que se cargue",
+        "cuanto le falta para cargar",
+        "cuanto falta para que termine de cargar",
+        "cuanto falta para que este cargado",
+        "cuanto falta para que este cargada",
+        "cuanto falta para la carga completa",
+        "cuanto falta para el cien por ciento",
+        "cuanto falta para el 100",
+        "cuanto le falta a la bateria",
+        "cuanto tarda en cargar",
+        "cuanto tarda en cargarse",
+        "cuanto demora en cargar",
+        "cuanto tiempo falta para cargar",
+        "cuanto tiempo le falta para cargar",
+        "en cuanto termina de cargar",
+        "en cuanto se carga"
+      ],
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.POWER_USAGE_SUMMARY"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro la batería: mientras está enchufado, ahí arriba dice cuánto falta para la carga completa. Si querés, decime \"avisame cuando termine de cargar\"."
+        }
+      ],
+      "v13": true
     }
   ]
 }
