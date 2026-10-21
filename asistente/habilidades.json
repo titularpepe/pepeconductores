@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 20,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2475,22 +2475,28 @@
     {
       "nombre": "Claro Pay (billetera)",
       "frases": [
-        "claro app",
+        "abre claro",
+        "abri claro",
+        "abri claro app",
+        "abri claro pay",
+        "abri el claro",
+        "abri la billetera",
+        "abri la billetera de claro",
+        "abri la de claro",
+        "abrime claro",
+        "abrir claro",
+        "billetera de claro",
         "clara app",
         "claro ap",
-        "claro pay",
-        "claro pei",
+        "claro app",
         "claro pai",
         "claro paid",
-        "claropay",
+        "claro pay",
+        "claro pei",
         "claro play",
-        "abri claro pay",
-        "abri claro app",
-        "billetera de claro",
-        "abri la billetera de claro",
-        "abri la billetera",
-        "mi billetera",
-        "la billetera"
+        "claropay",
+        "la billetera",
+        "mi billetera"
       ],
       "acciones": [
         {
