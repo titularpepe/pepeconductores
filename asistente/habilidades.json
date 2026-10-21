@@ -1,5 +1,5 @@
 {
-  "version": 16,
+  "version": 17,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2429,35 +2429,6 @@
       "v14": true
     },
     {
-      "nombre": "Último mensaje de WhatsApp",
-      "frases": [
-        "cual fue mi ultimo mensaje de whatsapp",
-        "cual fue el ultimo mensaje de whatsapp",
-        "cual es mi ultimo mensaje de whatsapp",
-        "cual es el ultimo mensaje de whatsapp",
-        "ultimo mensaje de whatsapp",
-        "mi ultimo mensaje de whatsapp",
-        "cual fue mi ultimo whatsapp",
-        "cual fue el ultimo whatsapp",
-        "el ultimo whatsapp",
-        "ultimo whatsapp",
-        "quien me mando el ultimo whatsapp",
-        "quien me escribio por whatsapp",
-        "que me mandaron por whatsapp",
-        "leeme el ultimo whatsapp",
-        "leeme el ultimo mensaje",
-        "cual fue mi ultimo mensaje",
-        "cual fue el ultimo mensaje"
-      ],
-      "acciones": [
-        {
-          "tipo": "orden",
-          "texto": "leeme los mensajes"
-        }
-      ],
-      "v15": true
-    },
-    {
       "nombre": "Precio del GNC",
       "frases": [
         "cuanto sale cargar el tubo de gnc",
@@ -2489,6 +2460,17 @@
         }
       ],
       "v16": true
+    },
+    {
+      "nombre": "Detener la música",
+      "regex": "^(detener|detene|deten|detenelo|detenela|detenete|stop|para todo|pausa todo|frena todo)( la musica| la cancion| el tema| el audio| el video| todo| eso| esto)?( por favor)?$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "pausa"
+        }
+      ],
+      "v17": true
     }
   ]
 }
