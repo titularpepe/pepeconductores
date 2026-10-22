@@ -1,5 +1,5 @@
 {
-  "version": 27,
+  "version": 28,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2716,6 +2716,40 @@
         }
       ],
       "v24": true
+    },
+    {
+      "nombre": "Uso de Claude",
+      "frases": [
+        "cuanto me queda para gastar en la sesion de claude",
+        "cuanto me queda en la sesion de claude",
+        "cuanto me queda de claude",
+        "cuanto me queda en claude",
+        "cuantos token me queda en claude",
+        "cuantos tokens me quedan en claude",
+        "cuantos tokens me queda en claude",
+        "tokens de claude",
+        "token de claude",
+        "uso de claude",
+        "limite de claude",
+        "cuanto gaste en claude",
+        "cuanto llevo gastado en claude",
+        "cuanto uso me queda de claude",
+        "sesion de claude",
+        "cuanto me queda de la sesion de claude",
+        "cuando se renueva claude",
+        "consumo de claude"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://claude.ai/settings/usage"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro la página de uso de Claude: ahí ves cuánto te queda de la sesión y cuándo se renueva."
+        }
+      ],
+      "v28": true
     }
   ]
 }
