@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 30,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2789,6 +2789,78 @@
         }
       ],
       "v29": true
+    },
+    {
+      "nombre": "Buscar en Google (lo dicho antes)",
+      "regex": "^(?:pepe )?(.+?) (?:busca|buscalo|buscar|buscame|buscamelo|busque|fijate|fijalo)(?: eso)? en (?:google|internet)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.WEB_SEARCH",
+          "extras": {
+            "query": "{1}"
+          }
+        },
+        {
+          "tipo": "decir",
+          "texto": "Busco {1} en Google."
+        }
+      ],
+      "v30": true
+    },
+    {
+      "nombre": "Buscar en Google (lo dicho despues)",
+      "regex": "^(?:pepe )?(?:busca|buscame|buscar|busque|fijate|googlea|googleame) en (?:google|internet) (.+)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.WEB_SEARCH",
+          "extras": {
+            "query": "{1}"
+          }
+        },
+        {
+          "tipo": "decir",
+          "texto": "Busco {1} en Google."
+        }
+      ],
+      "v30": true
+    },
+    {
+      "nombre": "Buscar en Google (lo dicho en el medio)",
+      "regex": "^(?:pepe )?(?:busca|buscame|buscar|busque|fijate) (?!en (?:google|internet))(.+?) en (?:google|internet)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.WEB_SEARCH",
+          "extras": {
+            "query": "{1}"
+          }
+        },
+        {
+          "tipo": "decir",
+          "texto": "Busco {1} en Google."
+        }
+      ],
+      "v30": true
+    },
+    {
+      "nombre": "Googlear",
+      "regex": "^(?:pepe )?(?:googlea|googleame|googlear|googlealo) (?!en (?:google|internet))(.+)$",
+      "acciones": [
+        {
+          "tipo": "intent",
+          "accion": "android.intent.action.WEB_SEARCH",
+          "extras": {
+            "query": "{1}"
+          }
+        },
+        {
+          "tipo": "decir",
+          "texto": "Busco {1} en Google."
+        }
+      ],
+      "v30": true
     }
   ]
 }
