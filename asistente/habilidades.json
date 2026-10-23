@@ -1,5 +1,5 @@
 {
-  "version": 28,
+  "version": 29,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2750,6 +2750,45 @@
         }
       ],
       "v28": true
+    },
+    {
+      "nombre": "Página de Ludamic",
+      "frases": [
+        "ludamic.com.ar abrir",
+        "abrir ludamic.com.ar",
+        "abri ludamic.com.ar",
+        "abrime ludamic.com.ar",
+        "ludamic.com.ar",
+        "ludamic com ar abrir",
+        "abrir ludamic com ar",
+        "abri ludamic com ar",
+        "ludamic punto com punto ar",
+        "abri ludamic punto com punto ar",
+        "abrir ludamic punto com punto ar",
+        "ludamic abrir",
+        "abrir ludamic",
+        "abri ludamic",
+        "abrime ludamic",
+        "ludamic",
+        "pagina de ludamic",
+        "abri la pagina de ludamic",
+        "abrir la pagina de ludamic",
+        "entra a ludamic",
+        "anda a ludamic",
+        "web de ludamic",
+        "abri la web de ludamic"
+      ],
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://ludamic.com.ar/"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Te abro ludamic punto com punto ar."
+        }
+      ],
+      "v29": true
     }
   ]
 }
