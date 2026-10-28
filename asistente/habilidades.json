@@ -1,5 +1,5 @@
 {
-  "version": 30,
+  "version": 31,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2861,6 +2861,102 @@
         }
       ],
       "v30": true
+    },
+    {
+      "nombre": "Sumar 2 numeros",
+      "regex": "^(?:pepe )?(?:puedes |podes |me )?(?:suma|sumame|sumar|sumame|sumalos|suma me|hace la suma de|haceme la suma de|hacer la suma de|hazme la suma de|cuanto suman|cuanto suma|cuanto da la suma de|cuanto es la suma de)(?: de)?(?: los numeros)? (\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} + {2}"
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Sumar 3 numeros",
+      "regex": "^(?:pepe )?(?:puedes |podes |me )?(?:suma|sumame|sumar|sumame|sumalos|suma me|hace la suma de|haceme la suma de|hacer la suma de|hazme la suma de|cuanto suman|cuanto suma|cuanto da la suma de|cuanto es la suma de)(?: de)?(?: los numeros)? (\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} + {2} + {3}"
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Sumar 4 numeros",
+      "regex": "^(?:pepe )?(?:puedes |podes |me )?(?:suma|sumame|sumar|sumame|sumalos|suma me|hace la suma de|haceme la suma de|hacer la suma de|hazme la suma de|cuanto suman|cuanto suma|cuanto da la suma de|cuanto es la suma de)(?: de)?(?: los numeros)? (\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} + {2} + {3} + {4}"
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Sumar 5 numeros",
+      "regex": "^(?:pepe )?(?:puedes |podes |me )?(?:suma|sumame|sumar|sumame|sumalos|suma me|hace la suma de|haceme la suma de|hacer la suma de|hazme la suma de|cuanto suman|cuanto suma|cuanto da la suma de|cuanto es la suma de)(?: de)?(?: los numeros)? (\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} + {2} + {3} + {4} + {5}"
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Sumar 6 numeros",
+      "regex": "^(?:pepe )?(?:puedes |podes |me )?(?:suma|sumame|sumar|sumame|sumalos|suma me|hace la suma de|haceme la suma de|hacer la suma de|hazme la suma de|cuanto suman|cuanto suma|cuanto da la suma de|cuanto es la suma de)(?: de)?(?: los numeros)? (\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?) ?(?:\\+|mas|y) ?(\\d+(?:,\\d+)?)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "cuanto es {1} + {2} + {3} + {4} + {5} + {6}"
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Hacer una suma",
+      "frases": [
+        "puedes hacerme una suma",
+        "podes hacerme una suma",
+        "hazme una suma",
+        "haceme una suma",
+        "hacerme una suma",
+        "hace una suma",
+        "quiero hacer una suma",
+        "necesito hacer una suma",
+        "haceme una cuenta",
+        "hazme una cuenta",
+        "puedes hacerme una cuenta",
+        "hacerme una cuenta",
+        "quiero hacer una cuenta",
+        "sabes sumar",
+        "sabes hacer cuentas"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Dale, decime los numeros. Por ejemplo: suma 23000 mas 13700 mas 145500.",
+            "Claro. Decime la cuenta, por ejemplo: cuanto es 100 mas 250 menos 30."
+          ]
+        }
+      ],
+      "v31": true
+    },
+    {
+      "nombre": "Que dia seria",
+      "regex": "que (?:dia|fecha) (?:seria|va a ser|sera|caeria|cae|fue|era|seria el|cae el) (pasado manana|manana|anteayer|ayer|hoy)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "que dia es {1}"
+        }
+      ],
+      "v31": true
     }
   ]
 }
