@@ -42,6 +42,39 @@
       "disponible": true,
       "estado": "beta",
       "linkBeta": "https://play.google.com/apps/internaltest/4700517440290887601"
+    },
+    {
+      "id": "escaner",
+      "nombre": "Pepe Escáner OBD2",
+      "descripcion": "Leé las fallas de tu auto y mirá el motor en vivo con un ELM327 por Bluetooth.",
+      "emoji": "🚗",
+      "imagenUrl": "https://pepeconductores.com/apps-iconos/escaner.png",
+      "packageName": "com.david.escanerobd2",
+      "disponible": true,
+      "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/internaltest/4698063829688821284"
+    },
+    {
+      "id": "reproductor",
+      "nombre": "Reproductor de Pepe",
+      "descripcion": "Tu música del teléfono, simple, con ecualizador y sin internet.",
+      "emoji": "🎵",
+      "imagenUrl": "https://pepeconductores.com/apps-iconos/reproductor.png",
+      "packageName": "com.david.reproductor",
+      "disponible": true,
+      "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/internaltest/4701508628473808702"
+    },
+    {
+      "id": "cuentaregresiva",
+      "nombre": "Cuenta Regresiva Pepe",
+      "descripcion": "Minutos y cuadras que faltan para llegar a tiempo, con tu velocidad crucero.",
+      "emoji": "⏱️",
+      "imagenUrl": "https://pepeconductores.com/apps-iconos/cuentaregresiva.png",
+      "packageName": "com.titularpepe.cuentaregresiva",
+      "disponible": true,
+      "estado": "beta",
+      "linkBeta": "https://play.google.com/apps/internaltest/4701400353804726163"
     }
   ],
   "pepe": {
