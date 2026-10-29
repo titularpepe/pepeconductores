@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pepe Pasajeros — Viajá en Salta con tarifa fija</title>
+<meta name="description" content="Pepe Pasajeros: pedí auto, taxi, remis, moto, taxiflet, delivery o conductor designado en Salta. Tarifa fija sin precio dinámico, pagás en efectivo o transferencia. Lanzamiento 17 de noviembre de 2026.">
+<meta property="og:title" content="Pepe Pasajeros — Viajá en Salta con tarifa fija">
+<meta property="og:description" content="Auto, moto, taxiflet, delivery y conductor designado. Ves el precio antes de pedir. Lanzamiento 17/11/2026.">
+<meta property="og:image" content="https://pepeconductores.com/pasajeros/img/inicio.jpg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- (2026-10-29, pedido del dueño) Página para pasajeros: link de la campaña de Facebook "PEPE - Pasajeros".
+     Mismo estilo que index.html. Las tarifas se leen EN VIVO de config/tarifas (las que se cambian en
+     Superpepe → Tarifas); los números escritos son solo el respaldo si no carga. -->
+<style>
+:root { --negro:#0c0c0c; --blanco:#f7f4ee; --amarillo:#f5d800; --naranja:#ff4d00; --gris:#161616; --gris2:#222; --apagado:rgba(247,244,238,0.6); }
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--negro); color:var(--blanco); font-family:'Barlow',sans-serif; line-height:1.6; }
+a { color:var(--amarillo); }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 5%; background:rgba(12,12,12,.95); backdrop-filter:blur(14px); border-bottom:1px solid rgba(245,216,0,.12); }
+.logo { font-family:'Barlow Condensed',sans-serif; font-size:1.7rem; font-weight:900; color:var(--amarillo); text-decoration:none; }
+.logo span { color:var(--apagado); font-size:.85rem; font-family:'Barlow',sans-serif; font-weight:400; margin-left:.4rem; }
+.btn { display:inline-block; background:var(--amarillo); color:var(--negro); padding:.85rem 1.6rem; border-radius:8px; font-weight:700; text-decoration:none; transition:transform .2s, box-shadow .2s; }
+.btn:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgba(245,216,0,.3); }
+.btn-borde { background:transparent; color:var(--amarillo); border:1.5px solid var(--amarillo); }
+section { padding:4rem 5%; max-width:1150px; margin:0 auto; }
+.label { font-size:.72rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--amarillo); margin-bottom:.8rem; }
+h1,h2 { font-family:'Barlow Condensed',sans-serif; font-weight:900; text-transform:uppercase; line-height:1; }
+h1 { font-size:clamp(2.6rem,7vw,4.6rem); }
+h2 { font-size:clamp(2rem,4.5vw,3.2rem); margin-bottom:1rem; }
+.sub { color:var(--apagado); max-width:620px; margin-bottom:2rem; font-size:1.05rem; }
+.hero { display:grid; grid-template-columns:1.2fr .8fr; gap:2.5rem; align-items:center; padding-top:3rem; }
+.hero h1 span { color:var(--amarillo); }
+.fecha { display:inline-block; background:rgba(245,216,0,.1); border:1px solid rgba(245,216,0,.35); color:var(--amarillo); padding:.35rem .9rem; border-radius:999px; font-weight:700; margin-bottom:1.2rem; }
+.botones { display:flex; gap:.8rem; flex-wrap:wrap; margin-top:1.6rem; }
+.tel { width:100%; max-width:300px; justify-self:center; border-radius:28px; border:6px solid #2a2a2a; box-shadow:0 20px 60px rgba(245,216,0,.15); overflow:hidden; }
+.tel img { width:100%; display:block; }
+.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+.card { background:var(--gris); border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:1.5rem; }
+.card h3 { font-size:1.15rem; margin:.4rem 0 .4rem; }
+.card p { color:var(--apagado); font-size:.95rem; }
+.card .ico { font-size:1.8rem; }
+.servicio { display:grid; grid-template-columns:220px 1fr; gap:1.8rem; align-items:center; background:var(--gris); border:1px solid rgba(255,255,255,.07); border-radius:20px; padding:1.4rem; margin-bottom:1.2rem; }
+.servicio img { width:100%; max-height:420px; object-fit:cover; object-position:top; border-radius:16px; border:4px solid #2a2a2a; }
+.servicio h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.8rem; font-weight:800; text-transform:uppercase; color:var(--amarillo); }
+.servicio ul { margin:.6rem 0 0 1.1rem; color:var(--apagado); }
+.precio { display:inline-block; margin-top:.8rem; font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:900; color:var(--blanco); background:rgba(245,216,0,.08); border-radius:8px; padding:.2rem .7rem; }
+.tarifas { background:var(--gris); border:1px solid rgba(245,216,0,.18); border-radius:20px; padding:1rem 2rem; max-width:760px; position:relative; overflow:hidden; }
+.tarifas::before { content:''; position:absolute; inset:0 0 auto 0; height:3px; background:var(--amarillo); }
+.fila { display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:.9rem 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.fila:last-child { border-bottom:0; }
+.fila span:first-child { color:var(--apagado); }
+.fila b { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; color:var(--amarillo); white-space:nowrap; }
+.nota { font-size:.85rem; color:rgba(247,244,238,.45); margin-top:1rem; }
+.pasos { counter-reset:paso; display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; }
+.paso { background:var(--gris); border-radius:16px; padding:1.3rem; border:1px solid rgba(255,255,255,.07); }
+.paso::before { counter-increment:paso; content:'0' counter(paso); font-family:'Barlow Condensed',sans-serif; font-size:2.6rem; font-weight:900; color:rgba(245,216,0,.25); display:block; line-height:1; margin-bottom:.4rem; }
+.paso b { display:block; margin-bottom:.3rem; }
+.paso span { color:var(--apagado); font-size:.92rem; }
+.dos { display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:center; }
+.capturas { display:flex; gap:1rem; justify-content:center; }
+.capturas img { width:46%; max-width:230px; border-radius:16px; border:4px solid #2a2a2a; }
+.cancel { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.cancel .card b { color:var(--amarillo); display:block; font-size:1.1rem; margin:.3rem 0; }
+details { background:var(--gris); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:1rem 1.2rem; margin-bottom:.7rem; }
+summary { cursor:pointer; font-weight:600; }
+details p { color:var(--apagado); margin-top:.6rem; }
+.final { text-align:center; background:linear-gradient(180deg,transparent,rgba(245,216,0,.06)); border-radius:24px; }
+footer { padding:2rem 5%; border-top:1px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; color:rgba(247,244,238,.4); font-size:.85rem; }
+@media (max-width:860px) {
+  .hero, .dos { grid-template-columns:1fr; }
+  .grid, .cancel { grid-template-columns:1fr; }
+  .pasos { grid-template-columns:1fr 1fr; }
+  .servicio { grid-template-columns:120px 1fr; gap:1rem; padding:1rem; }
+  .servicio h3 { font-size:1.4rem; }
+  .tarifas { padding:.5rem 1.2rem; }
+  .fila b { font-size:1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="/">PEPE<span>Pasajeros</span></a>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" data-descarga>📱 Descargar</a>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="fecha">🚀 Lanzamiento: 17 de noviembre de 2026 · Salta</div>
+    <h1>Viajá con Pepe:<br><span>sabés cuánto pagás</span><br>antes de pedir</h1>
+    <p class="sub" style="margin-top:1.2rem">Auto, taxi, remis, moto, taxiflet, delivery y conductor designado en una sola app. Tarifa fija por kilómetro, sin precio dinámico: no sube por lluvia, hora pico ni demanda.</p>
+    <div class="botones">
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" data-descarga>📱 Descargá Pepe Pasajeros</a>
+      <a class="btn btn-borde" href="#tarifas">💲 Ver tarifas</a>
+    </div>
+  </div>
+  <div class="tel"><img src="img/inicio.jpg" alt="Pantalla de inicio de Pepe Pasajeros: elegí el servicio"></div>
+</section>
+
+<section>
+  <div class="label">Por qué Pepe</div>
+  <h2>Lo que te da Pepe</h2>
+  <div class="grid">
+    <div class="card"><div class="ico">💲</div><h3>Precio antes de pedir</h3><p>Ves el costo estimado en el mapa antes de confirmar. Sin sorpresas.</p></div>
+    <div class="card"><div class="ico">🚫</div><h3>Sin tarifa dinámica</h3><p>La tarifa por kilómetro es siempre la misma, llueva o sea hora pico.</p></div>
+    <div class="card"><div class="ico">🪪</div><h3>Conductores verificados</h3><p>Cada conductor pasa por control de documentos, vehículo y antecedentes.</p></div>
+    <div class="card"><div class="ico">🔐</div><h3>PIN de seguridad</h3><p>El viaje no arranca hasta que el conductor ingresa tu PIN: sabés que es el auto correcto.</p></div>
+    <div class="card"><div class="ico">📍</div><h3>Compartí tu viaje en vivo</h3><p>Mandá por WhatsApp un link para que tu familia vea por dónde vas. Y tenés botón SOS.</p></div>
+    <div class="card"><div class="ico">💬</div><h3>Chat con el conductor</h3><p>Coordiná el encuentro sin dar tu número. Después del viaje calificás 👍 o 👎.</p></div>
+  </div>
+</section>
+
+<section id="servicios">
+  <div class="label">Servicios</div>
+  <h2>Todo lo que podés pedir</h2>
+  <p class="sub">Tocás el servicio, marcás origen y destino en el mapa, ves el precio y confirmás.</p>
+
+  <div class="servicio"><img src="img/rapido.jpg" alt="Pepe Rápido" loading="lazy"><div>
+    <h3>⚡ Pepe Rápido</h3>
+    <p>El más rápido: Pepe te manda el auto o la moto disponible más cercano, sin elegir preferencias.</p>
+    <ul><li>Auto o moto</li><li>Hasta 4 pasajeros, sin mascota</li><li>Para vos o para otra persona</li></ul>
+  </div></div>
+
+  <div class="servicio"><img src="img/auto.jpg" alt="Auto, taxi o remis" loading="lazy"><div>
+    <h3>🚗 Auto / Taxi / Remis</h3>
+    <p>Elegís cómo querés viajar.</p>
+    <ul><li>De 4 a 7 pasajeros (vehículo grande para 6 o 7)</li><li>Con o sin baúl</li><li>Con mascota (recargo fijo)</li><li>Preferencia de conductor: hombre o mujer</li></ul>
+    <span class="precio">Auto: <span data-tarifa="auto">$1.300</span>/km · Grande: <span data-tarifa="auto_grande">$1.700</span>/km</span>
+  </div></div>
+
+  <div class="servicio"><img src="img/rapido.jpg" alt="Moto" loading="lazy"><div>
+    <h3>🏍️ Moto</h3>
+    <p>Para una sola persona, rápido en el tránsito. El conductor lleva casco extra.</p>
+    <span class="precio"><span data-tarifa="moto">$600</span>/km · 250cc: <span data-tarifa="moto_250">$800</span>/km</span>
+  </div></div>
+
+  <div class="servicio"><img src="img/taxiflet.jpg" alt="Taxiflet" loading="lazy"><div>
+    <h3>🚚 Taxiflet</h3>
+    <p>Mudanzas y cosas grandes: cocinas, heladeras, camas, televisores (de 50 a 1.000 kg).</p>
+    <ul><li>Podés pedir 1, 2 o 3 ayudantes (el costo lo arreglás con el fletero)</li><li>Con o sin mascota</li></ul>
+    <span class="precio"><span data-tarifa="taxiflet">$1.300</span>/km</span>
+  </div></div>
+
+  <div class="servicio"><img src="img/delivery.jpg" alt="Cadete y delivery" loading="lazy"><div>
+    <h3>📦 Cadete y Delivery</h3>
+    <p>Sin pasajero: el cadete lleva o trae cosas por vos.</p>
+    <ul><li><b>Mandar algo:</b> envío de objetos a otra persona, con PIN para que solo lo reciba quien corresponde</li><li><b>Que me compren algo:</b> el cadete compra lo que pedís hasta el presupuesto que vos marcás; si se pasa, te pide autorización</li></ul>
+    <span class="precio"><span data-tarifa="cadeteria">$600</span>/km</span>
+  </div></div>
+
+  <div class="servicio"><img src="img/cond.jpg" alt="Conductor designado" loading="lazy"><div>
+    <h3>👔 Conductor designado</h3>
+    <p>Un conductor de Pepe va a donde estás y maneja <b>tu</b> vehículo hasta donde le digas. Ideal si tomaste algo o no querés manejar.</p>
+    <ul><li>Auto, camioneta, moto, camión u otro</li><li>Caja manual o automática</li><li>Solo te pedimos el tipo de vehículo</li></ul>
+    <span class="precio"><span data-tarifa="conductor_desig">$1.300</span>/km</span>
+  </div></div>
+
+  <div class="servicio"><img src="img/tupepe.jpg" alt="Solicitá a tu Pepe" loading="lazy"><div>
+    <h3>💜 Solicitá a tu Pepe</h3>
+    <p>¿Tenés un conductor de confianza? Pedile el viaje directo a él con su número de conductor. Solo ese conductor recibe tu pedido.</p>
+  </div></div>
+
+  <div class="grid" style="margin-top:1.5rem">
+    <div class="card"><div class="ico">📅</div><h3>Reservas</h3><p>Reservá tu viaje para más tarde desde la solapa “Reservar”: el conductor sale a buscarte a la hora que elegiste.</p></div>
+    <div class="card"><div class="ico">👥</div><h3>Viaje para otra persona</h3><p>Pedí un viaje para un familiar o amigo: el conductor ve el nombre y DNI de quien viaja.</p></div>
+    <div class="card"><div class="ico">👧</div><h3>Mis Hijos</h3><p>Pedí viajes para tus hijos y seguilos en tiempo real. El conductor sabe que viaja un menor.</p></div>
+  </div>
+</section>
+
+<section id="tarifas">
+  <div class="label">Tarifas</div>
+  <h2>Precio fijo, siempre</h2>
+  <p class="sub">Estos valores salen en vivo de la misma tabla que usa la app.</p>
+  <div class="tarifas">
+    <div class="fila"><span>💡 Servicio Pepe (por pedir el viaje)</span><b data-tarifa="servicio_efectivo">$200</b></div>
+    <div class="fila"><span>🚗 Auto / taxi / remis, por km</span><b data-tarifa="auto">$1.300</b></div>
+    <div class="fila"><span>🚐 Vehículo grande (6-7 pasajeros), por km</span><b data-tarifa="auto_grande">$1.700</b></div>
+    <div class="fila"><span>🏍️ Moto, por km</span><b data-tarifa="moto">$600</b></div>
+    <div class="fila"><span>🏍️ Moto 250cc, por km</span><b data-tarifa="moto_250">$800</b></div>
+    <div class="fila"><span>🚚 Taxiflet, por km</span><b data-tarifa="taxiflet">$1.300</b></div>
+    <div class="fila"><span>📦 Cadete / delivery, por km</span><b data-tarifa="cadeteria">$600</b></div>
+    <div class="fila"><span>👔 Conductor designado, por km</span><b data-tarifa="conductor_desig">$1.300</b></div>
+    <div class="fila"><span>🐾 Recargo por mascota</span><b data-tarifa="recargo_mascota">$1.000</b></div>
+    <div class="fila"><span>⏱️ Espera: los primeros 4 minutos son gratis, después por minuto</span><b data-tarifa="espera_por_minuto">$130</b></div>
+    <div class="fila"><span>🧮 Ejemplo: viaje de 3 km en auto</span><b data-calc="ejemplo3">$4.100</b></div>
+  </div>
+  <p class="nota">⚠️ Sin tarifa dinámica: el precio no sube por lluvia, hora pico ni alta demanda. Los valores pueden cambiar por el precio del combustible.</p>
+</section>
+
+<section>
+  <div class="label">Cómo funciona</div>
+  <h2>Simple en 5 pasos</h2>
+  <div class="pasos">
+    <div class="paso"><b>Descargá la app</b><span>Entrá con tu cuenta de Google.</span></div>
+    <div class="paso"><b>Registrá tu DNI</b><span>Una persona, una cuenta: más seguridad para todos.</span></div>
+    <div class="paso"><b>Elegí el servicio</b><span>Marcá origen y destino y mirá el precio.</span></div>
+    <div class="paso"><b>Confirmá</b><span>Te toma la selfie y llega el conductor más cercano.</span></div>
+    <div class="paso"><b>Viajá y pagá</b><span>Le das tu PIN al conductor y pagás al terminar.</span></div>
+  </div>
+  <div class="dos" style="margin-top:2.5rem">
+    <div>
+      <div class="label">Te lo enseña la app</div>
+      <h2 style="font-size:clamp(1.7rem,3.5vw,2.4rem)">Un tour te muestra todo</h2>
+      <p class="sub">La primera vez que abrís Pepe Pasajeros, un tour paso a paso te explica cada botón y cada función, y cada servicio tiene su propia guía cortita. En 3 minutos sabés usar todo.</p>
+    </div>
+    <div class="capturas"><img src="img/tour-bienvenida.jpg" alt="Tour de bienvenida" loading="lazy"><img src="img/tour-servicio.jpg" alt="Tour: elegí tu servicio" loading="lazy"></div>
+  </div>
+</section>
+
+<section>
+  <div class="dos">
+    <div>
+      <div class="label">Pagos</div>
+      <h2>Pagás como quieras</h2>
+      <p class="sub">En <b>efectivo</b> o por <b>transferencia</b> al conductor, al terminar el viaje. En la app ves el alias del conductor para copiarlo.</p>
+      <p class="sub">En <b>“Mi cuenta”</b> ves si le debés algo a Pepe y todos tus movimientos. Si quedó una deuda, se suma a tu próximo viaje.</p>
+    </div>
+    <div class="capturas"><img src="img/micuenta.jpg" alt="Mi cuenta en Pepe Pasajeros" loading="lazy"></div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Cancelaciones</div>
+  <h2>Reglas claras</h2>
+  <div class="cancel">
+    <div class="card"><div class="ico">✅</div><b>Antes de que acepte un conductor</b><p>Cancelás sin pagar nada.</p></div>
+    <div class="card"><div class="ico">🚗</div><b>Con el conductor en camino</b><p>Pagás la mínima: 1 km del vehículo + el servicio de Pepe. El kilómetro es para el conductor que salió a buscarte.</p></div>
+    <div class="card"><div class="ico">⏳</div><b>Con el conductor esperándote</b><p>Pagás lo del viaje hasta ese momento + el servicio de Pepe.</p></div>
+  </div>
+  <p class="nota">Si no lo pagás en el momento, queda en tu cuenta y en tu DNI y se suma a tu próximo viaje (o lo pagás desde “Mi cuenta”).</p>
+</section>
+
+<section>
+  <div class="label">Preguntas frecuentes</div>
+  <h2>Dudas</h2>
+  <details><summary>¿Dónde funciona Pepe?</summary><p>En Salta Capital y alrededores, desde el 17 de noviembre de 2026.</p></details>
+  <details><summary>¿Por qué me piden el DNI?</summary><p>Para que cada persona tenga una sola cuenta y los conductores sepan a quién llevan. Es más seguridad para todos.</p></details>
+  <details><summary>¿Puedo pedir un viaje para otra persona?</summary><p>Sí: tocá “Para otra persona” e ingresá su nombre y DNI. Para tus hijos, usá “Mis Hijos”.</p></details>
+  <details><summary>¿Puedo llevar mi mascota?</summary><p>Sí, en Auto y Taxiflet marcás “Llevo mascota” y se suma un recargo fijo. Pepe Rápido es sin mascota.</p></details>
+  <details><summary>¿Qué pasa si me olvido algo en el auto?</summary><p>Desde Soporte en la app elegís “Objeto perdido” y lo atendemos con prioridad.</p></details>
+  <details><summary>¿Cómo me contacto?</summary><p>Por WhatsApp al <a href="https://wa.me/5493875157437">+54 9 387 515-7437</a> o desde Soporte en la app.</p></details>
+</section>
+
+<section class="final">
+  <h2>Descargá Pepe Pasajeros</h2>
+  <p class="sub" style="margin:0 auto 1.5rem">Gratis en Google Play. Viajá desde el 17 de noviembre.</p>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" data-descarga>📱 Descargar en Google Play</a>
+</section>
+
+<footer>
+  <div><b style="color:var(--amarillo)">PEPE</b> · © 2026 Pepe Conductores · Salta, Argentina</div>
+  <div><a href="/">Inicio</a> · <a href="/legal/terminos.html">Términos</a> · <a href="/legal/privacidad.html">Privacidad</a></div>
+</footer>
+
+<script>
+// Tarifas en vivo (config/tarifas, lectura pública). Si no carga, quedan los valores escritos.
+(function () {
+  var pesos = function (n) { return '$' + Math.round(n).toLocaleString('es-AR'); };
+  fetch('https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/tarifas')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var f = d.fields || {}, t = {};
+      Object.keys(f).forEach(function (k) { var v = f[k].integerValue || f[k].doubleValue; if (v != null) t[k] = Number(v); });
+      document.querySelectorAll('[data-tarifa]').forEach(function (el) {
+        var v = t[el.getAttribute('data-tarifa')]; if (typeof v === 'number' && isFinite(v)) el.textContent = pesos(v);
+      });
+      if (t.auto && t.servicio_efectivo != null) {
+        document.querySelectorAll('[data-calc="ejemplo3"]').forEach(function (el) { el.textContent = pesos(3 * t.auto + t.servicio_efectivo); });
+      }
+    }).catch(function () {});
+  // Link de descarga administrado desde Superpepe (config/descargas.pasajeros).
+  fetch('https://firestore.googleapis.com/v1/projects/pepe-conductores/databases/(default)/documents/config/descargas')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var u = d.fields && d.fields.pasajeros && d.fields.pasajeros.stringValue;
+      if (u) document.querySelectorAll('[data-descarga]').forEach(function (a) { a.href = u; });
+    }).catch(function () {});
+})();
+</script>
+</body>
+</html>
