@@ -389,14 +389,15 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="eyebrow"><span class="eyebrow-dot"></span>La app argentina de transporte</div>
       <h1>Viajá<br><span class="am">sin</span><br><span class="out">sorpresas</span></h1>
       <p class="hero-desc">Tarifa fija. Sin comisiones abusivas. Conductores profesionales verificados. Pepe Conductores conecta pasajeros y conductores de manera justa y transparente.</p>
-      <div class="hero-ctas">
-        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Quiero registrarme</button>
-        <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
-      </div>
-      <div class="hero-ctas" id="descargas-box" style="margin-top:1rem;">
+      <div class="hero-ctas" id="descargas-box">
         <button class="btn-main" id="dl-pasajeros" onclick="descargarApp('pasajeros')">📱 Descargar app Pasajeros</button>
         <button class="btn-main" id="dl-conductor" onclick="descargarApp('conductor')">🚗 Descargar app Conductor</button>
         <button class="btn-main" id="dl-filtro" onclick="descargarApp('filtro')">🎯 Descargar Filtro de Viajes</button>
+      </div>
+      <!-- (2026-10-29, pedido del dueño) Primero las descargas; registrarse y "Soy conductor" abajo. -->
+      <div class="hero-ctas" style="margin-top:1rem;">
+        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Quiero registrarme</button>
+        <button class="btn-outline" onclick="showPage('conductor',null)">Soy conductor →</button>
       </div>
       <div class="hero-stats">
         <div><div class="stat-num"><span data-tarifa="servicio_efectivo">$200</span></div><div class="stat-label">Costo fijo por solicitud</div></div>
