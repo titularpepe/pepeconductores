@@ -1,5 +1,5 @@
 {
-  "version": 40,
+  "version": 41,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3191,6 +3191,39 @@
         }
       ],
       "v40": true
+    },
+    {
+      "nombre": "Leer un texto que te mando",
+      "frases": [
+        "te voy a mandar un texto",
+        "te mando un texto",
+        "te paso un texto",
+        "te voy a pasar un texto",
+        "te voy a mandar un mensaje leemelo",
+        "te mando un mensaje leemelo",
+        "leeme un texto",
+        "leeme este texto",
+        "leeme el texto",
+        "lee este texto",
+        "te mando algo para que me leas",
+        "te paso algo para que me leas",
+        "leeme lo que te mando",
+        "leeme lo que te mande",
+        "lee lo que te mando",
+        "podes leerme un texto",
+        "me lees un texto"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Dale. Mandámelo por WhatsApp a este teléfono y cuando llegue decime \"leeme el último mensaje\".",
+            "Mandalo por WhatsApp y después decime \"leeme el último mensaje\", así te lo leo en voz alta.",
+            "Bueno: mandámelo por WhatsApp y decime \"leeme el último mensaje\". Ojo, tengo que tener el permiso de notificaciones."
+          ]
+        }
+      ],
+      "v41": true
     }
   ]
 }
