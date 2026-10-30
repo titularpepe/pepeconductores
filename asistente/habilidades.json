@@ -1,5 +1,5 @@
 {
-  "version": 38,
+  "version": 39,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3131,6 +3131,21 @@
         }
       ],
       "v38": true
+    },
+    {
+      "nombre": "Cerrar Ludamic",
+      "regex": "^(?:pepe )?(?:cerra|cerrar|cierra|cerrame|cerras|cerralo|sali de|salir de|saca|sacame)\\s+(?:el |la |lo de )?(?:pagina de |web de )?(?:ludami|ludamic|ludamik|ludamy|ludamis|luda mi|luda mic)(?:\\.com\\.ar| com ar| punto com punto ar)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "abrir_app",
+          "paquete": "com.miui.home"
+        },
+        {
+          "tipo": "decir",
+          "texto": "Listo, saqué Ludamic de la pantalla. Para cerrarla del todo, tocá el botón cuadrado de abajo y deslizala."
+        }
+      ],
+      "v39": true
     }
   ]
 }
