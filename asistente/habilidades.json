@@ -1,5 +1,5 @@
 {
-  "version": 39,
+  "version": 40,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3146,6 +3146,51 @@
         }
       ],
       "v39": true
+    },
+    {
+      "nombre": "Recomendar una cancion",
+      "frases": [
+        "que cancion puedo escuchar",
+        "que cancion escucho",
+        "que musica puedo escuchar",
+        "que musica escucho",
+        "que tema puedo escuchar",
+        "que tema escucho",
+        "recomendame una cancion",
+        "recomendame un tema",
+        "recomendame musica",
+        "recomendas una cancion",
+        "sugerime una cancion",
+        "sugerime un tema",
+        "decime una cancion",
+        "decime un tema para escuchar",
+        "dame una cancion",
+        "que me recomendas escuchar",
+        "que puedo escuchar",
+        "no se que escuchar",
+        "una cancion para escuchar",
+        "alguna cancion para escuchar"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Te recomiendo \"Muchachos\" de La Mosca. Si querés, decime \"poné Muchachos de La Mosca\".",
+            "Probá con \"Persiana americana\" de Soda Stereo. Decime \"poné Persiana americana\" y la paso.",
+            "¿Qué tal \"Amor salvaje\" de Chaqueño Palavecino? Decime \"poné Chaqueño Palavecino\".",
+            "Te va a gustar \"Zamba de mi esperanza\". Decime \"poné Zamba de mi esperanza\".",
+            "Escuchá \"Quién se tomó todo el vino\" de La Mona Jiménez. Decime \"poné La Mona Jiménez\".",
+            "Una linda: \"Tren del cielo\" de Soledad. Decime \"poné Tren del cielo\".",
+            "Te recomiendo \"Lamento boliviano\" de Enanitos Verdes. Decime \"poné Lamento boliviano\".",
+            "Probá con \"Ciudad mágica\" de Tan Biónica. Decime \"poné Ciudad mágica\".",
+            "¿Qué tal \"Gracias a la vida\" de Mercedes Sosa? Decime \"poné Mercedes Sosa\".",
+            "Escuchá \"Rasguña las piedras\" de Sui Generis. Decime \"poné Rasguña las piedras\".",
+            "Una para levantar el ánimo: \"Despacito\" de Luis Fonsi. Decime \"poné Despacito\".",
+            "Te recomiendo \"De música ligera\" de Soda Stereo. Decime \"poné De música ligera\"."
+          ]
+        }
+      ],
+      "v40": true
     }
   ]
 }
