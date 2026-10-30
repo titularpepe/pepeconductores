@@ -1,5 +1,5 @@
 {
-  "version": 32,
+  "version": 33,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2972,6 +2972,21 @@
         }
       ],
       "v32": true
+    },
+    {
+      "nombre": "¿De dónde es Claude?",
+      "regex": "\\b(?:de donde (?:es|viene|salio)|donde (?:vive|esta|queda|lo hicieron|fue hecho)|de que (?:pais|lugar|ciudad) (?:es|viene)|en que (?:pais|lugar|ciudad) (?:vive|esta|lo hicieron)|quien (?:hizo|creo|invento|fabrico|programo) a|quienes (?:hicieron|crearon) a|que empresa (?:hizo|creo|tiene) a|de que empresa es|quien es el dueno de) (?:el |la )?(?:claude|claud|clod|clode|cloud)\\b",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Claude es de Estados Unidos: lo hizo Anthropic, una empresa de San Francisco, California. No vive en un lugar fijo: funciona en computadoras grandes en internet.",
+            "Lo creó Anthropic, una empresa de inteligencia artificial de San Francisco, en Estados Unidos. Claude vive en la nube, en computadoras por internet.",
+            "Claude viene de San Francisco, Estados Unidos, donde está Anthropic, la empresa que lo hizo. Desde ahí me enseña cosas nuevas."
+          ]
+        }
+      ],
+      "v33": true
     }
   ]
 }
