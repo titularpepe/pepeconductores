@@ -1,5 +1,5 @@
 {
-  "version": 36,
+  "version": 37,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3097,6 +3097,25 @@
         }
       ],
       "v36": true
+    },
+    {
+      "nombre": "Mostrar imagenes de algo",
+      "regex": "^(?:pepe )?(?:mostrame|muestrame|mostrar|mostra|ensename|ensenar|quiero ver|podes mostrarme|me mostras|buscame|busca|buscar|busques|dame|pasame|traeme|abri|abrime)\\s+(?:la |una |unas |las |alguna |algunas )?(?:imagen|imagenes|dibujo|dibujos)\\s+(?:de unos |de unas |de una |de un |de la |de los |de las |del |de )?(.+?)(?: en google| en internet)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Te muestro imágenes de {1}.",
+            "Ahí busco imágenes de {1}.",
+            "Mirá, imágenes de {1}."
+          ]
+        },
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?tbm=isch&q={1}"
+        }
+      ],
+      "v37": true
     }
   ]
 }
