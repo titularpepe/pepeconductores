@@ -372,7 +372,8 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-const BASE_URL = 'https://pepe-backend-production-6f08.up.railway.app';
+// (2026-10-30) Los pagos se mudaron de Railway a una función de Firebase (functions-pagos).
+const BASE_URL = 'https://southamerica-east1-pepe-conductores.cloudfunctions.net/pagos';
 
 let _uid = null;
 let _col = 'pasajeros';
