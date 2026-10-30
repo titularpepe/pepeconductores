@@ -1,5 +1,5 @@
 {
-  "version": 35,
+  "version": 36,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3078,6 +3078,25 @@
         }
       ],
       "v35": true
+    },
+    {
+      "nombre": "Abrir el navegador web",
+      "regex": "^(?:pepe )?(?:abri|abrir|abrime|abre|abrilo|abreme|entra a|entrar a|anda a|ir a|quiero abrir|podes abrir|me abris|abrime un|abri un)\\s+(?:el |la |un |una )?(?:navegador|explorador|internet|chrome|google chrome|browser)(?: web| de internet| de chrome)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Te abro el navegador.",
+            "Abriendo el navegador.",
+            "Listo, ahí tenés el navegador."
+          ]
+        },
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/"
+        }
+      ],
+      "v36": true
     }
   ]
 }
