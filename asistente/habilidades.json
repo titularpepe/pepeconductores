@@ -1,5 +1,5 @@
 {
-  "version": 37,
+  "version": 38,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3116,6 +3116,21 @@
         }
       ],
       "v37": true
+    },
+    {
+      "nombre": "Como sacar captura de pantalla",
+      "regex": "^(?:pepe )?(?:saca|sacame|sacar|sacale|saques|hace|haceme|hacer|tomame|toma|tomar|como (?:saco|hago|se saca|se hace|puedo sacar|puedo hacer)|quiero sacar|necesito)\\s+(?:una |la |un )?(?:captura|capturas|pantallazo|screenshot|screen|foto de (?:la )?pantalla)(?: de (?:la )?pantalla)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Todavía no sé sacarla yo solo. Apretá a la vez el botón de apagar y el de bajar volumen, y listo.",
+            "Por ahora no puedo sacarla yo. Apretá juntos el botón de encendido y el de bajar volumen un segundo.",
+            "Eso todavía no lo sé hacer. Apretá al mismo tiempo apagar y bajar volumen, y se guarda en la galería."
+          ]
+        }
+      ],
+      "v38": true
     }
   ]
 }
