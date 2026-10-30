@@ -1,5 +1,5 @@
 {
-  "version": 33,
+  "version": 34,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2987,6 +2987,25 @@
         }
       ],
       "v33": true
+    },
+    {
+      "nombre": "Sanguchería Goofy (Salta)",
+      "regex": "^(?=.*\\b(?:goofy|goofi|gufi|gufy|goofys|gufis)\\b)(?=.*\\b(?:sandwicheria|sangucheria|sandwich|sanguche|sanguches|sandwiches|pagina|web|abri|abrir|abrime|busca|buscar|buscame|navegador|salta)\\b).*$",
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://www.google.com/search?q=Goofy+sangucher%C3%ADa+Salta"
+        },
+        {
+          "tipo": "decir",
+          "textos": [
+            "Te busco la sanguchería Goofy de Salta en el navegador.",
+            "Ahí te abro Goofy, la sanguchería de Salta.",
+            "Listo, te muestro la sanguchería Goofy en Salta."
+          ]
+        }
+      ],
+      "v34": true
     }
   ]
 }
