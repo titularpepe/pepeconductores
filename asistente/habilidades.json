@@ -1,5 +1,5 @@
 {
-  "version": 34,
+  "version": 35,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3006,6 +3006,78 @@
         }
       ],
       "v34": true
+    },
+    {
+      "nombre": "Nombre de la hija menor (Mia)",
+      "regex": "^(?=.*\\b(?:hija|hijas|nena|nenas)\\b)(?!.*\\b(?:manda|mandale|mandar|envia|enviale|escribi|escribile|llama a|llamala|llamar|donde|anda|estuvo|avisa|avisale|decile|ubicacion|life ?360)\\b)(?=.*\\b(?:menor|chica|chiquita|mas chica|mas chiquita)\\b).*$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Tu hija menor es Mía.",
+            "La menor se llama Mía.",
+            "Mía, tu hija más chiquita."
+          ]
+        }
+      ],
+      "v35": true
+    },
+    {
+      "nombre": "Nombre de la hija mayor (Zoe)",
+      "regex": "^(?=.*\\b(?:hija|hijas|nena|nenas)\\b)(?!.*\\b(?:manda|mandale|mandar|envia|enviale|escribi|escribile|llama a|llamala|llamar|donde|anda|estuvo|avisa|avisale|decile|ubicacion|life ?360)\\b)(?=.*\\b(?:mayor|grande|mas grande)\\b).*$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Tu hija mayor es Zoe.",
+            "La mayor se llama Zoe.",
+            "Zoe, tu hija más grande."
+          ]
+        }
+      ],
+      "v35": true
+    },
+    {
+      "nombre": "Nombres de las hijas (Zoe y Mia)",
+      "regex": "^(?=.*\\b(?:hija|hijas|nena|nenas)\\b)(?!.*\\b(?:manda|mandale|mandar|envia|enviale|escribi|escribile|llama a|llamala|llamar|donde|anda|estuvo|avisa|avisale|decile|ubicacion|life ?360)\\b)(?!.*\\b(?:menor|chica|chiquita|mayor|grande)\\b)(?=.*\\b(?:como se llama|como se llaman|nombre|nombres|quien es|quienes son|cuales son|cual es|cuantas|tengo|y mi)\\b).*$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Tenés dos hijas: Zoe, la mayor, y Mía, la menor.",
+            "Tus hijas son Zoe, la más grande, y Mía, la más chiquita."
+          ]
+        }
+      ],
+      "v35": true
+    },
+    {
+      "nombre": "Quien es Zoe / quien es Mia",
+      "frases": [
+        "quien es zoe",
+        "quien es la zoe"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Zoe es tu hija mayor."
+        }
+      ],
+      "v35": true
+    },
+    {
+      "nombre": "Quien es Mia",
+      "frases": [
+        "quien es mia",
+        "quien es la mia"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Mía es tu hija menor."
+        }
+      ],
+      "v35": true
     }
   ]
 }
