@@ -1,5 +1,5 @@
 {
-  "version": 41,
+  "version": 42,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3224,6 +3224,24 @@
         }
       ],
       "v41": true
+    },
+    {
+      "nombre": "Pedidos y notificaciones de Ludamic",
+      "regex": "^(?:pepe )?(?:(?:me )?(?:llego|llegaron|entro|entraron|hay|tengo|habra)(?: algun| algunos| alguna| algunas| un| una)? (?:pedido|pedidos|notificacion|notificaciones|venta|ventas|compra|compras|mensaje|mensajes|aviso|avisos)|(?:revisa|revisame|fijate|mira|mirame|chequea|controla|ver)(?: si)?(?: hay| tengo| llego| llegaron| entro)?(?: algun| algunos| alguna| algunas| un| una| los| las)? (?:pedido|pedidos|notificacion|notificaciones|venta|ventas|compra|compras|mensaje|mensajes|aviso|avisos))(?: nuevos| nuevas| nuevo| nueva)? (?:en|de|del|por) (?:la pagina de |la web de |la app de )?(?:ludami|ludamic|ludamik|ludamy|ludamis|ludame|luda mi|luda mic|luda me|duda mi|dudami)(?:\\.com\\.ar| com ar| punto com punto ar)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "abrir_url",
+          "url": "https://ludamic.com.ar/"
+        },
+        {
+          "tipo": "decir",
+          "textos": [
+            "Todavía no puedo leer los avisos de Ludamic, así que te abro la página para que mires los pedidos.",
+            "Te abro Ludamic para que te fijes si entró algún pedido. Leer sus avisos yo solo todavía no sé."
+          ]
+        }
+      ],
+      "v42": true
     }
   ]
 }
