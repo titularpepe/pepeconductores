@@ -1,5 +1,5 @@
 {
-  "version": 31,
+  "version": 32,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -2957,6 +2957,21 @@
         }
       ],
       "v31": true
+    },
+    {
+      "nombre": "Recomendar gestor de archivos",
+      "regex": "\\b(?:nombre|recomenda|recomiend|recomendas|sugeri|sugier|cual|que|dame|decime|dime|conoces|sabes de|necesito|quiero|bueno).*(?:gestor|gestores|administrador|administradores|explorador|exploradores|manejador|organizador|app|aplicacion|programa) (?:de|para) (?:los )?archivos?",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "Busca en el Play Store: Files de Google. Es gratis y sin publicidad. Otras buenas son Solid Explorer y MiXplorer.",
+            "Te recomiendo Files de Google, la buscas como Files by Google en el Play Store. Tambien estan Solid Explorer y Material Files.",
+            "Proba con Files de Google. Si queres algo mas completo, Solid Explorer o Total Commander."
+          ]
+        }
+      ],
+      "v32": true
     }
   ]
 }
