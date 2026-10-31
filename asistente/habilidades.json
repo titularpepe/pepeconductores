@@ -1,5 +1,5 @@
 {
-  "version": 42,
+  "version": 43,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3242,6 +3242,17 @@
         }
       ],
       "v42": true
+    },
+    {
+      "nombre": "Contestar por WhatsApp (\"... y escribí ...\")",
+      "regex": "^(?:pepe )?(?:contestarle|contestale|contestele|contesta|contestar|respondele|responderle|responde|responder|respondale)(?: (?:por|en|de|al) (?:el )?(?:whatsapp|wasap|guasap))? a (.+?)(?: (?:por|en|de|al) (?:el )?(?:whatsapp|wasap|guasap))?,?(?: y)? (?:escribi|escribile|escribele|escribe|escribir|escribirle|pone|ponele|poner|ponerle|decile|deci|dile|decirle|manda|mandale|mandarle|diciendo|diciendole)(?: que)?:? (.+)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "contestale a {1} que {2}"
+        }
+      ],
+      "v43": true
     }
   ]
 }
