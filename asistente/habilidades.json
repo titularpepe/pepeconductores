@@ -1,5 +1,5 @@
 {
-  "version": 43,
+  "version": 44,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -1676,7 +1676,27 @@
         "revisa donde esta zoe",
         "donde esta ahora",
         "donde esta zoe ahora",
-        "por donde anda zoe"
+        "por donde anda zoe",
+        "abri ife 360",
+        "abri ife360",
+        "abri if 360",
+        "abri laif 360",
+        "abri laif360",
+        "abri live 360",
+        "abri life tres sesenta",
+        "abri life 3 60",
+        "abrir life 360",
+        "abre life 360",
+        "abrime life 360",
+        "abrime ife 360",
+        "abre ife 360",
+        "abrir ife 360",
+        "life 360",
+        "life360",
+        "ife 360",
+        "abri la app de life 360",
+        "abri el life 360",
+        "abri life"
       ],
       "acciones": [
         {
@@ -1689,7 +1709,8 @@
         }
       ],
       "v6": true,
-      "v26": true
+      "v26": true,
+      "v44": true
     },
     {
       "nombre": "Sacar foto",
