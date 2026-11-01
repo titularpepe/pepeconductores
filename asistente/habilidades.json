@@ -1,5 +1,5 @@
 {
-  "version": 44,
+  "version": 45,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3274,6 +3274,17 @@
         }
       ],
       "v43": true
+    },
+    {
+      "nombre": "Buscar en Google (con un nombre o saludo adelante)",
+      "regex": "^(?:victoria|oye|oi|hey|ey|eh|ok|okey|hola|che|dale)(?: pepe)?,? ((?:busca|buscame|buscar|busque|googlea|googleame|averigua|averiguame)(?: en (?:google|internet))?,? .+)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "{1}"
+        }
+      ],
+      "v45": true
     }
   ]
 }
