@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar ticket · Pepe Conductores</title>
+  <!-- (2026-11-06, pedido del dueño) Una sola página para verificar TODOS los tickets de viaje: no se crea
+       nada por ticket. Le pregunta al servidor (función verificarTicket) si el código del ticket es la firma
+       real de ese viaje; si alguien cambió el monto o inventó el ticket, sale NO VÁLIDO. -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, Roboto, Arial, sans-serif; background: #0c0c0c; color: #fff; min-height: 100vh; padding: 28px 16px; }
+    .caja { max-width: 400px; margin: 0 auto; }
+    h1 { color: #f5d800; text-align: center; font-size: 1.5rem; margin: 10px 0 4px; }
+    .sub { text-align: center; color: #aaa; font-size: .9rem; margin-bottom: 22px; }
+    .logo { display: block; margin: 0 auto; width: 64px; height: 64px; border-radius: 50%; border: 2px solid #f5d800; }
+    form { background: #1a1a1a; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    label { font-size: .8rem; color: #aaa; }
+    input { padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0f0f0f; color: #fff; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+    button { background: #f5d800; color: #000; border: 0; border-radius: 10px; padding: 13px; font-weight: 800; font-size: 1rem; cursor: pointer; }
+    #resultado { margin-top: 18px; border-radius: 12px; overflow: hidden; display: none; }
+    .ok-cab { background: #1D9E75; padding: 14px; text-align: center; font-weight: 800; font-size: 1.15rem; }
+    .mal-cab { background: #c0392b; padding: 14px; text-align: center; font-weight: 800; font-size: 1.15rem; }
+    .datos { background: #fff; color: #111; padding: 14px 18px; }
+    .f { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: .92rem; border-bottom: 1px dashed #ddd; }
+    .f:last-child { border-bottom: 0; }
+    .f span { color: #555; } .f b { text-align: right; }
+    .nota { color: #888; font-size: .78rem; text-align: center; margin-top: 16px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="caja">
+    <img class="logo" src="android-chrome-192x192.png" alt="Pepe">
+    <h1>Verificar ticket de viaje</h1>
+    <p class="sub">Comprobá que un ticket de Pepe Conductores es real</p>
+
+    <form id="form">
+      <label for="numero">N° de recibo</label>
+      <input id="numero" placeholder="Ej: FQKEYEOQ" maxlength="8" autocomplete="off">
+      <label for="codigo">Código de verificación</label>
+      <input id="codigo" placeholder="Ej: K7Q2-M9XA" maxlength="9" autocomplete="off">
+      <button type="submit" id="btn">Verificar</button>
+    </form>
+
+    <div id="resultado"></div>
+    <p class="nota">Los datos que se muestran son los que guardó Pepe en el momento del viaje.<br>Si no coinciden con el ticket que te presentaron, el ticket fue modificado.</p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+      authDomain: "pepe-conductores.firebaseapp.com",
+      projectId: "pepe-conductores",
+      storageBucket: "pepe-conductores.firebasestorage.app",
+      messagingSenderId: "443201366396",
+      appId: "1:443201366396:web:bca7754157145474fb9cf9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfHkfEtAAAAAGmQsxm3pGZTKFvBmE4UdMEVLtz1'), true);
+    const verificarTicket = firebase.app().functions('us-central1').httpsCallable('verificarTicket');
+
+    const SERVICIOS = { auto: 'Pepe Auto', moto: 'Pepe Moto', taxiflet: 'Taxiflet', cond: 'Conductor designado', cadeteria: 'Cadetería', 'pepe-rapido': 'Pepe Rápido', 'tu-pepe': 'Tu Pepe' };
+    const PAGOS = { efectivo: 'Efectivo', transferencia: 'Transferencia', qr: 'QR', tarjeta: 'Tarjeta' };
+    const plata = n => '$ ' + Math.round(n).toLocaleString('es-AR');
+    const fecha = s => s ? new Date(s * 1000).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+    const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const $ = id => document.getElementById(id);
+
+    function mostrar(r) {
+      const box = $('resultado');
+      box.style.display = 'block';
+      if (!r || !r.valido) {
+        box.innerHTML = '<div class="mal-cab">✖ TICKET NO VÁLIDO</div><div class="datos">El código no corresponde a ningún viaje de Pepe, o el ticket fue modificado.</div>';
+        return;
+      }
+      const filas = [
+        ['N° de recibo', r.numero],
+        ['Servicio', SERVICIOS[r.tipo] || r.tipo],
+        ['Desde', r.origen || '—'],
+        ['Hasta', r.destino || '—'],
+        ['Inicio', fecha(r.inicioSeg)],
+        ['Fin', fecha(r.finSeg)],
+        ...(r.km != null ? [['Km recorridos', String(r.km).replace('.', ',')]] : []),
+        ['Conductor', 'N° ' + (r.conductor.numero ?? '—') + ' · ' + r.conductor.nombre],
+        ['Patente', r.vehiculo.patente || '—'],
+        ['Medio de pago', PAGOS[r.metodoPago] || r.metodoPago],
+        ['TOTAL', plata(r.total)],
+      ];
+      box.innerHTML = '<div class="ok-cab">✔ TICKET VÁLIDO</div><div class="datos">' +
+        filas.map(([a, b]) => '<div class="f"><span>' + esc(a) + '</span><b>' + esc(b) + '</b></div>').join('') + '</div>';
+    }
+
+    async function verificar(datos) {
+      $('btn').disabled = true; $('btn').textContent = 'Verificando…';
+      try { mostrar((await verificarTicket(datos)).data); }
+      catch (e) { mostrar(null); }
+      finally { $('btn').disabled = false; $('btn').textContent = 'Verificar'; }
+    }
+
+    $('form').addEventListener('submit', e => {
+      e.preventDefault();
+      const numero = $('numero').value.trim(), codigo = $('codigo').value.trim();
+      if (numero && codigo) verificar({ numero, codigo });
+    });
+
+    // Desde el QR del ticket: verificar.html?v=<id del viaje>&c=<código>
+    const p = new URLSearchParams(location.search);
+    if (p.get('v') && p.get('c')) {
+      $('numero').value = p.get('v').slice(0, 8).toUpperCase();
+      $('codigo').value = p.get('c');
+      verificar({ id: p.get('v'), codigo: p.get('c') });
+    }
+  </script>
+</body>
+</html>
