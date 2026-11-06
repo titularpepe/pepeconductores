@@ -1,5 +1,5 @@
 {
-  "version": 46,
+  "version": 47,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3417,6 +3417,50 @@
         }
       ],
       "v46": true
+    },
+    {
+      "nombre": "Porcentaje de un numero",
+      "regex": "^(?:(?:y |a ver |decime )?(?:cuanto es|cuanto da|cuanto seria|cuanto sale|cuanto son|calcula|calculame|calcular|sacame|saca|sacar|decime) (?:el )?|el )(\\d+(?:[.,]\\d+)?) ?(?:%|por ciento|porciento) (?:de|del) (?:un |una |los |las )?(\\d+(?:[.,]\\d+)?)(?: (?:pesos|dolares|euros|mangos|lucas))?$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "{1} % de {2}"
+        }
+      ],
+      "v47": true
+    },
+    {
+      "nombre": "Porcentaje de un numero (miles con espacio)",
+      "regex": "^(?:(?:y |a ver |decime )?(?:cuanto es|cuanto da|cuanto seria|cuanto sale|cuanto son|calcula|calculame|calcular|sacame|saca|sacar|decime) (?:el )?|el )(\\d+(?:[.,]\\d+)?) ?(?:%|por ciento|porciento) (?:de|del) (?:un |una |los |las )?(\\d{1,3}) (\\d{3})(?: (?:pesos|dolares|euros|mangos|lucas))?$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "{1} % de {2}{3}"
+        }
+      ],
+      "v47": true
+    },
+    {
+      "nombre": "Porcentaje de un numero (millones con espacio)",
+      "regex": "^(?:(?:y |a ver |decime )?(?:cuanto es|cuanto da|cuanto seria|cuanto sale|cuanto son|calcula|calculame|calcular|sacame|saca|sacar|decime) (?:el )?|el )(\\d+(?:[.,]\\d+)?) ?(?:%|por ciento|porciento) (?:de|del) (?:un |una |los |las )?(\\d{1,3}) (\\d{3}) (\\d{3})(?: (?:pesos|dolares|euros|mangos|lucas))?$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "{1} % de {2}{3}{4}"
+        }
+      ],
+      "v47": true
+    },
+    {
+      "nombre": "Porcentaje de un numero (en miles)",
+      "regex": "^(?:(?:y |a ver |decime )?(?:cuanto es|cuanto da|cuanto seria|cuanto sale|cuanto son|calcula|calculame|calcular|sacame|saca|sacar|decime) (?:el )?|el )(\\d+(?:[.,]\\d+)?) ?(?:%|por ciento|porciento) (?:de|del) (?:un |una |los |las )?(\\d+) mil(?: (?:pesos|dolares|euros|mangos|lucas))?$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "{1} % de {2}000"
+        }
+      ],
+      "v47": true
     }
   ]
 }
