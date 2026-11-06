@@ -35,7 +35,7 @@
     <p class="sub">Comprobá que un ticket de Pepe Conductores es real</p>
 
     <form id="form">
-      <label for="numero">N° de recibo</label>
+      <label for="numero">N° de ticket</label>
       <input id="numero" placeholder="Ej: FQKEYEOQ" maxlength="8" autocomplete="off">
       <label for="codigo">Código de verificación</label>
       <input id="codigo" placeholder="Ej: K7Q2-M9XA" maxlength="9" autocomplete="off">
@@ -77,7 +77,7 @@
         return;
       }
       const filas = [
-        ['N° de recibo', r.numero],
+        ['N° de ticket', r.numero],
         ['Servicio', SERVICIOS[r.tipo] || r.tipo],
         ['Desde', r.origen || '—'],
         ['Hasta', r.destino || '—'],
