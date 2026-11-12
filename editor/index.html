@@ -102,6 +102,7 @@ canvas { width:100%; background:#000; border-radius:10px; display:block; }
       </select>
       <label><input type="checkbox" id="txt-fondo" checked> Fondo oscuro</label>
     </div>
+    <div class="nota">Podés <b>arrastrar el texto</b> con el dedo o el mouse sobre la vista previa para ponerlo donde quieras.</div>
   </div>
 
   <div class="caja">
@@ -339,25 +340,35 @@ function cajaLogo(l) {
   const w = r >= 1 ? lado : lado * r, h = r >= 1 ? lado / r : lado;
   return { x: l.x * W - w / 2, y: l.y * H - h / 2, w, h };
 }
-// arrastrar logos sobre la vista previa
+// arrastrar logos y texto sobre la vista previa
+// textoPos: centro del texto (fracción) cuando lo arrastraron; null = usar "Lugar"
+const textoPos = { x: null, y: null };
+let cajaTexto = null; // la llena dibujarExtras (píxeles del lienzo)
+$('txt-pos').addEventListener('change', () => { textoPos.x = textoPos.y = null; redibujar(); });
 let arrastrando = null;
 function aLienzo(cx, cy) { const r = lienzo.getBoundingClientRect(); return { x: (cx - r.left) / r.width * lienzo.width, y: (cy - r.top) / r.height * lienzo.height }; }
-function empezarArrastre(cx, cy) {
-  const p = aLienzo(cx, cy);
+const dentro = (p, c) => c && p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h;
+function queHayAhi(p) {
   for (let i = logos.length - 1; i >= 0; i--) {
-    const l = logos[i]; if (!l.activo || !l.img.naturalWidth) continue;
-    const c = cajaLogo(l);
-    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-      arrastrando = { l, dx: p.x - l.x * lienzo.width, dy: p.y - l.y * lienzo.height }; return true;
-    }
+    const l = logos[i]; if (l.activo && l.img.naturalWidth && dentro(p, cajaLogo(l))) return l;
   }
-  return false;
+  if (dentro(p, cajaTexto)) {
+    if (textoPos.x == null) { textoPos.x = (cajaTexto.x + cajaTexto.w / 2) / lienzo.width; textoPos.y = cajaTexto.cy / lienzo.height; }
+    return textoPos;
+  }
+  return null;
+}
+function empezarArrastre(cx, cy) {
+  const p = aLienzo(cx, cy), o = queHayAhi(p);
+  if (!o) return false;
+  arrastrando = { o, dx: p.x - o.x * lienzo.width, dy: p.y - o.y * lienzo.height };
+  return true;
 }
 function moverArrastre(cx, cy) {
   if (!arrastrando) return;
   const p = aLienzo(cx, cy), a = arrastrando;
-  a.l.x = Math.min(1, Math.max(0, (p.x - a.dx) / lienzo.width));
-  a.l.y = Math.min(1, Math.max(0, (p.y - a.dy) / lienzo.height));
+  a.o.x = Math.min(1, Math.max(0, (p.x - a.dx) / lienzo.width));
+  a.o.y = Math.min(1, Math.max(0, (p.y - a.dy) / lienzo.height));
   redibujar();
 }
 lienzo.addEventListener('mousedown', e => { if (empezarArrastre(e.clientX, e.clientY)) e.preventDefault(); });
@@ -366,7 +377,12 @@ window.addEventListener('mouseup', () => { arrastrando = null; });
 lienzo.addEventListener('touchstart', e => { const t = e.touches[0]; if (e.touches.length === 1 && empezarArrastre(t.clientX, t.clientY)) e.preventDefault(); }, { passive: false });
 lienzo.addEventListener('touchmove', e => { if (arrastrando) { e.preventDefault(); moverArrastre(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
 lienzo.addEventListener('touchend', () => { arrastrando = null; });
-lienzo.addEventListener('mousemove', e => { if (!arrastrando) lienzo.style.cursor = (() => { const p = aLienzo(e.clientX, e.clientY); return logos.some(l => { if (!l.activo || !l.img.naturalWidth) return false; const c = cajaLogo(l); return p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h; }); })() ? 'move' : ''; });
+lienzo.addEventListener('mousemove', e => {
+  if (arrastrando) return;
+  const p = aLienzo(e.clientX, e.clientY);
+  const hay = dentro(p, cajaTexto) || logos.some(l => l.activo && l.img.naturalWidth && dentro(p, cajaLogo(l)));
+  lienzo.style.cursor = hay ? 'move' : '';
+});
 
 // ---------- tipo de letra ----------
 const PESO_LETRA = { 'Montserrat': 800, 'Comic Neue': 700 };
@@ -424,15 +440,19 @@ function dibujarExtras() {
     if (linea) lineas.push(linea);
     const alto = tam * 1.2 * lineas.length;
     const pos = $('txt-pos').value;
-    const y0 = pos === 'arriba' ? H * 0.12 : pos === 'medio' ? H / 2 - alto / 2 + tam * 0.6 : H * 0.84 - alto + tam * 0.6;
+    // si lo arrastraron, textoPos manda (centro del bloque); si no, el "Lugar" elegido
+    const y0 = textoPos.y != null ? textoPos.y * H - alto / 2 + tam * 0.6
+      : pos === 'arriba' ? H * 0.12 : pos === 'medio' ? H / 2 - alto / 2 + tam * 0.6 : H * 0.84 - alto + tam * 0.6;
+    const cx = textoPos.x != null ? textoPos.x * W : W / 2;
+    const ancho = Math.max(...lineas.map(l => ctx.measureText(l).width)) + tam;
+    cajaTexto = { x: cx - ancho / 2, y: y0 - tam * 0.8, w: ancho, h: alto + tam * 0.4, cy: y0 - tam * 0.6 + alto / 2 };
     if ($('txt-fondo').checked) {
-      const ancho = Math.max(...lineas.map(l => ctx.measureText(l).width)) + tam;
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect((W - ancho) / 2, y0 - tam * 0.8, ancho, alto + tam * 0.4);
+      ctx.fillRect(cajaTexto.x, cajaTexto.y, cajaTexto.w, cajaTexto.h);
     }
     ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = $('txt-color').value;
-    lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, W / 2, y); ctx.fillText(l, W / 2, y); });
-  }
+    lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, cx, y); ctx.fillText(l, cx, y); });
+  } else cajaTexto = null;
   const tema = $('mus-tema').value.trim(), artista = $('mus-artista').value.trim();
   if ($('mus-cartel').checked && (tema || artista)) {
     const t = Math.round(Math.min(W, H) * 0.038);
