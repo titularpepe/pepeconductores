@@ -1,0 +1,14 @@
+{
+  "name": "Pepe Editor",
+  "short_name": "Pepe Editor",
+  "description": "Armá videos con tus fotos y videos: texto, canción y el logo de Pepe.",
+  "start_url": "/editor/",
+  "scope": "/editor/",
+  "display": "standalone",
+  "background_color": "#0c0c0c",
+  "theme_color": "#0c0c0c",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pepe Editor — fotos y videos</title>
+<meta name="description" content="Armá videos con tus fotos y videos: cortá, poné texto, música y el logo de Pepe. Gratis, todo en tu teléfono o PC.">
+<meta name="theme-color" content="#0c0c0c">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- (2026-11-12, pedido del dueño) Pepe Editor v1: todo pasa en el navegador (nada se sube a ningún servidor).
+     El video se arma dibujando cada foto/video en un <canvas> y grabándolo con MediaRecorder, con el audio
+     mezclado por WebAudio (sonido original + canción). La exportación dura lo mismo que el video. -->
+<style>
+:root { --negro:#0c0c0c; --gris:#161616; --gris2:#222; --blanco:#f7f4ee; --amarillo:#f5d800; --dorado:#E8B33A; --apagado:rgba(247,244,238,0.6); --rojo:#ff4d4d; --verde:#25D366; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--negro); color:var(--blanco); font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+header { padding:14px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #222; position:sticky; top:0; background:var(--negro); z-index:5; }
+header img { width:34px; height:34px; border-radius:50%; }
+header h1 { margin:0; font-size:1.25rem; color:var(--dorado); letter-spacing:1px; }
+main { display:grid; grid-template-columns: minmax(0,1fr) 420px; gap:16px; padding:16px; max-width:1300px; margin:0 auto; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } .col-vista { order:-1; } }
+.caja { background:var(--gris); border:1px solid #2a2a2a; border-radius:12px; padding:14px; margin-bottom:14px; }
+.caja h2 { margin:0 0 10px; font-size:0.95rem; color:var(--amarillo); text-transform:uppercase; letter-spacing:0.5px; }
+button, .btn { background:var(--gris2); color:var(--blanco); border:1px solid #3a3a3a; border-radius:8px; padding:8px 12px; font-size:0.9rem; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-block; }
+button:hover, .btn:hover { border-color:var(--dorado); }
+button.prim { background:var(--amarillo); color:#111; border-color:var(--amarillo); font-weight:700; }
+button:disabled { opacity:0.5; cursor:default; }
+input[type=text], input[type=number], select { background:#111; color:var(--blanco); border:1px solid #3a3a3a; border-radius:6px; padding:6px 8px; font-family:inherit; font-size:0.9rem; }
+input[type=number] { width:74px; }
+input[type=range] { width:100%; }
+label { font-size:0.82rem; color:var(--apagado); }
+.fila { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0; }
+.clip { display:flex; gap:10px; align-items:center; background:#111; border:1px solid #2a2a2a; border-radius:10px; padding:8px; margin-bottom:8px; }
+.clip .mini { width:64px; height:64px; object-fit:cover; border-radius:6px; background:#000; flex:0 0 64px; }
+.clip .datos { flex:1; min-width:0; }
+.clip .nombre { font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.clip .acc { display:flex; flex-direction:column; gap:4px; }
+.clip .acc button { padding:3px 8px; font-size:0.8rem; }
+.vacio { color:var(--apagado); font-size:0.88rem; padding:10px 0; }
+canvas { width:100%; background:#000; border-radius:10px; display:block; }
+.col-vista { position:sticky; top:72px; align-self:start; }
+.estado { font-size:0.85rem; color:var(--apagado); margin-top:8px; min-height:1.2em; }
+.barra { height:6px; background:#2a2a2a; border-radius:4px; overflow:hidden; margin-top:6px; }
+.barra div { height:100%; width:0; background:var(--amarillo); }
+.tend { display:flex; gap:8px; align-items:center; padding:6px 0; border-bottom:1px solid #222; font-size:0.85rem; }
+.tend img { width:38px; height:38px; border-radius:4px; }
+.tend .t { flex:1; min-width:0; }
+.tend .t b { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tend .t span { color:var(--apagado); font-size:0.78rem; }
+.tend a { color:var(--amarillo); font-size:0.75rem; text-decoration:none; white-space:nowrap; }
+#lista-tend { max-height:340px; overflow:auto; }
+.nota { font-size:0.78rem; color:var(--apagado); margin-top:6px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="/android-chrome-192x192.png" alt="Pepe">
+  <h1>PEPE EDITOR</h1>
+  <span style="margin-left:auto;font-size:0.75rem;color:var(--apagado);">fotos y videos · v1</span>
+</header>
+
+<main>
+<div class="col-edicion">
+
+  <div class="caja">
+    <h2>1. Fotos y videos</h2>
+    <div class="fila">
+      <label class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;">➕ Agregar fotos y videos
+        <input type="file" id="in-clips" accept="image/*,video/*" multiple style="display:none;">
+      </label>
+      <span id="total" class="nota" style="margin:0;"></span>
+    </div>
+    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Se usan en el orden de la lista (podés subir o bajar cada uno).</div></div>
+  </div>
+
+  <div class="caja">
+    <h2>2. Texto encima</h2>
+    <div class="fila"><input type="text" id="txt" placeholder="Ej: ¡Lanzamiento 17/11! Bajate Pepe 🚗" style="flex:1;min-width:200px;"></div>
+    <div class="fila">
+      <label>Lugar</label>
+      <select id="txt-pos"><option value="arriba">Arriba</option><option value="medio">Medio</option><option value="abajo" selected>Abajo</option></select>
+      <label>Tamaño</label>
+      <select id="txt-tam"><option value="0.045">Chico</option><option value="0.06" selected>Mediano</option><option value="0.08">Grande</option></select>
+      <label>Color</label>
+      <input type="color" id="txt-color" value="#ffffff">
+      <label><input type="checkbox" id="txt-fondo" checked> Fondo oscuro</label>
+    </div>
+  </div>
+
+  <div class="caja">
+    <h2>3. Canción</h2>
+    <div class="fila">
+      <label class="btn">🎵 Elegir canción (mp3, m4a…)
+        <input type="file" id="in-musica" accept="audio/*,video/*" style="display:none;">
+      </label>
+      <button id="btn-sin-musica" style="display:none;">✕ Sacar canción</button>
+    </div>
+    <div id="musica-info" class="nota"></div>
+    <div id="musica-ctrl" style="display:none;">
+      <div class="fila"><label style="min-width:150px;">Empieza en el segundo</label><input type="number" id="mus-desde" min="0" step="0.5" value="0"><button id="btn-escuchar">▶ Escuchar desde ahí</button></div>
+      <div class="fila"><label style="min-width:150px;">Volumen canción</label><input type="range" id="mus-vol" min="0" max="100" value="80"></div>
+    </div>
+    <div class="fila"><label style="min-width:150px;">Sonido de los videos</label><input type="range" id="orig-vol" min="0" max="100" value="100"></div>
+
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer;color:var(--amarillo);font-size:0.88rem;">🔥 Canciones en tendencia en Argentina</summary>
+      <div class="nota">Las más escuchadas ahora. Tip: al publicar en TikTok o Instagram, agregala con su botón "Sonido": el video llega a más gente.</div>
+      <div id="lista-tend"><div class="vacio">Cargando…</div></div>
+    </details>
+  </div>
+
+  <div class="caja">
+    <h2>4. Logo y formato</h2>
+    <div class="fila">
+      <label><input type="checkbox" id="logo" checked> Logo de Pepe en la esquina</label>
+    </div>
+    <div class="fila">
+      <label>Formato</label>
+      <select id="formato">
+        <option value="720x1280" selected>Vertical 9:16 (TikTok, Reels, estados)</option>
+        <option value="720x720">Cuadrado 1:1 (Instagram, Facebook)</option>
+        <option value="1280x720">Horizontal 16:9 (YouTube)</option>
+      </select>
+      <label>Ajuste</label>
+      <select id="ajuste"><option value="contener" selected>Entera (con fondo borroso)</option><option value="llenar">Llenar la pantalla (recorta)</option></select>
+    </div>
+  </div>
+</div>
+
+<div class="col-vista">
+  <div class="caja">
+    <h2>Vista</h2>
+    <canvas id="lienzo" width="720" height="1280"></canvas>
+    <div class="fila" style="margin-top:10px;">
+      <button id="btn-ver">▶ Ver</button>
+      <button id="btn-parar" disabled>■ Parar</button>
+      <button id="btn-exportar" class="prim">⬇ Armar video</button>
+    </div>
+    <div class="barra"><div id="progreso"></div></div>
+    <div class="estado" id="estado"></div>
+    <div id="resultado" style="display:none;margin-top:10px;">
+      <video id="video-final" controls playsinline style="width:100%;border-radius:8px;background:#000;"></video>
+      <div class="fila" style="margin-top:8px;">
+        <a id="btn-descargar" class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;" download="pepe-video.mp4">💾 Guardar</a>
+        <button id="btn-compartir">📤 Compartir</button>
+      </div>
+      <div class="nota" id="nota-formato"></div>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
+const chico = document.createElement('canvas'), ctxChico = chico.getContext('2d'); // para el fondo borroso
+chico.width = 36; chico.height = 64;
+const clips = []; // { tipo:'video'|'foto', nombre, url, el, dur (foto) | desde, hasta, largo (video) }
+const logoImg = new Image(); logoImg.src = '/android-chrome-192x192.png';
+let musica = null; // { nombre, buffer }
+let audioCtx = null, mezcla = null, salidaGrabacion = null;
+let corriendo = null; // { parar: fn }
+
+// ---------- utilidades ----------
+const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`; };
+function estado(t) { $('estado').textContent = t || ''; }
+function duracionClip(c) { return c.tipo === 'foto' ? c.dur : Math.max(0.2, c.hasta - c.desde); }
+function duracionTotal() { return clips.reduce((a, c) => a + duracionClip(c), 0); }
+function asegurarAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  mezcla = audioCtx.createGain();
+  salidaGrabacion = audioCtx.createMediaStreamDestination();
+  mezcla.connect(audioCtx.destination);
+  mezcla.connect(salidaGrabacion);
+}
+
+// ---------- agregar clips ----------
+$('in-clips').addEventListener('change', async e => {
+  const archivos = [...e.target.files];
+  e.target.value = '';
+  for (const f of archivos) {
+    const url = URL.createObjectURL(f);
+    if (f.type.startsWith('image/')) {
+      const img = new Image();
+      await new Promise(ok => { img.onload = ok; img.onerror = ok; img.src = url; });
+      clips.push({ tipo: 'foto', nombre: f.name, url, el: img, dur: 3 });
+    } else if (f.type.startsWith('video/')) {
+      const v = document.createElement('video');
+      v.playsInline = true; v.preload = 'auto'; v.src = url; v.crossOrigin = 'anonymous';
+      await new Promise(ok => { v.onloadedmetadata = ok; v.onerror = ok; });
+      const largo = isFinite(v.duration) ? v.duration : 10;
+      clips.push({ tipo: 'video', nombre: f.name, url, el: v, desde: 0, hasta: largo, largo, fuente: null });
+    }
+  }
+  pintarLista();
+  dibujarCuadro(0);
+});
+
+function pintarLista() {
+  const el = $('lista-clips');
+  if (!clips.length) { el.innerHTML = '<div class="vacio">Todavía no agregaste nada.</div>'; $('total').textContent = ''; return; }
+  el.innerHTML = '';
+  clips.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'clip';
+    const mini = c.tipo === 'foto' ? `<img class="mini" src="${c.url}">` : `<video class="mini" src="${c.url}#t=0.5" muted playsinline></video>`;
+    const ctrl = c.tipo === 'foto'
+      ? `<div class="fila"><label>Dura</label><input type="number" min="0.5" step="0.5" value="${c.dur}" data-k="dur"> <label>seg</label></div>`
+      : `<div class="fila"><label>Desde</label><input type="number" min="0" max="${c.largo.toFixed(1)}" step="0.1" value="${c.desde.toFixed(1)}" data-k="desde">
+         <label>hasta</label><input type="number" min="0" max="${c.largo.toFixed(1)}" step="0.1" value="${c.hasta.toFixed(1)}" data-k="hasta">
+         <label>de ${fmt(c.largo)}</label></div>`;
+    d.innerHTML = `${mini}<div class="datos"><div class="nombre">${c.tipo === 'foto' ? '🖼️' : '🎬'} ${i + 1}. ${c.nombre.replace(/[<>&"]/g, '')}</div>${ctrl}</div>
+      <div class="acc"><button data-a="sube" title="Subir">▲</button><button data-a="baja" title="Bajar">▼</button><button data-a="saca" title="Sacar" style="color:var(--rojo);">✕</button></div>`;
+    d.querySelectorAll('input[data-k]').forEach(inp => inp.addEventListener('change', () => {
+      let v = parseFloat(inp.value) || 0;
+      if (inp.dataset.k === 'dur') c.dur = Math.max(0.5, v);
+      if (inp.dataset.k === 'desde') c.desde = Math.min(Math.max(0, v), c.hasta - 0.2);
+      if (inp.dataset.k === 'hasta') c.hasta = Math.max(Math.min(c.largo, v), c.desde + 0.2);
+      pintarLista();
+    }));
+    d.querySelector('[data-a=sube]').onclick = () => { if (i > 0) { [clips[i - 1], clips[i]] = [clips[i], clips[i - 1]]; pintarLista(); } };
+    d.querySelector('[data-a=baja]').onclick = () => { if (i < clips.length - 1) { [clips[i + 1], clips[i]] = [clips[i], clips[i + 1]]; pintarLista(); } };
+    d.querySelector('[data-a=saca]').onclick = () => { clips.splice(i, 1); pintarLista(); dibujarCuadro(0); };
+    el.appendChild(d);
+  });
+  $('total').textContent = `${clips.length} elemento(s) · el video dura ${fmt(duracionTotal())}`;
+}
+
+// ---------- canción ----------
+$('in-musica').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  asegurarAudio();
+  $('musica-info').textContent = 'Leyendo la canción…';
+  try {
+    const buffer = await audioCtx.decodeAudioData(await f.arrayBuffer());
+    musica = { nombre: f.name, buffer };
+    $('musica-info').textContent = `🎵 ${f.name} (${fmt(buffer.duration)})`;
+    $('musica-ctrl').style.display = '';
+    $('btn-sin-musica').style.display = '';
+    $('mus-desde').max = Math.floor(buffer.duration);
+  } catch (err) {
+    musica = null;
+    $('musica-info').textContent = 'No pude leer ese archivo de audio. Probá con un mp3 o m4a.';
+  }
+});
+$('btn-sin-musica').onclick = () => { musica = null; $('musica-info').textContent = ''; $('musica-ctrl').style.display = 'none'; $('btn-sin-musica').style.display = 'none'; };
+let escuchando = null;
+$('btn-escuchar').onclick = () => {
+  if (escuchando) { try { escuchando.stop(); } catch (e) {} escuchando = null; $('btn-escuchar').textContent = '▶ Escuchar desde ahí'; return; }
+  if (!musica) return;
+  asegurarAudio(); audioCtx.resume();
+  const s = audioCtx.createBufferSource(); s.buffer = musica.buffer;
+  const g = audioCtx.createGain(); g.gain.value = $('mus-vol').value / 100;
+  s.connect(g); g.connect(audioCtx.destination);
+  s.start(0, parseFloat($('mus-desde').value) || 0, 10);
+  s.onended = () => { escuchando = null; $('btn-escuchar').textContent = '▶ Escuchar desde ahí'; };
+  escuchando = s; $('btn-escuchar').textContent = '■ Parar';
+};
+
+// ---------- tendencias ----------
+fetch('https://us-central1-pepe-conductores.cloudfunctions.net/cancionesTendencia')
+  .then(r => r.json())
+  .then(d => {
+    const el = $('lista-tend');
+    if (!d.lista || !d.lista.length) { el.innerHTML = '<div class="vacio">No se pudo cargar la lista ahora.</div>'; return; }
+    el.innerHTML = d.lista.map(s => {
+      const q = encodeURIComponent(`${s.nombre} ${s.artista}`);
+      const esc = t => String(t).replace(/[<>&"]/g, '');
+      return `<div class="tend"><img src="${esc(s.tapa)}" alt="" loading="lazy"><div class="t"><b>${s.puesto}. ${esc(s.nombre)}</b><span>${esc(s.artista)}</span></div>
+        <a href="https://www.tiktok.com/search?q=${q}" target="_blank" rel="noopener">TikTok</a>
+        <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">YouTube</a></div>`;
+    }).join('');
+  })
+  .catch(() => { $('lista-tend').innerHTML = '<div class="vacio">No se pudo cargar la lista ahora.</div>'; });
+
+// ---------- dibujo ----------
+function tamanio() { const [w, h] = $('formato').value.split('x').map(Number); return { w, h }; }
+function aplicarFormato() {
+  const { w, h } = tamanio();
+  if (lienzo.width !== w || lienzo.height !== h) { lienzo.width = w; lienzo.height = h; }
+  chico.width = Math.round(w / 20); chico.height = Math.round(h / 20);
+}
+$('formato').addEventListener('change', () => { aplicarFormato(); dibujarCuadro(0); });
+['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'logo', 'ajuste'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
+
+function medidas(el) { return el.tagName === 'VIDEO' ? { w: el.videoWidth, h: el.videoHeight } : { w: el.naturalWidth, h: el.naturalHeight }; }
+
+function dibujarFuente(el) {
+  const W = lienzo.width, H = lienzo.height;
+  const { w, h } = medidas(el);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (!w || !h) return;
+  const llenar = $('ajuste').value === 'llenar';
+  const escCover = Math.max(W / w, H / h), escCont = Math.min(W / w, H / h);
+  if (!llenar) {
+    // fondo borroso barato: la misma imagen chiquita y estirada
+    const cw = chico.width, ch = chico.height, ec = Math.max(cw / w, ch / h);
+    ctxChico.drawImage(el, (cw - w * ec) / 2, (ch - h * ec) / 2, w * ec, h * ec);
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = 0.6; ctx.drawImage(chico, 0, 0, W, H); ctx.globalAlpha = 1;
+  }
+  const e = llenar ? escCover : escCont;
+  ctx.drawImage(el, (W - w * e) / 2, (H - h * e) / 2, w * e, h * e);
+}
+
+function dibujarExtras() {
+  const W = lienzo.width, H = lienzo.height;
+  const texto = $('txt').value.trim();
+  if (texto) {
+    const tam = Math.round(Math.min(W, H) * parseFloat($('txt-tam').value) * (W < H ? 1.4 : 1));
+    ctx.font = `800 ${tam}px system-ui, 'Segoe UI', Roboto, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    // cortar en renglones
+    const palabras = texto.split(/\s+/), lineas = []; let linea = '';
+    for (const p of palabras) { const prueba = linea ? linea + ' ' + p : p; if (ctx.measureText(prueba).width > W * 0.88 && linea) { lineas.push(linea); linea = p; } else linea = prueba; }
+    if (linea) lineas.push(linea);
+    const alto = tam * 1.2 * lineas.length;
+    const pos = $('txt-pos').value;
+    const y0 = pos === 'arriba' ? H * 0.12 : pos === 'medio' ? H / 2 - alto / 2 + tam * 0.6 : H * 0.84 - alto + tam * 0.6;
+    if ($('txt-fondo').checked) {
+      const ancho = Math.max(...lineas.map(l => ctx.measureText(l).width)) + tam;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect((W - ancho) / 2, y0 - tam * 0.8, ancho, alto + tam * 0.4);
+    }
+    ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = $('txt-color').value;
+    lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, W / 2, y); ctx.fillText(l, W / 2, y); });
+  }
+  if ($('logo').checked && logoImg.complete && logoImg.naturalWidth) {
+    const t = Math.round(Math.min(W, H) * 0.14);
+    ctx.globalAlpha = 0.9; ctx.drawImage(logoImg, W - t - Math.round(t * 0.25), Math.round(t * 0.25), t, t); ctx.globalAlpha = 1;
+  }
+}
+
+function dibujarCuadro() {
+  aplicarFormato();
+  if (!clips.length) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+    ctx.fillStyle = '#555'; ctx.font = '28px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('Agregá fotos y videos', lienzo.width / 2, lienzo.height / 2);
+    dibujarExtras();
+    return;
+  }
+  const c = clips[0];
+  if (c.tipo === 'video' && c.el.readyState < 2) { c.el.currentTime = c.desde + 0.01; c.el.onseeked = () => { c.el.onseeked = null; dibujarCuadro(); }; return; }
+  dibujarFuente(c.el); dibujarExtras();
+}
+
+// ---------- reproducir (vista y grabación usan lo mismo) ----------
+function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
+function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.05) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
+
+async function reproducir({ grabar }) {
+  if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
+  asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
+  aplicarFormato();
+  const total = duracionTotal();
+  let parado = false, recorder = null, partes = [];
+  const gOrig = audioCtx.createGain(); gOrig.gain.value = $('orig-vol').value / 100; gOrig.connect(mezcla);
+  let fuenteMusica = null;
+  if (musica) {
+    fuenteMusica = audioCtx.createBufferSource(); fuenteMusica.buffer = musica.buffer;
+    const g = audioCtx.createGain(); g.gain.value = $('mus-vol').value / 100;
+    // bajada suave al final
+    const fin = audioCtx.currentTime + total;
+    g.gain.setValueAtTime(g.gain.value, Math.max(audioCtx.currentTime, fin - 1));
+    g.gain.linearRampToValueAtTime(0, fin);
+    fuenteMusica.connect(g); g.connect(mezcla);
+  }
+  // los videos suenan a través de la mezcla (una sola conexión por elemento)
+  clips.forEach(c => { if (c.tipo === 'video') { if (!c.fuente) c.fuente = audioCtx.createMediaElementSource(c.el); try { c.fuente.disconnect(); } catch (e) {} c.fuente.connect(gOrig); c.el.muted = false; } });
+
+  if (grabar) {
+    const stream = lienzo.captureStream(30);
+    salidaGrabacion.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+    const tipos = ['video/mp4;codecs=avc1.42E01F,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
+    const tipo = tipos.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+    if (!tipo) { estado('Este navegador no puede grabar video. Usá Chrome.'); return null; }
+    recorder = new MediaRecorder(stream, { mimeType: tipo, videoBitsPerSecond: 5_000_000 });
+    recorder.ondataavailable = e => { if (e.data.size) partes.push(e.data); };
+  }
+
+  const control = { parar: () => { parado = true; } };
+  corriendo = control;
+  $('btn-parar').disabled = false; $('btn-ver').disabled = true; $('btn-exportar').disabled = true;
+
+  // preparar el primer cuadro antes de arrancar a grabar
+  if (clips[0].tipo === 'video') await irA(clips[0].el, clips[0].desde);
+  if (recorder) recorder.start(500);
+  if (fuenteMusica) fuenteMusica.start(0, Math.min(parseFloat($('mus-desde').value) || 0, musica.buffer.duration - 0.1));
+  const t0 = performance.now();
+  let hecho = 0;
+  for (const c of clips) {
+    if (parado) break;
+    const dur = duracionClip(c);
+    if (c.tipo === 'video') {
+      const v = c.el;
+      await irA(v, c.desde);
+      await v.play().catch(() => {});
+      while (!parado && v.currentTime < c.hasta && !v.ended) {
+        dibujarFuente(v); dibujarExtras();
+        $('progreso').style.width = `${Math.min(100, (hecho + v.currentTime - c.desde) / total * 100)}%`;
+        await new Promise(r => requestAnimationFrame(r));
+      }
+      v.pause();
+    } else {
+      const inicio = performance.now();
+      while (!parado && performance.now() - inicio < dur * 1000) {
+        dibujarFuente(c.el); dibujarExtras();
+        $('progreso').style.width = `${Math.min(100, (hecho + (performance.now() - inicio) / 1000) / total * 100)}%`;
+        await new Promise(r => requestAnimationFrame(r));
+      }
+    }
+    hecho += dur;
+  }
+  if (fuenteMusica) { try { fuenteMusica.stop(); } catch (e) {} }
+  try { gOrig.disconnect(); } catch (e) {}
+  corriendo = null;
+  $('btn-parar').disabled = true; $('btn-ver').disabled = false; $('btn-exportar').disabled = false;
+  if (!recorder) { estado(parado ? 'Parado.' : ''); return null; }
+  await new Promise(ok => { recorder.onstop = ok; recorder.stop(); });
+  if (parado) { estado('Cancelado.'); return null; }
+  console.log('grabado en', ((performance.now() - t0) / 1000).toFixed(1), 's');
+  return new Blob(partes, { type: recorder.mimeType });
+}
+
+$('btn-ver').onclick = () => { $('resultado').style.display = 'none'; estado('Mostrando…'); reproducir({ grabar: false }).then(() => estado('')); };
+$('btn-parar').onclick = () => corriendo && corriendo.parar();
+let ultimoArchivo = null;
+$('btn-exportar').onclick = async () => {
+  $('resultado').style.display = 'none';
+  estado(`Armando el video… tarda lo mismo que dura (${fmt(duracionTotal())}). No cambies de pestaña ni bloquees el teléfono.`);
+  const blob = await reproducir({ grabar: true });
+  if (!blob) return;
+  const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+  const nombre = `pepe-video-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${ext}`;
+  ultimoArchivo = new File([blob], nombre, { type: blob.type });
+  const url = URL.createObjectURL(blob);
+  $('video-final').src = url;
+  $('btn-descargar').href = url; $('btn-descargar').download = nombre;
+  $('nota-formato').textContent = ext === 'mp4' ? `Listo: ${nombre} (${(blob.size / 1048576).toFixed(1)} MB).`
+    : `Listo: ${nombre}. Ojo: este navegador lo guardó en formato WebM; para Instagram conviene armarlo desde Chrome actualizado (sale MP4).`;
+  $('resultado').style.display = '';
+  estado('¡Listo!');
+  $('progreso').style.width = '100%';
+};
+$('btn-compartir').onclick = async () => {
+  if (!ultimoArchivo) return;
+  if (navigator.canShare && navigator.canShare({ files: [ultimoArchivo] })) {
+    try { await navigator.share({ files: [ultimoArchivo], title: 'Video de Pepe' }); } catch (e) {}
+  } else {
+    estado('Tu navegador no deja compartir directo: tocá "Guardar" y subilo desde la galería.');
+  }
+};
+
+// si se cambia de pestaña durante la grabación, el navegador frena el dibujo: avisar
+document.addEventListener('visibilitychange', () => { if (document.hidden && corriendo) estado('⚠️ Volvé a esta pestaña: si no, el video sale cortado.'); });
+
+dibujarCuadro();
+</script>
+</body>
+</html>
