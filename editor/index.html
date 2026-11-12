@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#0c0c0c">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Comic+Neue:wght@700&family=Lobster&family=Luckiest+Guy&family=Montserrat:wght@800&family=Pacifico&family=Permanent+Marker&display=swap">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- (2026-11-12, pedido del dueño) Pepe Editor v1: todo pasa en el navegador (nada se sube a ningún servidor).
      El video se arma dibujando cada foto/video en un <canvas> y grabándolo con MediaRecorder, con el audio
@@ -85,6 +87,19 @@ canvas { width:100%; background:#000; border-radius:10px; display:block; }
       <select id="txt-tam"><option value="0.045">Chico</option><option value="0.06" selected>Mediano</option><option value="0.08">Grande</option></select>
       <label>Color</label>
       <input type="color" id="txt-color" value="#ffffff">
+      <label>Letra</label>
+      <select id="txt-letra">
+        <option value="comun" selected>Común</option>
+        <option value="Montserrat" style="font-family:Montserrat;font-weight:800;">Montserrat</option>
+        <option value="Anton" style="font-family:Anton;">Anton (tipo Impact)</option>
+        <option value="Bebas Neue" style="font-family:'Bebas Neue';">Bebas Neue</option>
+        <option value="Bangers" style="font-family:Bangers;">Bangers (cómic)</option>
+        <option value="Luckiest Guy" style="font-family:'Luckiest Guy';">Luckiest Guy (cómic)</option>
+        <option value="Comic Neue" style="font-family:'Comic Neue';font-weight:700;">Comic Neue (cómic)</option>
+        <option value="Permanent Marker" style="font-family:'Permanent Marker';">Permanent Marker (fibrón)</option>
+        <option value="Pacifico" style="font-family:Pacifico;">Pacifico (cursiva)</option>
+        <option value="Lobster" style="font-family:Lobster;">Lobster (cursiva)</option>
+      </select>
       <label><input type="checkbox" id="txt-fondo" checked> Fondo oscuro</label>
     </div>
   </div>
@@ -353,6 +368,19 @@ lienzo.addEventListener('touchmove', e => { if (arrastrando) { e.preventDefault(
 lienzo.addEventListener('touchend', () => { arrastrando = null; });
 lienzo.addEventListener('mousemove', e => { if (!arrastrando) lienzo.style.cursor = (() => { const p = aLienzo(e.clientX, e.clientY); return logos.some(l => { if (!l.activo || !l.img.naturalWidth) return false; const c = cajaLogo(l); return p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h; }); })() ? 'move' : ''; });
 
+// ---------- tipo de letra ----------
+const PESO_LETRA = { 'Montserrat': 800, 'Comic Neue': 700 };
+function fuenteTexto(tam) {
+  const f = $('txt-letra').value;
+  if (f === 'comun') return `800 ${tam}px system-ui, 'Segoe UI', Roboto, sans-serif`;
+  return `${PESO_LETRA[f] || 400} ${tam}px '${f}', system-ui, sans-serif`;
+}
+$('txt-letra').addEventListener('change', () => {
+  // la letra se baja recién cuando se usa: esperar a que esté y redibujar
+  document.fonts.load(fuenteTexto(40)).then(redibujar, redibujar);
+  redibujar();
+});
+
 // ---------- dibujo ----------
 function tamanio() { const [w, h] = $('formato').value.split('x').map(Number); return { w, h }; }
 function aplicarFormato() {
@@ -388,7 +416,7 @@ function dibujarExtras() {
   const texto = $('txt').value.trim();
   if (texto) {
     const tam = Math.round(Math.min(W, H) * parseFloat($('txt-tam').value) * (W < H ? 1.4 : 1));
-    ctx.font = `800 ${tam}px system-ui, 'Segoe UI', Roboto, sans-serif`;
+    ctx.font = fuenteTexto(tam);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     // cortar en renglones
     const palabras = texto.split(/\s+/), lineas = []; let linea = '';
@@ -447,6 +475,7 @@ function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) 
 async function reproducir({ grabar }) {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
   asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
+  await Promise.race([document.fonts.load(fuenteTexto(40)).catch(() => {}), esperar(3000)]);
   aplicarFormato();
   const total = duracionTotal();
   let parado = false, recorder = null, partes = [];
