@@ -116,9 +116,13 @@ canvas { width:100%; background:#000; border-radius:10px; display:block; }
 
   <div class="caja">
     <h2>4. Logo y formato</h2>
+    <div id="lista-logos"></div>
     <div class="fila">
-      <label><input type="checkbox" id="logo" checked> Logo de Pepe en la esquina</label>
+      <label class="btn">➕ Logo de mi PC / celular
+        <input type="file" id="in-logo" accept="image/*" multiple style="display:none;">
+      </label>
     </div>
+    <div class="nota">Marcá los logos que querés y <b>arrastralos con el dedo o el mouse</b> sobre la vista previa para ubicarlos.</div>
     <div class="fila">
       <label>Formato</label>
       <select id="formato">
@@ -162,7 +166,16 @@ const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
 const chico = document.createElement('canvas'), ctxChico = chico.getContext('2d'); // para el fondo borroso
 chico.width = 36; chico.height = 64;
 const clips = []; // { tipo:'video'|'foto', nombre, url, el, dur (foto) | desde, hasta, largo (video) }
-const logoImg = new Image(); logoImg.src = '/android-chrome-192x192.png';
+// logos: x, y = centro (fracción del ancho/alto); tam = fracción del lado chico
+function nuevoLogo(nombre, src, activo, x, y, propio) {
+  const img = new Image(); img.onload = () => { if (!corriendo) dibujarCuadro(0); }; img.src = src;
+  return { nombre, img, activo, x, y, tam: 0.16, propio };
+}
+const logos = [
+  nuevoLogo('Pepe', 'logos/pepe.png', true, 0.86, 0.08),
+  nuevoLogo('Pepe Conductores', 'logos/conductores.png', false, 0.14, 0.08),
+  nuevoLogo('Pepe Pasajeros', 'logos/pasajeros.png', false, 0.5, 0.08),
+];
 let musica = null; // { nombre, buffer }
 let audioCtx = null, mezcla = null, salidaGrabacion = null;
 let corriendo = null; // { parar: fn }
@@ -282,6 +295,64 @@ fetch('https://us-central1-pepe-conductores.cloudfunctions.net/cancionesTendenci
   })
   .catch(() => { $('lista-tend').innerHTML = '<div class="vacio">No se pudo cargar la lista ahora.</div>'; });
 
+// ---------- logos ----------
+function redibujar() { if (!corriendo) dibujarCuadro(0); }
+function pintarLogos() {
+  const el = $('lista-logos'); el.innerHTML = '';
+  logos.forEach((l, i) => {
+    const d = document.createElement('div');
+    d.className = 'fila';
+    d.innerHTML = `<label style="display:flex;align-items:center;gap:6px;min-width:190px;"><input type="checkbox" ${l.activo ? 'checked' : ''}>
+      <img src="${l.img.src}" style="width:32px;height:32px;object-fit:contain;"> ${l.nombre.replace(/[<>&"]/g, '')}</label>
+      <label>Tamaño</label><input type="range" min="5" max="45" value="${Math.round(l.tam * 100)}" style="flex:1;min-width:90px;">
+      ${l.propio ? '<button title="Sacar" style="color:var(--rojo);">✕</button>' : ''}`;
+    d.querySelector('input[type=checkbox]').onchange = e => { l.activo = e.target.checked; redibujar(); };
+    d.querySelector('input[type=range]').oninput = e => { l.tam = e.target.value / 100; redibujar(); };
+    const b = d.querySelector('button'); if (b) b.onclick = () => { logos.splice(i, 1); pintarLogos(); redibujar(); };
+    el.appendChild(d);
+  });
+}
+pintarLogos();
+$('in-logo').addEventListener('change', e => {
+  for (const f of e.target.files) if (f.type.startsWith('image/')) logos.push(nuevoLogo(f.name, URL.createObjectURL(f), true, 0.5, 0.5, true));
+  e.target.value = '';
+  pintarLogos(); redibujar();
+});
+function cajaLogo(l) {
+  const W = lienzo.width, H = lienzo.height;
+  const lado = l.tam * Math.min(W, H), r = (l.img.naturalWidth / l.img.naturalHeight) || 1;
+  const w = r >= 1 ? lado : lado * r, h = r >= 1 ? lado / r : lado;
+  return { x: l.x * W - w / 2, y: l.y * H - h / 2, w, h };
+}
+// arrastrar logos sobre la vista previa
+let arrastrando = null;
+function aLienzo(cx, cy) { const r = lienzo.getBoundingClientRect(); return { x: (cx - r.left) / r.width * lienzo.width, y: (cy - r.top) / r.height * lienzo.height }; }
+function empezarArrastre(cx, cy) {
+  const p = aLienzo(cx, cy);
+  for (let i = logos.length - 1; i >= 0; i--) {
+    const l = logos[i]; if (!l.activo || !l.img.naturalWidth) continue;
+    const c = cajaLogo(l);
+    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
+      arrastrando = { l, dx: p.x - l.x * lienzo.width, dy: p.y - l.y * lienzo.height }; return true;
+    }
+  }
+  return false;
+}
+function moverArrastre(cx, cy) {
+  if (!arrastrando) return;
+  const p = aLienzo(cx, cy), a = arrastrando;
+  a.l.x = Math.min(1, Math.max(0, (p.x - a.dx) / lienzo.width));
+  a.l.y = Math.min(1, Math.max(0, (p.y - a.dy) / lienzo.height));
+  redibujar();
+}
+lienzo.addEventListener('mousedown', e => { if (empezarArrastre(e.clientX, e.clientY)) e.preventDefault(); });
+window.addEventListener('mousemove', e => moverArrastre(e.clientX, e.clientY));
+window.addEventListener('mouseup', () => { arrastrando = null; });
+lienzo.addEventListener('touchstart', e => { const t = e.touches[0]; if (e.touches.length === 1 && empezarArrastre(t.clientX, t.clientY)) e.preventDefault(); }, { passive: false });
+lienzo.addEventListener('touchmove', e => { if (arrastrando) { e.preventDefault(); moverArrastre(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+lienzo.addEventListener('touchend', () => { arrastrando = null; });
+lienzo.addEventListener('mousemove', e => { if (!arrastrando) lienzo.style.cursor = (() => { const p = aLienzo(e.clientX, e.clientY); return logos.some(l => { if (!l.activo || !l.img.naturalWidth) return false; const c = cajaLogo(l); return p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h; }); })() ? 'move' : ''; });
+
 // ---------- dibujo ----------
 function tamanio() { const [w, h] = $('formato').value.split('x').map(Number); return { w, h }; }
 function aplicarFormato() {
@@ -290,7 +361,7 @@ function aplicarFormato() {
   chico.width = Math.round(w / 20); chico.height = Math.round(h / 20);
 }
 $('formato').addEventListener('change', () => { aplicarFormato(); dibujarCuadro(0); });
-['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'logo', 'ajuste', 'mus-tema', 'mus-artista', 'mus-cartel'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
+['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'ajuste', 'mus-tema', 'mus-artista', 'mus-cartel'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
 
 function medidas(el) { return el.tagName === 'VIDEO' ? { w: el.videoWidth, h: el.videoHeight } : { w: el.naturalWidth, h: el.naturalHeight }; }
 
@@ -348,9 +419,10 @@ function dibujarExtras() {
     if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, ancho, alto, alto / 2); ctx.fill(); } else ctx.fillRect(x, y, ancho, alto);
     ctx.fillStyle = '#fff'; ctx.fillText(cartel, x + t * 0.6, y + alto / 2);
   }
-  if ($('logo').checked && logoImg.complete && logoImg.naturalWidth) {
-    const t = Math.round(Math.min(W, H) * 0.14);
-    ctx.globalAlpha = 0.9; ctx.drawImage(logoImg, W - t - Math.round(t * 0.25), Math.round(t * 0.25), t, t); ctx.globalAlpha = 1;
+  for (const l of logos) {
+    if (!l.activo || !l.img.naturalWidth) continue;
+    const c = cajaLogo(l);
+    ctx.drawImage(l.img, c.x, c.y, c.w, c.h);
   }
 }
 
