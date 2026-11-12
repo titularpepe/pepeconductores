@@ -103,6 +103,9 @@ canvas { width:100%; background:#000; border-radius:10px; display:block; }
       <div class="fila"><label style="min-width:150px;">Volumen canción</label><input type="range" id="mus-vol" min="0" max="100" value="80"></div>
     </div>
     <div class="fila"><label style="min-width:150px;">Sonido de los videos</label><input type="range" id="orig-vol" min="0" max="100" value="100"></div>
+    <div class="fila"><label style="min-width:150px;">Tema</label><input type="text" id="mus-tema" placeholder="Nombre del tema" style="flex:1;min-width:140px;"></div>
+    <div class="fila"><label style="min-width:150px;">Artista</label><input type="text" id="mus-artista" placeholder="Nombre del artista" style="flex:1;min-width:140px;"></div>
+    <div class="fila"><label><input type="checkbox" id="mus-cartel" checked> Mostrar "🎵 Tema – Artista" en el video</label></div>
 
     <details style="margin-top:10px;">
       <summary style="cursor:pointer;color:var(--amarillo);font-size:0.88rem;">🔥 Canciones en tendencia en Argentina</summary>
@@ -287,7 +290,7 @@ function aplicarFormato() {
   chico.width = Math.round(w / 20); chico.height = Math.round(h / 20);
 }
 $('formato').addEventListener('change', () => { aplicarFormato(); dibujarCuadro(0); });
-['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'logo', 'ajuste'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
+['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'logo', 'ajuste', 'mus-tema', 'mus-artista', 'mus-cartel'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
 
 function medidas(el) { return el.tagName === 'VIDEO' ? { w: el.videoWidth, h: el.videoHeight } : { w: el.naturalWidth, h: el.naturalHeight }; }
 
@@ -330,6 +333,20 @@ function dibujarExtras() {
     }
     ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = $('txt-color').value;
     lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, W / 2, y); ctx.fillText(l, W / 2, y); });
+  }
+  const tema = $('mus-tema').value.trim(), artista = $('mus-artista').value.trim();
+  if ($('mus-cartel').checked && (tema || artista)) {
+    const t = Math.round(Math.min(W, H) * 0.038);
+    ctx.font = `600 ${t}px system-ui, 'Segoe UI', Roboto, sans-serif`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    let cartel = '🎵 ' + [tema, artista].filter(Boolean).join(' – ');
+    const max = W * 0.8;
+    while (ctx.measureText(cartel).width > max && cartel.length > 5) cartel = cartel.slice(0, -2) + '…';
+    const ancho = ctx.measureText(cartel).width + t * 1.2, alto = t * 1.8;
+    const x = Math.round(W * 0.04), y = Math.round(H - alto - H * 0.04);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, ancho, alto, alto / 2); ctx.fill(); } else ctx.fillRect(x, y, ancho, alto);
+    ctx.fillStyle = '#fff'; ctx.fillText(cartel, x + t * 0.6, y + alto / 2);
   }
   if ($('logo').checked && logoImg.complete && logoImg.naturalWidth) {
     const t = Math.round(Math.min(W, H) * 0.14);
