@@ -775,7 +775,7 @@ function pintarPanelCapa() {
     k.ini = Math.min(Math.max(0, ini), Math.max(0, total - 0.2));
     k.fin = Math.min(total, Math.max(k.ini + 0.2, fin));
     $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1);
-    pintarTimeline(); mostrarEn(k.ini + 0.01);
+    pintarTimeline(); redibujar(); // la línea amarilla no se mueve
   };
   // cambiar dónde empieza la mueve entera (mantiene lo que dura); "Termina" la estira o la acorta
   $('capa-ini').onchange = e => { const largo = k.fin - k.ini, v = parseFloat(e.target.value) || 0; ponerTiempos(v, v + largo); };
@@ -802,7 +802,7 @@ function marcarClipSel() {
       capaSel = k;
       arrastreTl = { modo: e.target.dataset.b || 'mover', k, t0: aT(e.clientX), ini0: k.ini, fin0: k.fin };
       pintarTimeline(); pintarPanelCapa();
-      if (tActual < k.ini || tActual >= k.fin) mostrarEn(k.ini + 0.01);
+      // (12/11) tocar un efecto o foto NO mueve la línea amarilla: queda donde el dueño pausó
       return;
     }
     const b = e.target.closest('.bloque');
@@ -815,9 +815,9 @@ function marcarClipSel() {
     const t = aT(e.clientX);
     if (a.modo === 'cursor') { mostrarEn(t); return; }
     const total = duracionTotal(), d = t - a.t0, largo = a.fin0 - a.ini0, k = a.k;
-    if (a.modo === 'mover') { k.ini = Math.min(Math.max(0, a.ini0 + d), total - largo); k.fin = k.ini + largo; mostrarEn(k.ini + 0.01); }
-    if (a.modo === 'ini') { k.ini = Math.min(Math.max(0, a.ini0 + d), k.fin - 0.2); mostrarEn(k.ini + 0.01); }
-    if (a.modo === 'fin') { k.fin = Math.max(Math.min(total, a.fin0 + d), k.ini + 0.2); mostrarEn(k.fin - 0.02); }
+    if (a.modo === 'mover') { k.ini = Math.min(Math.max(0, a.ini0 + d), total - largo); k.fin = k.ini + largo; redibujar(); }
+    if (a.modo === 'ini') { k.ini = Math.min(Math.max(0, a.ini0 + d), k.fin - 0.2); redibujar(); }
+    if (a.modo === 'fin') { k.fin = Math.max(Math.min(total, a.fin0 + d), k.ini + 0.2); redibujar(); }
     pintarTimeline();
     if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1); }
   });
@@ -849,7 +849,7 @@ $('in-capa').addEventListener('change', e => {
   const img = new Image(); img.onload = redibujar; img.src = URL.createObjectURL(f);
   const k = { tipo: 'foto', nombre: f.name, img, x: 0.5, y: 0.5, tam: 0.4, ini, fin: Math.min(total, ini + 3) };
   capas.push(k); capaSel = k;
-  pintarTimeline(); pintarPanelCapa(); mostrarEn(ini + 0.01);
+  pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 });
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
@@ -858,7 +858,7 @@ $('btn-efecto').onclick = () => {
   const ini = Math.min(tActual, Math.max(0, total - largo));
   const k = { tipo: 'efecto', efecto, ini, fin: Math.min(total, ini + largo) };
   capas.push(k); capaSel = k;
-  pintarTimeline(); pintarPanelCapa(); mostrarEn(ini + 0.01);
+  pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 };
 
 // ---------- reproducir (vista y grabación usan lo mismo) ----------
