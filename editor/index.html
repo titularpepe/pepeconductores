@@ -189,6 +189,8 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
         <option value="confeti">🎉 Confeti</option><option value="corazones">❤️ Corazones</option>
       </select>
       <button id="btn-efecto">✨ Efecto acá</button>
+      <button id="btn-deshacer" title="Deshacer (Ctrl+Z)">↶</button>
+      <button id="btn-rehacer" title="Rehacer (Ctrl+Y)">↷</button>
     </div>
     <div id="capa-panel"></div>
     <div class="fila" style="margin-top:10px;">
@@ -604,6 +606,7 @@ function mostrarEn(t) {
   const total = duracionTotal();
   tActual = Math.min(Math.max(0, t || 0), total);
   pintarCursor();
+  marcarCambio();
   if (corriendo) return;
   pedidoT = tActual;
   if (!mostrando) procesarMostrar();
@@ -686,6 +689,7 @@ function pintarCursor() {
   $('tl-tiempo').textContent = `${fmt1(tActual)} / ${fmt1(total)}`;
 }
 function pintarTimeline() {
+  marcarCambio();
   const total = duracionTotal() || 1, ini = inicios();
   const esc = t => String(t).replace(/[<>&"]/g, '');
   // regla de segundos: cada 1 s (o cada 2/5/10/30 si el video es largo), con marquitas en el medio
@@ -962,9 +966,71 @@ $('btn-parar').onclick = async () => {
   if (corriendo) { const g = corriendo.grabando, f = corriendo.fin; corriendo.parar(); await f; if (g) return; }
   mostrarEn(0);
 };
-// barra espaciadora = Ver/Pausa; Supr = borrar lo seleccionado (foto/efecto encima o pedazo)
+// ---------- deshacer / rehacer (Ctrl+Z / Ctrl+Y y botones ↶ ↷) ----------
+// Se guarda una "foto" del proyecto un ratito después de cada cambio (si cambió algo de verdad).
+// Los videos/imágenes no se copian: se guardan las mismas referencias.
+var historia = [], paraRehacer = [];
+var tHistoria = null, restaurando = false;
+function fotoProyecto() {
+  return {
+    clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
+    capas: capas.map(k => ({ ...k })),
+    logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam })),
+    texto: { x: textoPos.x, y: textoPos.y },
+  };
+}
+function claveProyecto(f) {
+  return JSON.stringify([f.clips.map(c => ({ ...c, el: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
+    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam]), f.texto]);
+}
+function guardarHistoria() {
+  clearTimeout(tHistoria); tHistoria = null;
+  const f = fotoProyecto(), k = claveProyecto(f);
+  if (historia.length && historia[historia.length - 1].k === k) return;
+  historia.push({ f, k }); if (historia.length > 80) historia.shift();
+  paraRehacer.length = 0;
+}
+function marcarCambio() {
+  if (restaurando || !historia) return;
+  clearTimeout(tHistoria); tHistoria = setTimeout(guardarHistoria, 400);
+}
+function aplicarFoto(f) {
+  restaurando = true;
+  try {
+    clips.length = 0; f.clips.forEach(c => clips.push({ ...c, filtro: { ...c.filtro } }));
+    capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
+    logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam }); logos.push(o.l); });
+    textoPos.x = f.texto.x; textoPos.y = f.texto.y;
+    capaSel = null; clipSel = null;
+    pintarLista(); pintarLogos(); pintarPanelCapa();
+    mostrarEn(Math.min(tActual, duracionTotal()));
+  } finally { restaurando = false; }
+}
+function deshacer() {
+  if (corriendo) return;
+  if (tHistoria) guardarHistoria(); // guardar lo último antes de volver
+  if (historia.length < 2) { estado('No hay nada más para deshacer.'); return; }
+  paraRehacer.push(historia.pop());
+  aplicarFoto(historia[historia.length - 1].f);
+  estado('↶ Deshecho.');
+}
+function rehacer() {
+  if (corriendo || !paraRehacer.length) { if (!paraRehacer.length) estado('No hay nada para rehacer.'); return; }
+  const s = paraRehacer.pop(); historia.push(s);
+  aplicarFoto(s.f);
+  estado('↷ Rehecho.');
+}
+$('btn-deshacer').onclick = deshacer;
+$('btn-rehacer').onclick = rehacer;
+
+// barra espaciadora = Ver/Pausa; Supr = borrar lo seleccionado (foto/efecto encima o pedazo); Ctrl+Z / Ctrl+Y
 document.addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input[type=text], input[type=number], textarea, select')) return;
+  if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+    const k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); deshacer(); return; }
+    if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); rehacer(); return; }
+  }
   if (e.code === 'Space') { e.preventDefault(); $('btn-ver').click(); }
   if (e.key === 'Delete' && !corriendo) {
     if (capaSel && capas.includes(capaSel)) { capas.splice(capas.indexOf(capaSel), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); }
@@ -1003,6 +1069,7 @@ $('btn-compartir').onclick = async () => {
 document.addEventListener('visibilitychange', () => { if (document.hidden && corriendo) estado('⚠️ Volvé a esta pestaña: si no, el video sale cortado.'); });
 
 dibujarCuadro();
+guardarHistoria(); // punto de partida para deshacer
 </script>
 </body>
 </html>
