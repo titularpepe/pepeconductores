@@ -100,6 +100,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 .tl .cursor { position:absolute; top:0; bottom:0; width:2px; margin-left:-1px; background:var(--amarillo); pointer-events:none; z-index:2; }
 #capa-panel { margin-top:6px; }
 .tl .cursor.marca { background:#3aa0ff; width:2px; z-index:2; }
+.tl .cursor.marca.sel { width:4px; margin-left:-2px; background:#7cc4ff; box-shadow:0 0 6px #3aa0ff; }
 .tl .regla { position:relative; height:16px; border-bottom:1px solid #2a2a2a; }
 .tl .regla span { position:absolute; top:0; height:100%; border-left:1px solid #555; font-size:0.6rem; color:var(--apagado); padding-left:2px; line-height:16px; }
 .tl .regla span.chica { height:5px; top:11px; }
@@ -121,7 +122,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <div id="tl-regla" class="regla"></div>
       <div id="tl-clips" class="pista"></div>
       <div id="tl-capas" class="capas"></div>
-      <div id="tl-marca" class="cursor marca" style="left:0;display:none;"></div>
+      <div id="tl-marcas"></div>
       <div id="tl-cursor" class="cursor" style="left:0;"></div>
     </div>
     <div class="fila controles">
@@ -129,9 +130,9 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
       <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
       <button id="btn-parar" title="Parar y volver al principio">■ Parar</button>
-      <button id="btn-marca" title="Deja una segunda línea (celeste) donde está la amarilla. Tecla M">📍 Marca</button>
+      <button id="btn-marca" title="Deja una línea celeste donde está la amarilla (podés poner varias). Tecla M">📍 Marca</button>
       <span id="marca-info" class="nota" style="margin:0;display:none;color:#3aa0ff;"></span>
-      <button id="btn-sin-marca" title="Sacar la marca" style="display:none;">✕</button>
+      <button id="btn-sin-marca" title="Borrar la marca seleccionada (Supr)" style="display:none;">✕</button>
     </div>
   </div>
 </div>
@@ -747,26 +748,37 @@ function dibujarCuadro() { mostrarEn(tActual); }
 
 // ---------- línea de tiempo ----------
 let clipSel = null, capaSel = null, arrastreTl = null;
-// marca: segunda línea (celeste) para ubicar efectos entre dos puntos; null = no hay
-var marca = null;
+// marcas: líneas celestes (varias) para ubicar efectos; se selecciona tocándola y se borra con Supr o ✕
+var marcas = [], marcaSel = null; // marcas = [{ t }]
 function pintarCursor() {
   const total = duracionTotal();
   $('tl-cursor').style.left = `${total ? tActual / total * 100 : 0}%`;
   $('tl-tiempo').textContent = `${fmt1(tActual)} / ${fmt1(total)}`;
-  if (marca != null && marca > total) marca = total;
-  const hay = marca != null && total > 0;
-  $('tl-marca').style.display = hay ? '' : 'none';
-  if (hay) $('tl-marca').style.left = `${marca / total * 100}%`;
-  $('marca-info').style.display = $('btn-sin-marca').style.display = hay ? '' : 'none';
-  if (hay) $('marca-info').textContent = `📍 ${fmt1(marca)}`;
+  marcas.forEach(m => { if (m.t > total) m.t = total; });
+  $('tl-marcas').innerHTML = total ? marcas.map(m => `<div class="cursor marca${m === marcaSel ? ' sel' : ''}" style="left:${m.t / total * 100}%;"></div>`).join('') : '';
+  const sel = marcaSel && marcas.includes(marcaSel);
+  $('marca-info').style.display = $('btn-sin-marca').style.display = sel ? '' : 'none';
+  if (sel) $('marca-info').textContent = `📍 ${fmt1(marcaSel.t)}`;
 }
-function ponerMarca(t) { marca = t; pintarCursor(); }
-$('btn-marca').onclick = () => { if (clips.length) ponerMarca(tActual); };
-$('btn-sin-marca').onclick = () => ponerMarca(null);
-// entre las dos líneas (si hay marca y están separadas); si no, null
-function tramoMarcado() {
-  if (marca == null || Math.abs(marca - tActual) < 0.2) return null;
-  return { ini: Math.min(marca, tActual), fin: Math.max(marca, tActual) };
+function agregarMarca() {
+  if (!clips.length) return;
+  const ya = marcas.find(m => Math.abs(m.t - tActual) < 0.05);
+  marcaSel = ya || { t: tActual };
+  if (!ya) marcas.push(marcaSel);
+  pintarCursor(); marcarCambio();
+}
+function borrarMarcaSel() {
+  if (!marcaSel || !marcas.includes(marcaSel)) return false;
+  marcas.splice(marcas.indexOf(marcaSel), 1); marcaSel = null;
+  pintarCursor(); marcarCambio();
+  return true;
+}
+$('btn-marca').onclick = agregarMarca;
+$('btn-sin-marca').onclick = borrarMarcaSel;
+// la próxima marca después de la línea amarilla (para que "Efecto acá" llegue justo hasta ahí); null si no hay
+function siguienteMarca() {
+  const despues = marcas.map(m => m.t).filter(t => t > tActual + 0.2).sort((a, b) => a - b);
+  return despues.length ? despues[0] : null;
 }
 function pintarTimeline() {
   marcarCambio();
@@ -852,11 +864,11 @@ function marcarClipSel() {
       // (12/11) tocar un efecto o foto NO mueve la línea amarilla: queda donde el dueño pausó
       return;
     }
-    // agarrar la marca celeste (si se toca a menos de 8 px) para moverla
-    if (marca != null && Math.abs(aT(e.clientX) - marca) < 8 / tl.getBoundingClientRect().width * duracionTotal()) {
-      arrastreTl = { modo: 'marca' };
-      return;
-    }
+    // tocar una marca celeste (a menos de 8 px): queda seleccionada y se puede arrastrar
+    const cerca = 8 / tl.getBoundingClientRect().width * duracionTotal(), tt = aT(e.clientX);
+    const m = marcas.filter(m => Math.abs(m.t - tt) < cerca).sort((a, b) => Math.abs(a.t - tt) - Math.abs(b.t - tt))[0];
+    if (m) { marcaSel = m; capaSel = null; pintarTimeline(); pintarPanelCapa(); arrastreTl = { modo: 'marca', m }; return; }
+    if (marcaSel) { marcaSel = null; pintarCursor(); }
     const b = e.target.closest('.bloque');
     if (b) { clipSel = +b.dataset.id; marcarClipSel(); }
     arrastreTl = { modo: 'cursor' };
@@ -866,11 +878,11 @@ function marcarClipSel() {
     const a = arrastreTl; if (!a) return;
     const t = aT(e.clientX);
     if (a.modo === 'cursor') { mostrarEn(t); return; }
-    if (a.modo === 'marca') { ponerMarca(t); return; }
+    if (a.modo === 'marca') { a.m.t = t; pintarCursor(); return; }
     const total = duracionTotal(), d = t - a.t0, largo = a.fin0 - a.ini0, k = a.k;
     // imán: si un borde pasa cerca (12 px) de la línea amarilla, de la marca celeste, del principio o del final, se pega justo ahí
     const iman = 12 / tl.getBoundingClientRect().width * total;
-    const puntos = [tActual, 0, total]; if (marca != null) puntos.unshift(marca);
+    const puntos = [tActual, 0, total, ...marcas.map(m => m.t)];
     const pegar = v => { for (const p of puntos) if (Math.abs(v - p) < iman) return p; return v; };
     if (a.modo === 'mover') {
       let ini = a.ini0 + d;
@@ -884,6 +896,7 @@ function marcarClipSel() {
     if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1); }
   });
   const soltar = () => {
+    if (arrastreTl && arrastreTl.modo === 'marca') marcarCambio();
     arrastreTl = null;
     if (reanudar) { const f = reanudar; reanudar = null; f.then(() => verDesde(tActual)); }
   };
@@ -907,25 +920,21 @@ $('in-capa').addEventListener('change', e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f || !clips.length) { if (!clips.length) estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal();
-  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas (y la marca se borra: se usa una vez)
-  // si no: empieza JUSTO en la línea amarilla; cerca del final se acorta en vez de correrse para atrás
-  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - 0.2));
+  // empieza JUSTO en la línea amarilla; termina en la próxima marca celeste si hay, si no dura 3 s
+  const ini = Math.min(tActual, Math.max(0, total - 0.2)), sig = siguienteMarca();
   const img = new Image(); img.onload = redibujar; img.src = URL.createObjectURL(f);
-  const k = { tipo: 'foto', nombre: f.name, img, x: 0.5, y: 0.5, tam: 0.4, ini, fin: tramo ? tramo.fin : Math.min(total, ini + 3) };
+  const k = { tipo: 'foto', nombre: f.name, img, x: 0.5, y: 0.5, tam: 0.4, ini, fin: sig != null ? sig : Math.min(total, ini + 3) };
   capas.push(k); capaSel = k;
-  if (tramo) ponerMarca(null);
   pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 });
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal(), efecto = $('sel-efecto').value;
   const largo = efecto === 'flash' ? 0.6 : 2;
-  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas (y la marca se borra: se usa una vez)
-  // si no: empieza JUSTO en la línea amarilla; cerca del final se acorta en vez de correrse para atrás
-  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - 0.2));
-  const k = { tipo: 'efecto', efecto, ini, fin: tramo ? tramo.fin : Math.min(total, ini + largo) };
+  // empieza JUSTO en la línea amarilla; termina en la próxima marca celeste si hay, si no dura lo de siempre
+  const ini = Math.min(tActual, Math.max(0, total - 0.2)), sig = siguienteMarca();
+  const k = { tipo: 'efecto', efecto, ini, fin: sig != null ? sig : Math.min(total, ini + largo) };
   capas.push(k); capaSel = k;
-  if (tramo) ponerMarca(null);
   pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 };
 
@@ -1085,11 +1094,12 @@ function fotoProyecto() {
     capas: capas.map(k => ({ ...k })),
     logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin })),
     texto: { x: textoPos.x, y: textoPos.y },
+    marcas: marcas.map(m => m.t),
   };
 }
 function claveProyecto(f) {
   return JSON.stringify([f.clips.map(c => ({ ...c, el: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
-    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin]), f.texto]);
+    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin]), f.texto, f.marcas]);
 }
 function guardarHistoria() {
   clearTimeout(tHistoria); tHistoria = null;
@@ -1109,6 +1119,7 @@ function aplicarFoto(f) {
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
     logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin }); logos.push(o.l); });
     textoPos.x = f.texto.x; textoPos.y = f.texto.y;
+    marcas = (f.marcas || []).map(t => ({ t })); marcaSel = null;
     capaSel = null; clipSel = null;
     pintarLista(); pintarLogos(); pintarPanelCapa();
     mostrarEn(Math.min(tActual, duracionTotal()));
@@ -1141,6 +1152,7 @@ document.addEventListener('keydown', e => {
   }
   if (e.code === 'Space') { e.preventDefault(); $('btn-ver').click(); }
   if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey) $('btn-marca').click();
+  if ((e.key === 'Delete' || e.key === 'Backspace') && !corriendo && borrarMarcaSel()) { e.preventDefault(); return; }
   if (e.key === 'Delete' && !corriendo) {
     if (capaSel && capas.includes(capaSel)) { capas.splice(capas.indexOf(capaSel), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); }
     else if (clipSel != null) { const i = clips.findIndex(c => c.id === clipSel); if (i >= 0) { clips.splice(i, 1); clipSel = null; pintarLista(); mostrarEn(Math.min(tActual, duracionTotal())); } }
