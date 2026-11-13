@@ -212,12 +212,12 @@ const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
 const chico = document.createElement('canvas'), ctxChico = chico.getContext('2d'); // para el fondo borroso
 chico.width = 36; chico.height = 64;
 // clips: { id, tipo:'video'|'foto', nombre, url, el, dur (foto) | desde, hasta, largo (video),
-//          vel, mudo, giro, filtro:{b,c,s,bn}, trans:'corte'|'fundido' }
+//          vel, vol (0-100), giro, filtro:{b,c,s,bn}, trans:'corte'|'fundido' }
 // Al cortar o duplicar, los pedazos comparten el mismo <video> (el); su sonido va por el._fuente/el._gan.
 const clips = [];
 let idSeq = 0;
 function nuevoClip(base) {
-  return Object.assign({ id: ++idSeq, vel: 1, mudo: false, giro: 0, filtro: { b: 100, c: 100, s: 100, bn: false }, trans: 'corte' }, base);
+  return Object.assign({ id: ++idSeq, vel: 1, vol: 100, giro: 0, filtro: { b: 100, c: 100, s: 100, bn: false }, trans: 'corte' }, base);
 }
 // capas sobre la línea de tiempo: fotos encima y efectos, cada una de ini a fin (segundos del video final)
 const capas = [];
@@ -299,7 +299,7 @@ function pintarLista() {
     const sel = (k, ops) => `<select data-k="${k}">${ops.map(([v, t]) => `<option value="${v}" ${String(c[k]) === String(v) ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     const extra = `<div class="fila">
         ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])}
-        <label><input type="checkbox" data-k="mudo" ${c.mudo ? 'checked' : ''}> 🔇 Sin sonido</label>` : ''}
+        <label title="Volumen de este video">🔊</label><input type="range" min="0" max="100" value="${c.vol}" data-k="vol" style="width:90px;"><span class="nota" style="margin:0;" data-v="vol">${c.vol}%</span>` : ''}
         <button data-a="gira" title="Girar 90°">⟳ Girar</button>
         ${i > 0 ? `<label>Entrada</label>${sel('trans', [['corte', 'Corte'], ['fundido', 'Fundido']])}` : ''}
       </div>
@@ -312,7 +312,7 @@ function pintarLista() {
     d.innerHTML = `${mini}<div class="datos"><div class="nombre">${c.tipo === 'foto' ? '🖼️' : '🎬'} ${i + 1}. ${c.nombre.replace(/[<>&"]/g, '')} <span class="nota">(${fmt1(duracionClip(c))})</span></div>${corte}${extra}</div>
       <div class="acc"><button data-a="sube" title="Subir">▲</button><button data-a="baja" title="Bajar">▼</button><button data-a="dup" title="Duplicar">⧉</button><button data-a="saca" title="Sacar" style="color:var(--rojo);">✕</button></div>`;
     // cortar: mientras se arrastra muestra ese cuadro; al soltar recalcula todo
-    d.querySelectorAll('input[type=range][data-k]').forEach(inp => {
+    d.querySelectorAll('input[data-k=desde], input[data-k=hasta]').forEach(inp => {
       inp.addEventListener('input', () => {
         const v = parseFloat(inp.value);
         if (inp.dataset.k === 'desde') c.desde = Math.min(Math.max(0, v), c.hasta - 0.2);
@@ -325,7 +325,8 @@ function pintarLista() {
     });
     d.querySelectorAll('input[type=number][data-k]').forEach(inp => inp.addEventListener('change', () => { c.dur = Math.max(0.5, parseFloat(inp.value) || 0); pintarLista(); }));
     d.querySelectorAll('select[data-k]').forEach(s => s.addEventListener('change', () => { c[s.dataset.k] = s.dataset.k === 'vel' ? parseFloat(s.value) : s.value; pintarLista(); redibujar(); }));
-    const mudo = d.querySelector('input[data-k=mudo]'); if (mudo) mudo.onchange = () => { c.mudo = mudo.checked; };
+    const vol = d.querySelector('input[data-k=vol]');
+    if (vol) vol.oninput = () => { c.vol = +vol.value; d.querySelector('[data-v=vol]').textContent = c.vol + '%'; };
     d.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => { c.filtro[inp.dataset.f] = inp.type === 'checkbox' ? inp.checked : parseFloat(inp.value); clipSel = c.id; mostrarEn(Math.max(ini[i], Math.min(tActual, ini[i] + duracionClip(c) - 0.02))); }));
     d.querySelector('[data-a=normal]').onclick = () => { c.filtro = { b: 100, c: 100, s: 100, bn: false }; pintarLista(); redibujar(); };
     d.querySelector('[data-a=gira]').onclick = () => { c.giro = (c.giro + 90) % 360; clipSel = c.id; mostrarEn(Math.max(ini[i], Math.min(tActual, ini[i] + duracionClip(c) - 0.02))); };
@@ -781,6 +782,16 @@ $('btn-efecto').onclick = () => {
 function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
 function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.05) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
 
+// volúmenes que se pueden mover mientras se reproduce
+let gOrig = null, gMus = null, vidSonando = null; // vidSonando = { v, c }
+function aplicarVolumenes() {
+  if (gOrig) gOrig.gain.value = $('orig-vol').value / 100;
+  if (gMus) gMus.gain.value = $('mus-vol').value / 100;
+  if (vidSonando && vidSonando.v._gan) vidSonando.v._gan.gain.value = vidSonando.c.vol / 100;
+}
+$('orig-vol').addEventListener('input', aplicarVolumenes);
+$('mus-vol').addEventListener('input', aplicarVolumenes);
+
 async function reproducir({ grabar }) {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
   asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
@@ -788,16 +799,18 @@ async function reproducir({ grabar }) {
   aplicarFormato();
   const total = duracionTotal();
   let parado = false, recorder = null, partes = [];
-  const gOrig = audioCtx.createGain(); gOrig.gain.value = $('orig-vol').value / 100; gOrig.connect(mezcla);
+  gOrig = audioCtx.createGain(); gOrig.gain.value = $('orig-vol').value / 100; gOrig.connect(mezcla);
   let fuenteMusica = null;
+  gMus = null;
   if (musica) {
     fuenteMusica = audioCtx.createBufferSource(); fuenteMusica.buffer = musica.buffer;
-    const g = audioCtx.createGain(); g.gain.value = $('mus-vol').value / 100;
-    // bajada suave al final
+    // gMus = volumen elegido (se puede cambiar mientras suena); g = bajada suave al final
+    gMus = audioCtx.createGain(); gMus.gain.value = $('mus-vol').value / 100;
+    const g = audioCtx.createGain();
     const fin = audioCtx.currentTime + total;
-    g.gain.setValueAtTime(g.gain.value, Math.max(audioCtx.currentTime, fin - 1));
+    g.gain.setValueAtTime(1, Math.max(audioCtx.currentTime, fin - 1));
     g.gain.linearRampToValueAtTime(0, fin);
-    fuenteMusica.connect(g); g.connect(mezcla);
+    fuenteMusica.connect(gMus); gMus.connect(g); g.connect(mezcla);
   }
   // los videos suenan a través de la mezcla (una sola fuente por <video>, aunque esté cortado en pedazos)
   clips.forEach(c => {
@@ -837,7 +850,7 @@ async function reproducir({ grabar }) {
     const c = clips[i], dur = duracionClip(c);
     if (c.tipo === 'video') {
       const v = c.el;
-      if (v._gan) v._gan.gain.value = c.mudo ? 0 : 1;
+      vidSonando = { v, c }; aplicarVolumenes();
       await irA(v, c.desde);
       v.playbackRate = c.vel;
       // si el navegador no deja reproducir con sonido, seguir sin sonido antes que quedarse colgado
@@ -846,6 +859,7 @@ async function reproducir({ grabar }) {
       while (!parado && v.currentTime < c.hasta && !v.ended) {
         const local = Math.max(0, (v.currentTime - c.desde) / c.vel);
         cuadro(ini[i] + local, c, i, local);
+        if (v._gan) v._gan.gain.value = c.vol / 100; // por si movieron la barra de este video
         if (v.currentTime !== ultimo) { ultimo = v.currentTime; quietoDesde = performance.now(); }
         else if (performance.now() - quietoDesde > 4000) break; // el video se trabó: pasar al siguiente
         await new Promise(r => requestAnimationFrame(r));
@@ -862,6 +876,7 @@ async function reproducir({ grabar }) {
   }
   if (fuenteMusica) { try { fuenteMusica.stop(); } catch (e) {} }
   try { gOrig.disconnect(); } catch (e) {}
+  gOrig = null; gMus = null; vidSonando = null;
   corriendo = null;
   $('btn-parar').disabled = true; $('btn-ver').disabled = false; $('btn-exportar').disabled = false;
   if (!recorder) { estado(parado ? 'Parado.' : ''); return null; }
