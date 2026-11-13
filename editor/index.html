@@ -126,9 +126,10 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <div id="tl-cursor" class="cursor" style="left:0;"></div>
     </div>
     <div class="fila controles">
-      <span id="tl-tiempo" class="nota" style="margin:0;min-width:96px;">0:00.0 / 0:00.0</span>
+      <span id="tl-tiempo" class="nota" style="margin:0;min-width:150px;">0:00.000 / 0:00.000</span>
       <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
       <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
+      <button id="btn-desde-marca" title="Ver desde la marca seleccionada (la última que pusiste)">📍▶ Desde la marca</button>
       <button id="btn-parar" title="Parar y volver al principio">■ Parar</button>
       <button id="btn-marca" title="Deja una línea celeste donde está la amarilla (podés poner varias). Tecla M">📍 Marca</button>
       <span id="marca-info" class="nota" style="margin:0;display:none;color:#3aa0ff;"></span>
@@ -296,6 +297,8 @@ let corriendo = null; // { parar: fn }
 const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`; };
 function estado(t) { $('estado').textContent = t || ''; }
 const fmt1 = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
+// con milésimas (pedido del dueño 12/11): 0:03.457
+const fmt3 = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${(s % 60).toFixed(3).padStart(6, '0')}`; };
 function duracionClip(c) { return c.tipo === 'foto' ? c.dur : Math.max(0.2, (c.hasta - c.desde) / c.vel); }
 function inicios() { let a = 0; return clips.map(c => { const i = a; a += duracionClip(c); return i; }); }
 function clipEn(t) {
@@ -350,8 +353,8 @@ function pintarLista() {
     const mini = c.tipo === 'foto' ? `<img class="mini" src="${c.url}">` : `<video class="mini" src="${c.url}#t=${(c.desde + 0.3).toFixed(1)}" muted playsinline></video>`;
     const corte = c.tipo === 'foto'
       ? `<div class="fila"><label>Dura</label><input type="number" min="0.5" step="0.5" value="${c.dur}" data-k="dur"> <label>seg</label></div>`
-      : `<div class="fila"><label style="min-width:42px;">Inicio</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.05" value="${c.desde}" data-k="desde" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="desde">${fmt1(c.desde)}</span></div>
-         <div class="fila"><label style="min-width:42px;">Final</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.05" value="${c.hasta}" data-k="hasta" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="hasta">${fmt1(c.hasta)}</span></div>`;
+      : `<div class="fila"><label style="min-width:42px;">Inicio</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.001" value="${c.desde}" data-k="desde" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="desde">${fmt3(c.desde)}</span></div>
+         <div class="fila"><label style="min-width:42px;">Final</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.001" value="${c.hasta}" data-k="hasta" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="hasta">${fmt3(c.hasta)}</span></div>`;
     const sel = (k, ops) => `<select data-k="${k}">${ops.map(([v, t]) => `<option value="${v}" ${String(c[k]) === String(v) ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
     const extra = `<div class="fila">
         ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])}
@@ -373,7 +376,7 @@ function pintarLista() {
         const v = parseFloat(inp.value);
         if (inp.dataset.k === 'desde') c.desde = Math.min(Math.max(0, v), c.hasta - 0.2);
         else c.hasta = Math.max(Math.min(c.largo, v), c.desde + 0.2);
-        d.querySelector(`[data-v=${inp.dataset.k}]`).textContent = fmt1(c[inp.dataset.k]);
+        d.querySelector(`[data-v=${inp.dataset.k}]`).textContent = fmt3(c[inp.dataset.k]);
         clipSel = c.id;
         mostrarEn(inp.dataset.k === 'desde' ? inicios()[i] : inicios()[i] + duracionClip(c) - 0.02);
       });
@@ -462,8 +465,8 @@ function pintarLogos() {
       <label>Tamaño</label><input type="range" min="5" max="45" value="${Math.round(l.tam * 100)}" style="flex:1;min-width:70px;">
       ${l.propio ? '<button data-a="saca" title="Sacar" style="color:var(--rojo);">✕</button>' : ''}</div>
       ${l.activo ? `<div class="fila" style="padding-left:22px;"><label><input type="checkbox" data-k="todo" ${todo ? 'checked' : ''}> Todo el video</label>
-      ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.1" value="${l.ini.toFixed(1)}">
-        <label>a</label><input type="number" data-k="fin" min="0" step="0.1" value="${l.fin.toFixed(1)}"><label>seg</label>
+      ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.001" value="${l.ini.toFixed(3)}">
+        <label>a</label><input type="number" data-k="fin" min="0" step="0.001" value="${l.fin.toFixed(3)}"><label>seg</label>
         <button data-a="aca-ini" title="Que aparezca donde está la línea amarilla">⇤ Acá</button>
         <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}</div>` : ''}`;
     const total = () => duracionTotal() || 1;
@@ -753,12 +756,12 @@ var marcas = [], marcaSel = null; // marcas = [{ t }]
 function pintarCursor() {
   const total = duracionTotal();
   $('tl-cursor').style.left = `${total ? tActual / total * 100 : 0}%`;
-  $('tl-tiempo').textContent = `${fmt1(tActual)} / ${fmt1(total)}`;
+  $('tl-tiempo').textContent = `${fmt3(tActual)} / ${fmt3(total)}`;
   marcas.forEach(m => { if (m.t > total) m.t = total; });
   $('tl-marcas').innerHTML = total ? marcas.map(m => `<div class="cursor marca${m === marcaSel ? ' sel' : ''}" style="left:${m.t / total * 100}%;"></div>`).join('') : '';
   const sel = marcaSel && marcas.includes(marcaSel);
   $('marca-info').style.display = $('btn-sin-marca').style.display = sel ? '' : 'none';
-  if (sel) $('marca-info').textContent = `📍 ${fmt1(marcaSel.t)}`;
+  if (sel) $('marca-info').textContent = `📍 ${fmt3(marcaSel.t)}`;
 }
 function agregarMarca() {
   if (!clips.length) return;
@@ -774,6 +777,13 @@ function borrarMarcaSel() {
   return true;
 }
 $('btn-marca').onclick = agregarMarca;
+// ▶ desde la marca: la seleccionada (al poner una marca queda seleccionada, así que es la última que pusiste)
+$('btn-desde-marca').onclick = async () => {
+  const m = (marcaSel && marcas.includes(marcaSel)) ? marcaSel : marcas[marcas.length - 1];
+  if (!m) { estado('Todavía no pusiste ninguna marca (📍 Marca o tecla M).'); return; }
+  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
+  tActual = m.t; verDesde(m.t);
+};
 $('btn-sin-marca').onclick = borrarMarcaSel;
 // la próxima marca después de la línea amarilla (para que "Efecto acá" llegue justo hasta ahí); null si no hay
 function siguienteMarca() {
@@ -813,8 +823,8 @@ function pintarPanelCapa() {
     <div class="fila"><b style="font-size:0.85rem;">${k.tipo === 'foto' ? '🖼 Foto encima' : '✨ Efecto'}</b>
       <button id="capa-saca" style="color:var(--rojo);margin-left:auto;">✕ Sacar</button></div>
     <div class="fila">
-      <label>Empieza</label><input type="number" id="capa-ini" min="0" step="0.1" value="${k.ini.toFixed(1)}"><label>seg</label>
-      <label>Termina</label><input type="number" id="capa-fin" min="0" step="0.1" value="${k.fin.toFixed(1)}"><label>seg</label>
+      <label>Empieza</label><input type="number" id="capa-ini" min="0" step="0.001" value="${k.ini.toFixed(3)}"><label>seg</label>
+      <label>Termina</label><input type="number" id="capa-fin" min="0" step="0.001" value="${k.fin.toFixed(3)}"><label>seg</label>
     </div>
     <div class="fila">
       <button id="capa-aca-ini" title="Que empiece donde está la línea amarilla">⇤ Empezar acá</button>
@@ -833,7 +843,7 @@ function pintarPanelCapa() {
     const total = duracionTotal();
     k.ini = Math.min(Math.max(0, ini), Math.max(0, total - 0.2));
     k.fin = Math.min(total, Math.max(k.ini + 0.2, fin));
-    $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1);
+    $('capa-ini').value = k.ini.toFixed(3); $('capa-fin').value = k.fin.toFixed(3);
     pintarTimeline(); redibujar(); // la línea amarilla no se mueve
   };
   // cambiar dónde empieza la mueve entera (mantiene lo que dura); "Termina" la estira o la acorta
@@ -893,7 +903,7 @@ function marcarClipSel() {
     if (a.modo === 'ini') { k.ini = Math.min(Math.max(0, pegar(a.ini0 + d)), k.fin - 0.2); redibujar(); }
     if (a.modo === 'fin') { k.fin = Math.max(Math.min(total, pegar(a.fin0 + d)), k.ini + 0.2); redibujar(); }
     pintarTimeline();
-    if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1); }
+    if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(3); $('capa-fin').value = k.fin.toFixed(3); }
   });
   const soltar = () => {
     if (arrastreTl && arrastreTl.modo === 'marca') marcarCambio();
