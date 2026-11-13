@@ -782,8 +782,15 @@ function pintarTimeline() {
   $('tl-regla').innerHTML = duracionTotal() ? regla : '';
   $('tl-clips').innerHTML = clips.map((c, i) => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${ini[i] / total * 100}%;width:${duracionClip(c) / total * 100}%;">${i + 1}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}</div>`).join('');
   capas.forEach(k => { k.fin = Math.min(k.fin, total); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
-  $('tl-capas').style.height = capas.length ? `${capas.length * 21 + 3}px` : '0';
-  $('tl-capas').innerHTML = capas.map((k, n) => `<div class="capa ${k.tipo}${k === capaSel ? ' sel' : ''}" data-n="${n}" style="top:${n * 21 + 2}px;left:${k.ini / total * 100}%;width:${(k.fin - k.ini) / total * 100}%;">
+  // filas: cada efecto/foto va en la primera fila donde no pisa a otro (uno detrás del otro, como en un editor)
+  const filaDe = new Map(), finFila = [];
+  [...capas].sort((a, b) => a.ini - b.ini).forEach(k => {
+    let f = finFila.findIndex(fin => fin <= k.ini + 0.001);
+    if (f < 0) { f = finFila.length; finFila.push(0); }
+    finFila[f] = k.fin; filaDe.set(k, f);
+  });
+  $('tl-capas').style.height = capas.length ? `${finFila.length * 21 + 3}px` : '0';
+  $('tl-capas').innerHTML = capas.map((k, n) => `<div class="capa ${k.tipo}${k === capaSel ? ' sel' : ''}" data-n="${n}" style="top:${filaDe.get(k) * 21 + 2}px;left:${k.ini / total * 100}%;width:${(k.fin - k.ini) / total * 100}%;">
       <span class="borde" data-b="ini" style="left:0;"></span>${k.tipo === 'foto' ? '🖼 ' + esc(k.nombre) : NOMBRE_EFECTO[k.efecto]}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('');
   pintarCursor();
 }
@@ -900,21 +907,25 @@ $('in-capa').addEventListener('change', e => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f || !clips.length) { if (!clips.length) estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal();
-  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas
-  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - 1));
+  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas (y la marca se borra: se usa una vez)
+  // si no: empieza JUSTO en la línea amarilla; cerca del final se acorta en vez de correrse para atrás
+  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - 0.2));
   const img = new Image(); img.onload = redibujar; img.src = URL.createObjectURL(f);
   const k = { tipo: 'foto', nombre: f.name, img, x: 0.5, y: 0.5, tam: 0.4, ini, fin: tramo ? tramo.fin : Math.min(total, ini + 3) };
   capas.push(k); capaSel = k;
+  if (tramo) ponerMarca(null);
   pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 });
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal(), efecto = $('sel-efecto').value;
   const largo = efecto === 'flash' ? 0.6 : 2;
-  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas
-  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - largo));
+  const tramo = tramoMarcado(); // si hay marca: justo entre las dos líneas (y la marca se borra: se usa una vez)
+  // si no: empieza JUSTO en la línea amarilla; cerca del final se acorta en vez de correrse para atrás
+  const ini = tramo ? tramo.ini : Math.min(tActual, Math.max(0, total - 0.2));
   const k = { tipo: 'efecto', efecto, ini, fin: tramo ? tramo.fin : Math.min(total, ini + largo) };
   capas.push(k); capaSel = k;
+  if (tramo) ponerMarca(null);
   pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
 };
 
