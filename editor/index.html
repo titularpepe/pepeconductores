@@ -67,6 +67,10 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 .tl .capa .borde { position:absolute; top:0; width:9px; height:100%; cursor:ew-resize; background:rgba(255,255,255,0.3); }
 .tl .cursor { position:absolute; top:0; bottom:0; width:2px; margin-left:-1px; background:var(--amarillo); pointer-events:none; z-index:2; }
 #capa-panel { margin-top:6px; }
+.tl .regla { position:relative; height:16px; border-bottom:1px solid #2a2a2a; }
+.tl .regla span { position:absolute; top:0; height:100%; border-left:1px solid #555; font-size:0.6rem; color:var(--apagado); padding-left:2px; line-height:16px; }
+.tl .regla span.chica { height:5px; top:11px; }
+#tl-tiempo { font-size:0.95rem !important; color:var(--amarillo) !important; font-weight:700; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -170,6 +174,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
     <h2>Vista</h2>
     <canvas id="lienzo" width="720" height="1280"></canvas>
     <div id="tl" class="tl" title="Tocá o arrastrá para moverte por el video">
+      <div id="tl-regla" class="regla"></div>
       <div id="tl-clips" class="pista"></div>
       <div id="tl-capas" class="capas"></div>
       <div id="tl-cursor" class="cursor" style="left:0;"></div>
@@ -187,8 +192,9 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
     </div>
     <div id="capa-panel"></div>
     <div class="fila" style="margin-top:10px;">
-      <button id="btn-ver">▶ Ver</button>
-      <button id="btn-parar" disabled>■ Parar</button>
+      <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
+      <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
+      <button id="btn-parar" title="Parar y volver al principio">■ Parar</button>
       <button id="btn-exportar" class="prim">⬇ Armar video</button>
     </div>
     <div class="barra"><div id="progreso"></div></div>
@@ -682,6 +688,14 @@ function pintarCursor() {
 function pintarTimeline() {
   const total = duracionTotal() || 1, ini = inicios();
   const esc = t => String(t).replace(/[<>&"]/g, '');
+  // regla de segundos: cada 1 s (o cada 2/5/10/30 si el video es largo), con marquitas en el medio
+  const paso = [1, 2, 5, 10, 15, 30, 60].find(p => total / p <= 12) || 60;
+  let regla = '';
+  for (let s = 0; s <= total + 0.001; s += paso / 2) {
+    const entero = Math.abs(s / paso - Math.round(s / paso)) < 0.001;
+    regla += entero ? `<span style="left:${s / total * 100}%;">${s < 60 ? Math.round(s) + 's' : fmt(s)}</span>` : `<span class="chica" style="left:${s / total * 100}%;"></span>`;
+  }
+  $('tl-regla').innerHTML = duracionTotal() ? regla : '';
   $('tl-clips').innerHTML = clips.map((c, i) => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${ini[i] / total * 100}%;width:${duracionClip(c) / total * 100}%;">${i + 1}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}</div>`).join('');
   capas.forEach(k => { k.fin = Math.min(k.fin, total); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
   $('tl-capas').style.height = capas.length ? `${capas.length * 21 + 3}px` : '0';
@@ -694,8 +708,15 @@ function pintarPanelCapa() {
   if (!k || !capas.includes(k)) { el.innerHTML = ''; return; }
   el.innerHTML = `<div class="clip" style="display:block;">
     <div class="fila"><b style="font-size:0.85rem;">${k.tipo === 'foto' ? '🖼 Foto encima' : '✨ Efecto'}</b>
-      <span class="nota" style="margin:0;" id="capa-tiempos">de ${fmt1(k.ini)} a ${fmt1(k.fin)}</span>
       <button id="capa-saca" style="color:var(--rojo);margin-left:auto;">✕ Sacar</button></div>
+    <div class="fila">
+      <label>Empieza</label><input type="number" id="capa-ini" min="0" step="0.1" value="${k.ini.toFixed(1)}"><label>seg</label>
+      <label>Termina</label><input type="number" id="capa-fin" min="0" step="0.1" value="${k.fin.toFixed(1)}"><label>seg</label>
+    </div>
+    <div class="fila">
+      <button id="capa-aca-ini" title="Que empiece donde está la línea amarilla">⇤ Empezar acá</button>
+      <button id="capa-aca-fin" title="Que termine donde está la línea amarilla">Terminar acá ⇥</button>
+    </div>
     ${k.tipo === 'foto'
       ? `<div class="fila"><label>Tamaño</label><input type="range" id="capa-tam" min="5" max="100" value="${Math.round(k.tam * 100)}" style="flex:1;"></div>
          <div class="nota">Arrastrala en la vista para ubicarla. En la línea de tiempo: arrastrá la barra verde para moverla y sus puntas para que dure más o menos.</div>`
@@ -704,6 +725,19 @@ function pintarPanelCapa() {
   </div>`;
   $('capa-saca').onclick = () => { capas.splice(capas.indexOf(k), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); };
   if ($('capa-tam')) $('capa-tam').oninput = e => { k.tam = e.target.value / 100; redibujar(); };
+  // tiempos exactos: escribiendo los segundos o con la línea amarilla
+  const ponerTiempos = (ini, fin) => {
+    const total = duracionTotal();
+    k.ini = Math.min(Math.max(0, ini), Math.max(0, total - 0.2));
+    k.fin = Math.min(total, Math.max(k.ini + 0.2, fin));
+    $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1);
+    pintarTimeline(); mostrarEn(k.ini + 0.01);
+  };
+  // cambiar dónde empieza la mueve entera (mantiene lo que dura); "Termina" la estira o la acorta
+  $('capa-ini').onchange = e => { const largo = k.fin - k.ini, v = parseFloat(e.target.value) || 0; ponerTiempos(v, v + largo); };
+  $('capa-fin').onchange = e => ponerTiempos(k.ini, parseFloat(e.target.value) || 0);
+  $('capa-aca-ini').onclick = () => { const largo = k.fin - k.ini; ponerTiempos(tActual, tActual + largo); };
+  $('capa-aca-fin').onclick = () => { if (tActual <= k.ini + 0.1) { estado('La línea amarilla tiene que estar después de donde empieza.'); return; } ponerTiempos(k.ini, tActual); };
   if ($('capa-efecto')) $('capa-efecto').onchange = e => { k.efecto = e.target.value; pintarTimeline(); redibujar(); };
 }
 function marcarClipSel() {
@@ -713,8 +747,10 @@ function marcarClipSel() {
 (() => {
   const tl = $('tl');
   const aT = x => { const r = tl.getBoundingClientRect(), total = duracionTotal(); return Math.min(total, Math.max(0, (x - r.left) / r.width * total)); };
+  let reanudar = null; // si estaba reproduciendo: la promesa de fin, para seguir desde el punto nuevo al soltar
   tl.addEventListener('pointerdown', e => {
-    if (corriendo || !clips.length) return;
+    if (!clips.length || (corriendo && corriendo.grabando)) return;
+    if (corriendo) { reanudar = corriendo.fin; corriendo.parar(); }
     tl.setPointerCapture(e.pointerId);
     const capaEl = e.target.closest('.capa');
     if (capaEl) {
@@ -739,9 +775,12 @@ function marcarClipSel() {
     if (a.modo === 'ini') { k.ini = Math.min(Math.max(0, a.ini0 + d), k.fin - 0.2); mostrarEn(k.ini + 0.01); }
     if (a.modo === 'fin') { k.fin = Math.max(Math.min(total, a.fin0 + d), k.ini + 0.2); mostrarEn(k.fin - 0.02); }
     pintarTimeline();
-    const tx = $('capa-tiempos'); if (tx) tx.textContent = `de ${fmt1(k.ini)} a ${fmt1(k.fin)}`;
+    if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(1); $('capa-fin').value = k.fin.toFixed(1); }
   });
-  const soltar = () => { arrastreTl = null; };
+  const soltar = () => {
+    arrastreTl = null;
+    if (reanudar) { const f = reanudar; reanudar = null; f.then(() => verDesde(tActual)); }
+  };
   tl.addEventListener('pointerup', soltar); tl.addEventListener('pointercancel', soltar);
 })();
 $('btn-cortar').onclick = () => {
@@ -780,6 +819,8 @@ $('btn-efecto').onclick = () => {
 
 // ---------- reproducir (vista y grabación usan lo mismo) ----------
 function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
+// siguiente cuadro: con requestAnimationFrame, pero si Chrome lo frena (ventana tapada por otra) sigue igual a ~30 cuadros/s
+function tic() { return new Promise(r => { let listo = false; const f = () => { if (!listo) { listo = true; r(); } }; requestAnimationFrame(f); setTimeout(f, 33); }); }
 function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.05) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
 
 // volúmenes que se pueden mover mientras se reproduce
@@ -792,12 +833,21 @@ function aplicarVolumenes() {
 $('orig-vol').addEventListener('input', aplicarVolumenes);
 $('mus-vol').addEventListener('input', aplicarVolumenes);
 
-async function reproducir({ grabar }) {
+let arrancando = false; // entre el clic y que arranca de verdad (para no arrancar dos veces)
+async function reproducir(opciones) {
+  if (arrancando || corriendo) return null;
+  arrancando = true;
+  try { return await reproducir2(opciones); } finally { arrancando = false; }
+}
+async function reproducir2({ grabar, desde = 0 }) {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
+  if (grabar) desde = 0; // el video final siempre se graba completo, desde el principio
   asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
   await Promise.race([document.fonts.load(fuenteTexto(40)).catch(() => {}), esperar(3000)]);
   aplicarFormato();
   const total = duracionTotal();
+  desde = Math.min(Math.max(0, desde), Math.max(0, total - 0.05));
+  const arranque = clipEn(desde); // pedazo y punto donde arranca
   let parado = false, recorder = null, partes = [];
   gOrig = audioCtx.createGain(); gOrig.gain.value = $('orig-vol').value / 100; gOrig.connect(mezcla);
   let fuenteMusica = null;
@@ -807,7 +857,7 @@ async function reproducir({ grabar }) {
     // gMus = volumen elegido (se puede cambiar mientras suena); g = bajada suave al final
     gMus = audioCtx.createGain(); gMus.gain.value = $('mus-vol').value / 100;
     const g = audioCtx.createGain();
-    const fin = audioCtx.currentTime + total;
+    const fin = audioCtx.currentTime + (total - desde);
     g.gain.setValueAtTime(1, Math.max(audioCtx.currentTime, fin - 1));
     g.gain.linearRampToValueAtTime(0, fin);
     fuenteMusica.connect(gMus); gMus.connect(g); g.connect(mezcla);
@@ -831,27 +881,30 @@ async function reproducir({ grabar }) {
     recorder.ondataavailable = e => { if (e.data.size) partes.push(e.data); };
   }
 
-  const control = { parar: () => { parado = true; } };
-  corriendo = control;
-  $('btn-parar').disabled = false; $('btn-ver').disabled = true; $('btn-exportar').disabled = true;
+  let terminar;
+  const control = { grabando: !!grabar, parar: () => { parado = true; }, fin: new Promise(ok => { terminar = ok; }) };
+  corriendo = control; arrancando = false;
+  $('btn-parar').disabled = false; $('btn-exportar').disabled = true; $('btn-inicio').disabled = !!grabar;
+  $('btn-ver').disabled = !!grabar; $('btn-ver').textContent = '⏸ Pausa';
 
-  // preparar el primer cuadro antes de arrancar a grabar
-  if (clips[0].tipo === 'video') await irA(clips[0].el, clips[0].desde);
+  // preparar el primer cuadro antes de arrancar
+  if (arranque.c.tipo === 'video') await irA(arranque.c.el, arranque.c.desde + arranque.local * arranque.c.vel);
   if (recorder) recorder.start(500);
-  if (fuenteMusica) fuenteMusica.start(0, Math.min(parseFloat($('mus-desde').value) || 0, musica.buffer.duration - 0.1));
+  if (fuenteMusica) fuenteMusica.start(0, Math.min((parseFloat($('mus-desde').value) || 0) + desde, musica.buffer.duration - 0.1));
   const t0 = performance.now();
   const ini = inicios();
   const cuadro = (t, c, i, local) => {
     tActual = t; dibujarEn(t, c, i, local); pintarCursor();
     $('progreso').style.width = `${Math.min(100, t / total * 100)}%`;
   };
-  for (let i = 0; i < clips.length; i++) {
+  for (let i = arranque.i; i < clips.length; i++) {
     if (parado) break;
     const c = clips[i], dur = duracionClip(c);
+    const salto = i === arranque.i ? arranque.local : 0; // en el primer pedazo se arranca desde la línea
     if (c.tipo === 'video') {
       const v = c.el;
       vidSonando = { v, c }; aplicarVolumenes();
-      await irA(v, c.desde);
+      await irA(v, c.desde + salto * c.vel);
       v.playbackRate = c.vel;
       // si el navegador no deja reproducir con sonido, seguir sin sonido antes que quedarse colgado
       try { await v.play(); } catch (e) { v.muted = true; await v.play().catch(() => {}); estado('⚠️ El navegador no dejó usar el sonido de los videos. Tocá "Armar video" de nuevo.'); }
@@ -862,15 +915,15 @@ async function reproducir({ grabar }) {
         if (v._gan) v._gan.gain.value = c.vol / 100; // por si movieron la barra de este video
         if (v.currentTime !== ultimo) { ultimo = v.currentTime; quietoDesde = performance.now(); }
         else if (performance.now() - quietoDesde > 4000) break; // el video se trabó: pasar al siguiente
-        await new Promise(r => requestAnimationFrame(r));
+        await tic();
       }
       v.pause(); v.playbackRate = 1;
     } else {
-      const inicio = performance.now();
+      const inicio = performance.now() - salto * 1000;
       while (!parado && performance.now() - inicio < dur * 1000) {
         const local = (performance.now() - inicio) / 1000;
         cuadro(ini[i] + local, c, i, local);
-        await new Promise(r => requestAnimationFrame(r));
+        await tic();
       }
     }
   }
@@ -878,18 +931,49 @@ async function reproducir({ grabar }) {
   try { gOrig.disconnect(); } catch (e) {}
   gOrig = null; gMus = null; vidSonando = null;
   corriendo = null;
-  $('btn-parar').disabled = true; $('btn-ver').disabled = false; $('btn-exportar').disabled = false;
-  if (!recorder) { estado(parado ? 'Parado.' : ''); return null; }
+  $('btn-parar').disabled = false; $('btn-ver').disabled = false; $('btn-exportar').disabled = false; $('btn-inicio').disabled = false;
+  $('btn-ver').textContent = '▶ Ver';
+  terminar();
+  if (!recorder) { mostrarEn(tActual); return null; } // muestra el cuadro donde quedó (o adonde movieron la línea)
   await new Promise(ok => { recorder.onstop = ok; recorder.stop(); });
   if (parado) { estado('Cancelado.'); return null; }
   console.log('grabado en', ((performance.now() - t0) / 1000).toFixed(1), 's');
   return new Blob(partes, { type: recorder.mimeType });
 }
 
-$('btn-ver').onclick = () => { $('resultado').style.display = 'none'; estado('Mostrando…'); reproducir({ grabar: false }).then(() => estado('')); };
-$('btn-parar').onclick = () => corriendo && corriendo.parar();
+// ▶ Ver / ⏸ Pausa: arranca desde la línea amarilla (si está al final, desde el principio)
+function verDesde(t) {
+  if (corriendo) return;
+  $('resultado').style.display = 'none'; estado('');
+  const total = duracionTotal();
+  reproducir({ grabar: false, desde: t >= total - 0.05 ? 0 : t });
+}
+$('btn-ver').onclick = () => {
+  if (arrancando) return;
+  if (corriendo) { if (!corriendo.grabando) corriendo.parar(); return; }
+  verDesde(tActual);
+};
+$('btn-inicio').onclick = async () => {
+  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
+  tActual = 0; verDesde(0);
+};
+// ■ Parar: detiene y vuelve al principio (si se está armando el video, lo cancela)
+$('btn-parar').onclick = async () => {
+  if (corriendo) { const g = corriendo.grabando, f = corriendo.fin; corriendo.parar(); await f; if (g) return; }
+  mostrarEn(0);
+};
+// barra espaciadora = Ver/Pausa; Supr = borrar lo seleccionado (foto/efecto encima o pedazo)
+document.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input[type=text], input[type=number], textarea, select')) return;
+  if (e.code === 'Space') { e.preventDefault(); $('btn-ver').click(); }
+  if (e.key === 'Delete' && !corriendo) {
+    if (capaSel && capas.includes(capaSel)) { capas.splice(capas.indexOf(capaSel), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); }
+    else if (clipSel != null) { const i = clips.findIndex(c => c.id === clipSel); if (i >= 0) { clips.splice(i, 1); clipSel = null; pintarLista(); mostrarEn(Math.min(tActual, duracionTotal())); } }
+  }
+});
 let ultimoArchivo = null;
 $('btn-exportar').onclick = async () => {
+  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
   $('resultado').style.display = 'none';
   estado(`Armando el video… tarda lo mismo que dura (${fmt(duracionTotal())}). No cambies de pestaña ni bloquees el teléfono.`);
   const blob = await reproducir({ grabar: true });
