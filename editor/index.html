@@ -273,8 +273,10 @@ let tActual = 0; // dónde está la línea amarilla
 // logos: x, y = centro (fracción del ancho/alto); tam = fracción del lado chico
 function nuevoLogo(nombre, src, activo, x, y, propio) {
   const img = new Image(); img.onload = () => { if (!corriendo) dibujarCuadro(0); }; img.src = src;
-  return { nombre, img, activo, x, y, tam: 0.16, propio };
+  return { nombre, img, activo, x, y, tam: 0.16, propio, ini: null, fin: null }; // ini/fin null = todo el video
 }
+// el logo se ve en el momento t? (todo el video, o solo de ini a fin)
+const logoVisible = (l, t) => l.activo && l.img.naturalWidth && (l.ini == null || (t >= l.ini && t < l.fin));
 const logos = [
   nuevoLogo('Pepe', 'logos/pepe.png', true, 0.86, 0.08),
   nuevoLogo('Pepe Conductores', 'logos/conductores.png', false, 0.14, 0.08),
@@ -447,14 +449,31 @@ function pintarLogos() {
   const el = $('lista-logos'); el.innerHTML = '';
   logos.forEach((l, i) => {
     const d = document.createElement('div');
-    d.className = 'fila';
-    d.innerHTML = `<label style="display:flex;align-items:center;gap:6px;min-width:190px;"><input type="checkbox" ${l.activo ? 'checked' : ''}>
-      <img src="${l.img.src}" style="width:32px;height:32px;object-fit:contain;"> ${l.nombre.replace(/[<>&"]/g, '')}</label>
-      <label>Tamaño</label><input type="range" min="5" max="45" value="${Math.round(l.tam * 100)}" style="flex:1;min-width:90px;">
-      ${l.propio ? '<button title="Sacar" style="color:var(--rojo);">✕</button>' : ''}`;
-    d.querySelector('input[type=checkbox]').onchange = e => { l.activo = e.target.checked; redibujar(); };
+    d.style.cssText = 'border-bottom:1px solid #222;padding:4px 0;';
+    const todo = l.ini == null;
+    d.innerHTML = `<div class="fila"><label style="display:flex;align-items:center;gap:6px;min-width:150px;"><input type="checkbox" data-k="activo" ${l.activo ? 'checked' : ''}>
+      <img src="${l.img.src}" style="width:28px;height:28px;object-fit:contain;"> ${l.nombre.replace(/[<>&"]/g, '')}</label>
+      <label>Tamaño</label><input type="range" min="5" max="45" value="${Math.round(l.tam * 100)}" style="flex:1;min-width:70px;">
+      ${l.propio ? '<button data-a="saca" title="Sacar" style="color:var(--rojo);">✕</button>' : ''}</div>
+      ${l.activo ? `<div class="fila" style="padding-left:22px;"><label><input type="checkbox" data-k="todo" ${todo ? 'checked' : ''}> Todo el video</label>
+      ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.1" value="${l.ini.toFixed(1)}">
+        <label>a</label><input type="number" data-k="fin" min="0" step="0.1" value="${l.fin.toFixed(1)}"><label>seg</label>
+        <button data-a="aca-ini" title="Que aparezca donde está la línea amarilla">⇤ Acá</button>
+        <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}</div>` : ''}`;
+    const total = () => duracionTotal() || 1;
+    const poner = (a, b) => { l.ini = Math.min(Math.max(0, a), Math.max(0, total() - 0.2)); l.fin = Math.min(total(), Math.max(l.ini + 0.2, b)); pintarLogos(); redibujar(); };
+    d.querySelector('[data-k=activo]').onchange = e => { l.activo = e.target.checked; pintarLogos(); redibujar(); };
     d.querySelector('input[type=range]').oninput = e => { l.tam = e.target.value / 100; redibujar(); };
-    const b = d.querySelector('button'); if (b) b.onclick = () => { logos.splice(i, 1); pintarLogos(); redibujar(); };
+    const q = s => d.querySelector(s);
+    if (q('[data-k=todo]')) q('[data-k=todo]').onchange = e => {
+      if (e.target.checked) { l.ini = l.fin = null; pintarLogos(); redibujar(); }
+      else poner(tActual, tActual + 3); // arranca desde la línea amarilla, 3 segundos
+    };
+    if (q('[data-k=ini]')) q('[data-k=ini]').onchange = e => { const largo = l.fin - l.ini, v = parseFloat(e.target.value) || 0; poner(v, v + largo); };
+    if (q('[data-k=fin]')) q('[data-k=fin]').onchange = e => poner(l.ini, parseFloat(e.target.value) || 0);
+    if (q('[data-a=aca-ini]')) q('[data-a=aca-ini]').onclick = () => { const largo = l.fin - l.ini; poner(tActual, tActual + largo); };
+    if (q('[data-a=aca-fin]')) q('[data-a=aca-fin]').onclick = () => { if (tActual <= l.ini + 0.1) { estado('La línea amarilla tiene que estar después de donde aparece el logo.'); return; } poner(l.ini, tActual); };
+    if (q('[data-a=saca]')) q('[data-a=saca]').onclick = () => { logos.splice(i, 1); pintarLogos(); redibujar(); };
     el.appendChild(d);
   });
 }
@@ -480,7 +499,7 @@ function aLienzo(cx, cy) { const r = lienzo.getBoundingClientRect(); return { x:
 const dentro = (p, c) => c && p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h;
 function queHayAhi(p) {
   for (let i = logos.length - 1; i >= 0; i--) {
-    const l = logos[i]; if (l.activo && l.img.naturalWidth && dentro(p, cajaLogo(l))) return l;
+    const l = logos[i]; if (logoVisible(l, tActual) && dentro(p, cajaLogo(l))) return l;
   }
   if (dentro(p, cajaTexto)) {
     if (textoPos.x == null) { textoPos.x = (cajaTexto.x + cajaTexto.w / 2) / lienzo.width; textoPos.y = cajaTexto.cy / lienzo.height; }
@@ -517,7 +536,7 @@ lienzo.addEventListener('touchend', () => { arrastrando = null; });
 lienzo.addEventListener('mousemove', e => {
   if (arrastrando) return;
   const p = aLienzo(e.clientX, e.clientY);
-  const hay = dentro(p, cajaTexto) || logos.some(l => l.activo && l.img.naturalWidth && dentro(p, cajaLogo(l)))
+  const hay = dentro(p, cajaTexto) || logos.some(l => logoVisible(l, tActual) && dentro(p, cajaLogo(l)))
     || capas.some(k => k.tipo === 'foto' && tActual >= k.ini && tActual < k.fin && k.img.naturalWidth && dentro(p, cajaLogo(k)));
   lienzo.style.cursor = hay ? 'move' : '';
 });
@@ -713,7 +732,7 @@ function dibujarExtras() {
     ctx.fillStyle = '#fff'; ctx.fillText(cartel, x + t * 0.6, y + alto / 2);
   }
   for (const l of logos) {
-    if (!l.activo || !l.img.naturalWidth) continue;
+    if (!logoVisible(l, tActual)) continue;
     const c = cajaLogo(l);
     ctx.drawImage(l.img, c.x, c.y, c.w, c.h);
   }
@@ -1015,13 +1034,13 @@ function fotoProyecto() {
   return {
     clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
     capas: capas.map(k => ({ ...k })),
-    logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam })),
+    logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin })),
     texto: { x: textoPos.x, y: textoPos.y },
   };
 }
 function claveProyecto(f) {
   return JSON.stringify([f.clips.map(c => ({ ...c, el: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
-    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam]), f.texto]);
+    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin]), f.texto]);
 }
 function guardarHistoria() {
   clearTimeout(tHistoria); tHistoria = null;
@@ -1039,7 +1058,7 @@ function aplicarFoto(f) {
   try {
     clips.length = 0; f.clips.forEach(c => clips.push({ ...c, filtro: { ...c.filtro } }));
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
-    logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam }); logos.push(o.l); });
+    logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin }); logos.push(o.l); });
     textoPos.x = f.texto.x; textoPos.y = f.texto.y;
     capaSel = null; clipSel = null;
     pintarLista(); pintarLogos(); pintarPanelCapa();
