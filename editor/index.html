@@ -89,7 +89,8 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 .clip.sel { border-color:var(--amarillo); }
 .clip details summary { cursor:pointer; font-size:0.8rem; color:var(--apagado); margin-top:4px; }
 /* línea de tiempo (fase 2) */
-.tl { position:relative; background:#111; border:1px solid #2a2a2a; border-radius:8px; margin-top:10px; touch-action:none; user-select:none; -webkit-user-select:none; cursor:pointer; }
+.tl { position:relative; background:#111; border:1px solid #2a2a2a; border-radius:8px; margin-top:10px; touch-action:none; user-select:none; -webkit-user-select:none; cursor:pointer; overflow-x:auto; overflow-y:hidden; }
+.tl-in { position:relative; width:100%; min-width:100%; }
 .tl .pista { position:relative; height:34px; }
 .tl .bloque { position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; font-size:0.68rem; color:#fff; padding:2px 4px; white-space:nowrap; border:1px solid #000; }
 .tl .bloque.video { background:#2d4a7a; } .tl .bloque.foto { background:#5a3d7a; } .tl .bloque.sel { outline:2px solid var(--amarillo); z-index:1; }
@@ -118,18 +119,22 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 <div class="col-vista">
   <div class="caja vista-caja">
     <canvas id="lienzo" width="720" height="1280"></canvas>
-    <div id="tl" class="tl" title="Tocá o arrastrá para moverte por el video">
-      <div id="tl-regla" class="regla"></div>
-      <div id="tl-clips" class="pista"></div>
-      <div id="tl-capas" class="capas"></div>
-      <div id="tl-marcas"></div>
-      <div id="tl-cursor" class="cursor" style="left:0;"></div>
+    <div id="tl" class="tl" title="Tocá o arrastrá para moverte por el video. Ctrl + ruedita = acercar/alejar">
+      <div id="tl-in" class="tl-in">
+        <div id="tl-regla" class="regla"></div>
+        <div id="tl-clips" class="pista"></div>
+        <div id="tl-capas" class="capas"></div>
+        <div id="tl-marcas"></div>
+        <div id="tl-cursor" class="cursor" style="left:0;"></div>
+      </div>
     </div>
     <div class="fila controles">
       <span id="tl-tiempo" class="nota" style="margin:0;min-width:150px;">0:00.000 / 0:00.000</span>
       <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
       <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
       <button id="btn-desde-marca" title="Ver desde la marca seleccionada (la última que pusiste)">📍▶ Desde la marca</button>
+      <button id="btn-zoom-menos" title="Alejar la línea de tiempo (Ctrl + ruedita)">🔍−</button>
+      <button id="btn-zoom-mas" title="Acercar la línea de tiempo para ver décimas y milésimas (Ctrl + ruedita)">🔍+</button>
       <button id="btn-parar" title="Parar y volver al principio">■ Parar</button>
       <button id="btn-marca" title="Deja una línea celeste donde está la amarilla (podés poner varias). Tecla M">📍 Marca</button>
       <span id="marca-info" class="nota" style="margin:0;display:none;color:#3aa0ff;"></span>
@@ -757,6 +762,10 @@ function pintarCursor() {
   const total = duracionTotal();
   $('tl-cursor').style.left = `${total ? tActual / total * 100 : 0}%`;
   $('tl-tiempo').textContent = `${fmt3(tActual)} / ${fmt3(total)}`;
+  if (corriendo && zoomTl > 1 && total) { // con zoom, la línea de tiempo sigue a la línea amarilla
+    const tl = $('tl'), x = tActual / total * $('tl-in').getBoundingClientRect().width;
+    if (x < tl.scrollLeft || x > tl.scrollLeft + tl.clientWidth - 30) tl.scrollLeft = x - 40;
+  }
   marcas.forEach(m => { if (m.t > total) m.t = total; });
   $('tl-marcas').innerHTML = total ? marcas.map(m => `<div class="cursor marca${m === marcaSel ? ' sel' : ''}" style="left:${m.t / total * 100}%;"></div>`).join('') : '';
   const sel = marcaSel && marcas.includes(marcaSel);
@@ -790,18 +799,54 @@ function siguienteMarca() {
   const despues = marcas.map(m => m.t).filter(t => t > tActual + 0.2).sort((a, b) => a - b);
   return despues.length ? despues[0] : null;
 }
+// regla de segundos: según el zoom, de 5 s hasta milésimas; solo se dibuja la parte que se ve
+var zoomTl = 1;
+function pintarRegla() {
+  const total = duracionTotal();
+  if (!total) { $('tl-regla').innerHTML = ''; return; }
+  const ancho = $('tl-in').getBoundingClientRect().width || 600, pxPorSeg = ancho / total;
+  const PASOS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300];
+  const paso = PASOS.find(p => p * pxPorSeg >= 70) || 300;
+  const dec = paso < 0.01 ? 3 : paso < 0.1 ? 2 : paso < 1 ? 1 : 0;
+  const etiqueta = s => s < 60 ? s.toFixed(dec) + 's' : `${Math.floor(s / 60)}:${(s % 60).toFixed(dec).padStart(dec ? 3 + dec : 2, '0')}`;
+  const tl = $('tl'), desdeT = tl.scrollLeft / pxPorSeg, hastaT = (tl.scrollLeft + tl.clientWidth) / pxPorSeg;
+  const medio = paso / 2;
+  let regla = '';
+  for (let i = Math.max(0, Math.floor(desdeT / medio) - 1); ; i++) {
+    const s = i * medio;
+    if (s > total + 1e-9 || s > hastaT + medio) break;
+    regla += i % 2 === 0 ? `<span style="left:${s / total * 100}%;">${etiqueta(s)}</span>` : `<span class="chica" style="left:${s / total * 100}%;"></span>`;
+  }
+  $('tl-regla').innerHTML = regla;
+}
+function ponerZoom(z, centroT) {
+  const total = duracionTotal(); if (!total) return;
+  const tl = $('tl'), vis = tl.clientWidth || 600;
+  const maxZ = Math.max(1, Math.min(1500000 / vis, total * 70 / 0.001 / vis)); // hasta ver milésimas
+  zoomTl = Math.min(maxZ, Math.max(1, z));
+  $('tl-in').style.width = `${zoomTl * 100}%`;
+  const t = centroT != null ? centroT : tActual;
+  tl.scrollLeft = t / total * $('tl-in').getBoundingClientRect().width - vis / 2;
+  pintarTimeline();
+}
+$('btn-zoom-mas').onclick = () => ponerZoom(zoomTl * 2);
+$('btn-zoom-menos').onclick = () => ponerZoom(zoomTl / 2);
+$('tl').addEventListener('wheel', e => {
+  if (!e.ctrlKey) { // ruedita sola: con zoom, corre la línea de tiempo para los costados
+    if (zoomTl > 1) { e.preventDefault(); $('tl').scrollLeft += (e.deltaY || e.deltaX); }
+    return;
+  }
+  e.preventDefault();
+  const r = $('tl-in').getBoundingClientRect(), total = duracionTotal();
+  const tMouse = Math.min(total, Math.max(0, (e.clientX - r.left) / r.width * total));
+  ponerZoom(zoomTl * (e.deltaY < 0 ? 1.25 : 0.8), tMouse);
+}, { passive: false });
+$('tl').addEventListener('scroll', () => pintarRegla());
 function pintarTimeline() {
   marcarCambio();
   const total = duracionTotal() || 1, ini = inicios();
   const esc = t => String(t).replace(/[<>&"]/g, '');
-  // regla de segundos: cada 1 s (o cada 2/5/10/30 si el video es largo), con marquitas en el medio
-  const paso = [1, 2, 5, 10, 15, 30, 60].find(p => total / p <= 12) || 60;
-  let regla = '';
-  for (let s = 0; s <= total + 0.001; s += paso / 2) {
-    const entero = Math.abs(s / paso - Math.round(s / paso)) < 0.001;
-    regla += entero ? `<span style="left:${s / total * 100}%;">${s < 60 ? Math.round(s) + 's' : fmt(s)}</span>` : `<span class="chica" style="left:${s / total * 100}%;"></span>`;
-  }
-  $('tl-regla').innerHTML = duracionTotal() ? regla : '';
+  pintarRegla();
   $('tl-clips').innerHTML = clips.map((c, i) => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${ini[i] / total * 100}%;width:${duracionClip(c) / total * 100}%;">${i + 1}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}</div>`).join('');
   capas.forEach(k => { k.fin = Math.min(k.fin, total); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
   // filas: cada efecto/foto va en la primera fila donde no pisa a otro (uno detrás del otro, como en un editor)
@@ -859,7 +904,7 @@ function marcarClipSel() {
 }
 (() => {
   const tl = $('tl');
-  const aT = x => { const r = tl.getBoundingClientRect(), total = duracionTotal(); return Math.min(total, Math.max(0, (x - r.left) / r.width * total)); };
+  const aT = x => { const r = $('tl-in').getBoundingClientRect(), total = duracionTotal(); return Math.min(total, Math.max(0, (x - r.left) / r.width * total)); };
   let reanudar = null; // si estaba reproduciendo: la promesa de fin, para seguir desde el punto nuevo al soltar
   tl.addEventListener('pointerdown', e => {
     if (!clips.length || (corriendo && corriendo.grabando)) return;
@@ -875,7 +920,7 @@ function marcarClipSel() {
       return;
     }
     // tocar una marca celeste (a menos de 8 px): queda seleccionada y se puede arrastrar
-    const cerca = 8 / tl.getBoundingClientRect().width * duracionTotal(), tt = aT(e.clientX);
+    const cerca = 8 / $('tl-in').getBoundingClientRect().width * duracionTotal(), tt = aT(e.clientX);
     const m = marcas.filter(m => Math.abs(m.t - tt) < cerca).sort((a, b) => Math.abs(a.t - tt) - Math.abs(b.t - tt))[0];
     if (m) { marcaSel = m; capaSel = null; pintarTimeline(); pintarPanelCapa(); arrastreTl = { modo: 'marca', m }; return; }
     if (marcaSel) { marcaSel = null; pintarCursor(); }
@@ -891,7 +936,7 @@ function marcarClipSel() {
     if (a.modo === 'marca') { a.m.t = t; pintarCursor(); return; }
     const total = duracionTotal(), d = t - a.t0, largo = a.fin0 - a.ini0, k = a.k;
     // imán: si un borde pasa cerca (12 px) de la línea amarilla, de la marca celeste, del principio o del final, se pega justo ahí
-    const iman = 12 / tl.getBoundingClientRect().width * total;
+    const iman = 12 / $('tl-in').getBoundingClientRect().width * total;
     const puntos = [tActual, 0, total, ...marcas.map(m => m.t)];
     const pegar = v => { for (const p of puntos) if (Math.abs(v - p) < iman) return p; return v; };
     if (a.modo === 'mover') {
