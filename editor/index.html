@@ -43,6 +43,17 @@ label { font-size:0.82rem; color:var(--apagado); }
 .vacio { color:var(--apagado); font-size:0.88rem; padding:10px 0; }
 canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#000; border-radius:10px; display:block; margin:0 auto; }
 .col-vista { position:sticky; top:72px; align-self:start; }
+/* PC: como un programa de edición. La vista queda fija y cada columna se mueve por su cuenta
+   (antes la vista se iba con la página al bajar a buscar algo). */
+@media (min-width: 901px) {
+  html, body { height:100%; overflow:hidden; }
+  body { display:flex; flex-direction:column; }
+  header { flex:0 0 auto; }
+  main { flex:1 1 auto; min-height:0; width:100%; grid-template-rows:minmax(0,1fr); padding-bottom:0; }
+  .col-edicion, .col-vista { min-height:0; align-self:stretch; overflow-y:auto; overscroll-behavior:contain; padding-bottom:16px; }
+  .col-vista { position:static; }
+  canvas { max-height:56vh; }
+}
 .estado { font-size:0.85rem; color:var(--apagado); margin-top:8px; min-height:1.2em; }
 .barra { height:6px; background:#2a2a2a; border-radius:4px; overflow:hidden; margin-top:6px; }
 .barra div { height:100%; width:0; background:var(--amarillo); }
