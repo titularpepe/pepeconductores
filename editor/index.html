@@ -125,7 +125,7 @@ canvas { width:100%; background:#000; border-radius:10px; display:block; }
 
     <details style="margin-top:10px;">
       <summary style="cursor:pointer;color:var(--amarillo);font-size:0.88rem;">🔥 Canciones en tendencia en Argentina</summary>
-      <div class="nota">Las más escuchadas ahora. Tip: al publicar en TikTok o Instagram, agregala con su botón "Sonido": el video llega a más gente.</div>
+      <div class="nota">Lo más escuchado hoy en Spotify Argentina, y separado por rubro. Tip: al publicar en TikTok o Instagram, agregala con su botón "Sonido": el video llega a más gente.</div>
       <div id="lista-tend"><div class="vacio">Cargando…</div></div>
     </details>
   </div>
@@ -296,18 +296,22 @@ $('btn-escuchar').onclick = () => {
 };
 
 // ---------- tendencias ----------
-fetch('https://us-central1-pepe-conductores.cloudfunctions.net/cancionesTendencia')
+fetch('https://us-central1-pepe-conductores.cloudfunctions.net/cancionesTendencia?v=2')
   .then(r => r.json())
   .then(d => {
     const el = $('lista-tend');
     if (!d.lista || !d.lista.length) { el.innerHTML = '<div class="vacio">No se pudo cargar la lista ahora.</div>'; return; }
-    el.innerHTML = d.lista.map(s => {
+    const esc = t => String(t || '').replace(/[<>&"]/g, '');
+    const fila = s => {
       const q = encodeURIComponent(`${s.nombre} ${s.artista}`);
-      const esc = t => String(t).replace(/[<>&"]/g, '');
-      return `<div class="tend"><img src="${esc(s.tapa)}" alt="" loading="lazy"><div class="t"><b>${s.puesto}. ${esc(s.nombre)}</b><span>${esc(s.artista)}</span></div>
+      return `<div class="tend">${s.tapa ? `<img src="${esc(s.tapa)}" alt="" loading="lazy">` : '<div style="width:40px;height:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:center;">🎵</div>'}
+        <div class="t"><b>${s.puesto ? s.puesto + '. ' : ''}${esc(s.nombre)}</b><span>${esc(s.artista)}${s.sugerida ? ' · sugerida' : ''}</span></div>
         <a href="https://www.tiktok.com/search?q=${q}" target="_blank" rel="noopener">TikTok</a>
         <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">YouTube</a></div>`;
-    }).join('');
+    };
+    const titulo = t => `<div style="margin:12px 0 4px;color:var(--amarillo);font-weight:800;font-size:0.9rem;">${t}</div>`;
+    el.innerHTML = titulo('🔥 Top Argentina hoy (Spotify)') + d.lista.slice(0, 10).map(fila).join('')
+      + (d.rubros || []).filter(r => r.canciones.length).map(r => titulo(r.rubro) + r.canciones.map(fila).join('')).join('');
   })
   .catch(() => { $('lista-tend').innerHTML = '<div class="vacio">No se pudo cargar la lista ahora.</div>'; });
 
