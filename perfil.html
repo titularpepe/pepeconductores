@@ -246,32 +246,19 @@ nav {
   </div>
 
   <!-- VERIFICACIÓN -->
+  <!-- (2026-11-14, auditoría) La verificación desde la web no funcionaba (subía a una carpeta que el servidor no
+       permite y marcaba un campo que nadie lee): ahora se muestra el estado real y se manda a la app. -->
   <div class="tab-section" id="tab-verificacion">
     <div class="section-title">Verificación de identidad</div>
     <div class="verif-estado-box">
       <div style="font-size:2rem;">🪪</div>
       <div>
-        <div style="font-weight:600;font-size:0.95rem;">Estado de verificación</div>
+        <div style="font-weight:600;font-size:0.95rem;">Estado de tu DNI</div>
         <div id="verif-badge" style="color:var(--texto-apagado);font-size:0.85rem;margin-top:3px;">⚠ Sin verificar</div>
       </div>
     </div>
-    <p style="font-size:0.85rem;color:var(--texto-apagado);line-height:1.7;margin-bottom:1.5rem;">Para usar todos los servicios necesitamos verificar tu identidad. Es rápido y tus datos están protegidos con cifrado.</p>
-    <div class="mfg">
-      <label>📄 Foto del DNI (frente y dorso)</label>
-      <div class="upload-box" onclick="document.getElementById('upload-dni').click()">
-        <input type="file" id="upload-dni" accept="image/*" style="display:none" onchange="previewFile(this,'prev-dni')">
-        <div id="prev-dni" style="color:var(--texto-apagado);font-size:0.85rem;">📎 Tocar para seleccionar imagen</div>
-      </div>
-    </div>
-    <div class="mfg">
-      <label>🤳 Selfie de validación</label>
-      <div class="upload-box" onclick="document.getElementById('upload-selfie').click()">
-        <input type="file" id="upload-selfie" accept="image/*" capture="user" style="display:none" onchange="previewFile(this,'prev-selfie')">
-        <div id="prev-selfie" style="color:var(--texto-apagado);font-size:0.85rem;">📎 Tocar para seleccionar imagen</div>
-      </div>
-    </div>
-    <div id="verif-status" class="verif-msg"></div>
-    <button class="modal-btn" id="btn-verificar" onclick="doVerificacion()">Enviar verificación →</button>
+    <p style="font-size:0.9rem;color:var(--texto-apagado);line-height:1.7;margin-bottom:1rem;">Las fotos del DNI se suben desde la app <b>Pepe Pasajeros</b>: Perfil → DNI. Ahí ves si está en revisión, aprobado o si hay que volver a subirlo.</p>
+    <a class="modal-btn" style="display:block;text-align:center;text-decoration:none;" href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" target="_blank" rel="noopener">📱 Abrir Pepe Pasajeros</a>
   </div>
 
   <!-- MENORES -->
@@ -328,22 +315,7 @@ nav {
   <!-- CONFIG -->
   <div class="tab-section" id="tab-config">
     <div class="section-title">Configuración</div>
-    <div class="config-item">
-      <div><div class="config-label">Notificaciones push</div><div class="config-sub">Recibí alertas de viajes y novedades</div></div>
-      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
-    </div>
-    <div class="config-item">
-      <div><div class="config-label">Notificaciones por email</div><div class="config-sub">Resumen semanal de actividad</div></div>
-      <button class="toggle" onclick="this.classList.toggle('on')"></button>
-    </div>
-    <div class="config-item">
-      <div><div class="config-label">Modo oscuro</div><div class="config-sub">Siempre activado en Pepe</div></div>
-      <button class="toggle on" disabled></button>
-    </div>
-    <div class="config-item">
-      <div><div class="config-label">Compartir ubicación</div><div class="config-sub">Necesario para solicitar viajes</div></div>
-      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
-    </div>
+    <!-- (2026-11-14, auditoría) se sacaron los interruptores de adorno (no guardaban nada) -->
     <div style="margin-top:1.5rem;">
       <button class="btn-danger" onclick="confirmDelete()">🗑️ Eliminar mi cuenta</button>
     </div>
@@ -420,6 +392,15 @@ function renderRol(col) {
   _col = col;
   _rolLabel = col === 'conductores' ? 'Conductor' : 'Pasajero';
   const d = _docs[col] || {};
+  // (2026-11-14, auditoría) estado REAL del DNI del pasajero (el mismo que ve Superpepe)
+  const vb = document.getElementById('verif-badge');
+  if (vb && col === 'pasajeros') {
+    const e = d.estadoDni;
+    const t = e === 'aprobado' ? ['✅ Aprobado', '#4caf50'] : e === 'pendiente' ? ['⏳ En revisión', '#f5d800']
+      : e === 'rechazado' ? ['❌ Rechazado' + (d.motivoRechazoDni?.motivo ? ': ' + d.motivoRechazoDni.motivo : '') + ' — subilo de nuevo desde la app', '#ff4d00']
+      : ['⚠ Sin verificar — subí tu DNI desde la app', ''];
+    vb.textContent = t[0]; vb.style.color = t[1] || '';
+  }
   // (2026-10-16) solapa activa + aviso cuando esta cuenta no tiene ficha de ese rol
   const rsC = document.getElementById('rs-conductor'), rsP = document.getElementById('rs-pasajero');
   if (rsC) rsC.classList.toggle('active', col === 'conductores');
@@ -784,30 +765,7 @@ function previewFile(input, containerId) {
   container.innerHTML = '<img src="' + url + '" style="max-height:120px;border-radius:8px;margin-top:0.5rem;" alt="Vista previa"><div style="font-size:0.78rem;color:rgba(247,244,238,0.5);margin-top:4px;">✓ ' + file.name + '</div>';
 }
 
-async function doVerificacion() {
-  const user = auth.currentUser;
-  if (!user) return;
-  const dniFile = document.getElementById('upload-dni').files[0];
-  const selfieFile = document.getElementById('upload-selfie').files[0];
-  const btn = document.getElementById('btn-verificar');
-  const statusEl = document.getElementById('verif-status');
-  if (!dniFile || !selfieFile) { statusEl.textContent = '⚠ Tenés que subir ambas fotos.'; statusEl.className = 'verif-msg error'; return; }
-  btn.disabled = true; btn.textContent = 'Subiendo...';
-  try {
-    await storage.ref('verificaciones/' + user.uid + '/dni').put(dniFile);
-    await storage.ref('verificaciones/' + user.uid + '/selfie').put(selfieFile);
-    await db.collection(_col).doc(user.uid).update({ verificacionEstado: 'pendiente', verificacionFecha: new Date().toISOString() });
-    btn.textContent = '✓ Enviado';
-    statusEl.textContent = '✅ Documentos enviados. Los revisaremos en 24-48 hs.';
-    statusEl.className = 'verif-msg ok';
-    document.getElementById('verif-badge').textContent = '⏳ En revisión';
-    document.getElementById('verif-badge').style.color = '#f5d800';
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Enviar verificación →';
-    statusEl.textContent = '❌ Error al subir. Intentá de nuevo.';
-    statusEl.className = 'verif-msg error';
-  }
-}
+// (2026-11-14) doVerificacion se sacó: la verificación del DNI se hace desde la app.
 
 // FOTO DE PERFIL
 window.subirFotoPerfil = async function(e) {
