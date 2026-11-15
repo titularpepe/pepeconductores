@@ -176,6 +176,11 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <select id="sel-efecto" style="max-width:220px;"></select>
       <button id="btn-efecto">✨ Efecto acá</button>
     </div>
+    <div class="fila">
+      <select id="sel-sonido" style="max-width:220px;"></select>
+      <button id="btn-sonido" title="Pone el sonido en una línea nueva, desde la línea amarilla">🔊 Sonido acá</button>
+      <button id="btn-oir-sonido" title="Escuchar el sonido elegido">▶</button>
+    </div>
     <div id="capa-panel"></div>
   </div>
 
@@ -654,13 +659,13 @@ function separarRGB(g, W, H, d) {
   g.save(); g.fillStyle = '#000'; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.drawImage(r, -d, 0); g.drawImage(c, d, 0); g.restore();
 }
 // grano: un ruido chico que se repite, corrido al azar en cada cuadro
-const ruido = document.createElement('canvas'); ruido.width = ruido.height = 160;
-(() => { const x = ruido.getContext('2d'), im = x.createImageData(160, 160); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); })();
+const telaRuido = document.createElement('canvas'); telaRuido.width = telaRuido.height = 160;
+(() => { const x = telaRuido.getContext('2d'), im = x.createImageData(160, 160); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); })();
 function grano(g, W, H, t, alfa) {
   const n = Math.floor(t * 24);
   g.save(); g.globalAlpha = alfa; g.globalCompositeOperation = 'overlay';
   g.translate(-azar(n, 1) * 160, -azar(n, 2) * 160);
-  g.fillStyle = g.createPattern(ruido, 'repeat'); g.fillRect(0, 0, W + 160, H + 160); g.restore();
+  g.fillStyle = g.createPattern(telaRuido, 'repeat'); g.fillRect(0, 0, W + 160, H + 160); g.restore();
 }
 function lineasTV(g, W, H, alfa) {
   g.save(); g.fillStyle = `rgba(0,0,0,${alfa})`;
@@ -1431,6 +1436,137 @@ $('btn-cortar').onclick = () => {
   estado(`Cortado en ${nombreLinea(c.linea)}. Arrastrá el pedazo nuevo para correrlo, o tocá su ✕ para sacarlo.`);
   pintarLista(); mostrarEn(tActual);
 };
+// ---------- efectos de sonido (15/11, pedido del dueño) ----------
+// Se fabrican en el navegador (sintetizados), así no hay que bajar archivos ni hay temas de derechos.
+// Cada uno se arma una sola vez con un OfflineAudioContext y queda guardado; al ponerlo, es un audio más en su propia línea.
+const SR = 44100;
+function ruidoBuf(a, dur) { const b = a.createBuffer(1, Math.ceil(a.sampleRate * dur), a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; }
+// envolvente: sube en "ataque" y se apaga en "dur"
+function env(a, t, dur, vol, ataque = 0.005, sostiene = 0) {
+  const g = a.createGain(); g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + ataque);
+  if (sostiene) g.gain.setValueAtTime(Math.max(0.0002, vol), t + ataque + sostiene);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur); return g;
+}
+function tono(a, dest, { tipo = 'sine', f, f2, t = 0, dur, vol = 0.4, ataque = 0.005, sostiene = 0, vib = 0, vibF = 6, filtro }) {
+  const o = a.createOscillator(); o.type = tipo; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  if (vib) { const l = a.createOscillator(), lg = a.createGain(); l.frequency.value = vibF; lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + 0.05); }
+  const g = env(a, t, dur, vol, ataque, sostiene);
+  let n = o; if (filtro) { const fl = a.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = filtro; o.connect(fl); n = fl; }
+  n.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + 0.05); return o;
+}
+function ruido(a, dest, { t = 0, dur, vol = 0.4, tipo = 'bandpass', f = 1000, f2, q = 1, ataque = 0.003, sostiene = 0 }) {
+  const s = a.createBufferSource(); s.buffer = ruidoBuf(a, dur + 0.05);
+  const fl = a.createBiquadFilter(); fl.type = tipo; fl.frequency.setValueAtTime(f, t); fl.Q.value = q;
+  if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  const g = env(a, t, dur, vol, ataque, sostiene);
+  s.connect(fl); fl.connect(g); g.connect(dest); s.start(t); s.stop(t + dur + 0.05);
+}
+const aplauso = (a, d, t, vol) => ruido(a, d, { t, dur: 0.02 + 0.04 * Math.random(), vol, f: 900 + 1800 * Math.random(), q: 0.8 });
+const redoblante = (a, d, t, vol = 0.5) => { ruido(a, d, { t, dur: 0.18, vol, f: 1800, q: 0.7 }); tono(a, d, { f: 210, f2: 150, t, dur: 0.1, vol: vol * 0.6 }); };
+const platillo = (a, d, t, vol = 0.35, dur = 1.4) => ruido(a, d, { t, dur, vol, tipo: 'highpass', f: 6000, q: 0.5 });
+const bombo = (a, d, t, vol = 0.8) => tono(a, d, { f: 130, f2: 45, t, dur: 0.35, vol });
+// voz "de dibujito": una vocal con su tono (risas, abucheo)
+function vocal(a, dest, { t, dur, f0, f0b, vol = 0.3, F1, F2, aire = 0 }) {
+  const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f0b || f0, t + dur);
+  const g = env(a, t, dur, vol, 0.02);
+  [F1, F2].forEach((F, i) => { const fl = a.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.value = F; fl.Q.value = 6; const fg = a.createGain(); fg.gain.value = i ? 0.6 : 1; o.connect(fl); fl.connect(fg); fg.connect(g); });
+  g.connect(dest); o.start(t); o.stop(t + dur + 0.05);
+  if (aire) ruido(a, dest, { t, dur: 0.06, vol: aire, f: 1600, q: 1 }); // la "j" de "ja"
+}
+const G_S_PUB = '👏 Público', G_S_COM = '🤡 Cómicos', G_S_TRANS = '💨 Transiciones', G_S_AVISO = '🔔 Avisos y botones', G_S_MUS = '🥁 Música y tensión', G_S_CALLE = '🚗 Calle';
+const GRUPOS_SONIDO = [G_S_PUB, G_S_COM, G_S_TRANS, G_S_AVISO, G_S_MUS, G_S_CALLE];
+const SONIDOS = {
+  aplausos: { n: '👏 Aplausos', g: G_S_PUB, dur: 3.2, hacer: (a, d) => { for (let i = 0; i < 420; i++) aplauso(a, d, 2.9 * Math.pow(Math.random(), 1.25), 0.08 + 0.2 * Math.random()); } },
+  ovacion: { n: '🙌 Ovación (aplausos y gritos)', g: G_S_PUB, dur: 4.2, hacer: (a, d) => {
+    for (let i = 0; i < 700; i++) aplauso(a, d, 3.9 * Math.pow(Math.random(), 1.15), 0.07 + 0.18 * Math.random());
+    ruido(a, d, { t: 0, dur: 4, vol: 0.12, tipo: 'lowpass', f: 700, ataque: 0.6, sostiene: 2.4 });
+    [0.3, 1.2, 2.1].forEach((t, i) => tono(a, d, { f: 2200 + 400 * i, f2: 2900 + 300 * i, t, dur: 0.6, vol: 0.08, vib: 40, vibF: 9 })); // silbidos
+    for (let i = 0; i < 6; i++) vocal(a, d, { t: 0.2 + Math.random() * 2.5, dur: 0.9, f0: 260 + Math.random() * 120, f0b: 330 + Math.random() * 120, vol: 0.05, F1: 350, F2: 900 }); // "¡uuuh!"
+  } },
+  risas: { n: '😂 Carcajadas', g: G_S_PUB, dur: 2.8, hacer: (a, d) => {
+    [[230, 0, 0.13], [310, 0.06, 0.11], [180, 0.1, 0.15], [380, 0.03, 0.1]].forEach(([f0, t0, paso], v) => {
+      for (let k = 0; k < 14; k++) { const t = t0 + k * paso * (1 + 0.15 * Math.random()); if (t > 2.4) break; const f = f0 * (1.15 - k * 0.02) * (0.95 + 0.1 * Math.random()); vocal(a, d, { t, dur: paso * 0.75, f0: f, f0b: f * 0.85, vol: 0.12, F1: 750, F2: 1250, aire: 0.06 }); }
+    });
+  } },
+  abucheo: { n: '👎 Abucheo (buuu)', g: G_S_PUB, dur: 2.6, hacer: (a, d) => { for (let v = 0; v < 6; v++) vocal(a, d, { t: Math.random() * 0.3, dur: 2.2, f0: 120 + v * 18, f0b: 100 + v * 14, vol: 0.08, F1: 320, F2: 800 }); } },
+  grillos: { n: '🦗 Grillos (silencio incómodo)', g: G_S_PUB, dur: 3.5, hacer: (a, d) => {
+    for (let c = 0; c < 2; c++) for (let s = 0.2 + c * 0.3; s < 3.3; s += 0.7 + Math.random() * 0.2) for (let p = 0; p < 3; p++) tono(a, d, { f: 4300 + c * 400, t: s + p * 0.045, dur: 0.03, vol: 0.12 });
+  } },
+  boing: { n: '🌀 Boing (resorte)', g: G_S_COM, dur: 0.9, hacer: (a, d) => tono(a, d, { tipo: 'triangle', f: 160, f2: 330, t: 0, dur: 0.85, vol: 0.5, vib: 90, vibF: 16 }) },
+  pop: { n: '🫧 Pop', g: G_S_COM, dur: 0.2, hacer: (a, d) => { tono(a, d, { f: 700, f2: 160, t: 0, dur: 0.12, vol: 0.6 }); ruido(a, d, { t: 0, dur: 0.02, vol: 0.3, f: 3000 }); } },
+  golpe: { n: '👊 Golpe', g: G_S_COM, dur: 0.5, hacer: (a, d) => { tono(a, d, { f: 140, f2: 40, t: 0, dur: 0.35, vol: 0.9 }); ruido(a, d, { t: 0, dur: 0.15, vol: 0.5, tipo: 'lowpass', f: 1200 }); } },
+  caida: { n: '📉 Silbido de caída', g: G_S_COM, dur: 1.3, hacer: (a, d) => tono(a, d, { f: 1800, f2: 220, t: 0, dur: 1.2, vol: 0.3, ataque: 0.05, sostiene: 0.9, vib: 15, vibF: 7 }) },
+  subida: { n: '📈 Silbido de subida', g: G_S_COM, dur: 1.1, hacer: (a, d) => tono(a, d, { f: 300, f2: 1800, t: 0, dur: 1, vol: 0.3, ataque: 0.05, sostiene: 0.7, vib: 15, vibF: 7 }) },
+  bocinapayaso: { n: '🤡 Bocina de payaso', g: G_S_COM, dur: 0.8, hacer: (a, d) => { [0, 0.35].forEach(t => tono(a, d, { tipo: 'square', f: 360, f2: 340, t, dur: 0.3, vol: 0.25, filtro: 1400, sostiene: 0.15 })); } },
+  trombontriste: { n: '🎺 Trombón triste (fracaso)', g: G_S_COM, dur: 3, hacer: (a, d) => {
+    [[233, 0, 0.45], [220, 0.5, 0.45], [207.7, 1.0, 0.45], [196, 1.5, 1.4]].forEach(([f, t, dur], i) => tono(a, d, { tipo: 'sawtooth', f, f2: i === 3 ? 190 : undefined, t, dur, vol: 0.22, ataque: 0.04, sostiene: dur * 0.6, filtro: 900, vib: i === 3 ? 6 : 0, vibF: 5 }));
+  } },
+  badumtss: { n: '🥁 Ba-dum-tss (chiste)', g: G_S_COM, dur: 1.8, hacer: (a, d) => { redoblante(a, d, 0); bombo(a, d, 0.2); platillo(a, d, 0.45, 0.4, 1.3); } },
+  beso: { n: '😘 Beso', g: G_S_COM, dur: 0.4, hacer: (a, d) => { tono(a, d, { f: 900, f2: 2400, t: 0, dur: 0.12, vol: 0.25 }); ruido(a, d, { t: 0.08, dur: 0.03, vol: 0.4, f: 3500, q: 2 }); } },
+  whoosh: { n: '💨 Whoosh', g: G_S_TRANS, dur: 0.9, hacer: (a, d) => ruido(a, d, { t: 0, dur: 0.85, vol: 0.6, f: 250, f2: 3000, q: 1.2, ataque: 0.35 }) },
+  swoosh: { n: '⚡ Swoosh rápido', g: G_S_TRANS, dur: 0.4, hacer: (a, d) => ruido(a, d, { t: 0, dur: 0.35, vol: 0.6, f: 800, f2: 5000, q: 1.5, ataque: 0.12 }) },
+  riser: { n: '🚀 Subida de tensión (riser)', g: G_S_TRANS, dur: 2.2, hacer: (a, d) => { ruido(a, d, { t: 0, dur: 2.1, vol: 0.35, tipo: 'highpass', f: 300, f2: 6000, ataque: 1.9 }); tono(a, d, { tipo: 'sawtooth', f: 110, f2: 880, t: 0, dur: 2.1, vol: 0.12, ataque: 1.9, filtro: 2500 }); } },
+  bajada: { n: '⬇ Bajada (drop)', g: G_S_TRANS, dur: 1.5, hacer: (a, d) => { tono(a, d, { f: 160, f2: 35, t: 0, dur: 1.4, vol: 0.8, ataque: 0.01 }); ruido(a, d, { t: 0, dur: 0.8, vol: 0.3, f: 3000, f2: 200 }); } },
+  ding: { n: '🔔 Ding', g: G_S_AVISO, dur: 1.4, hacer: (a, d) => { tono(a, d, { f: 1320, t: 0, dur: 1.3, vol: 0.35 }); tono(a, d, { f: 2640, t: 0, dur: 0.8, vol: 0.12 }); tono(a, d, { f: 3960, t: 0, dur: 0.4, vol: 0.05 }); } },
+  campanitas: { n: '🎐 Campanitas', g: G_S_AVISO, dur: 1.6, hacer: (a, d) => { [1568, 2093, 2637, 3136].forEach((f, i) => tono(a, d, { tipo: 'triangle', f, t: i * 0.09, dur: 1.2, vol: 0.18 })); } },
+  correcto: { n: '✅ Correcto', g: G_S_AVISO, dur: 0.6, hacer: (a, d) => { tono(a, d, { f: 880, t: 0, dur: 0.18, vol: 0.35 }); tono(a, d, { f: 1320, t: 0.12, dur: 0.4, vol: 0.35 }); } },
+  error: { n: '❌ Error', g: G_S_AVISO, dur: 0.7, hacer: (a, d) => { [0, 0.25].forEach(t => tono(a, d, { tipo: 'square', f: 180, t, dur: 0.2, vol: 0.2, sostiene: 0.12, filtro: 1500 })); } },
+  chaching: { n: '💰 Caja registradora (cha-ching)', g: G_S_AVISO, dur: 1.3, hacer: (a, d) => { ruido(a, d, { t: 0, dur: 0.12, vol: 0.4, f: 4000, q: 0.8 }); ruido(a, d, { t: 0.13, dur: 0.1, vol: 0.4, f: 5000, q: 0.8 }); [2093, 2637, 3136].forEach((f, i) => tono(a, d, { f, t: 0.15 + i * 0.03, dur: 1, vol: 0.15 })); } },
+  moneda: { n: '🪙 Moneda', g: G_S_AVISO, dur: 0.6, hacer: (a, d) => { tono(a, d, { tipo: 'square', f: 1047, t: 0, dur: 0.08, vol: 0.12, filtro: 5000 }); tono(a, d, { tipo: 'square', f: 1568, t: 0.07, dur: 0.45, vol: 0.12, filtro: 5000 }); } },
+  notificacion: { n: '📱 Notificación', g: G_S_AVISO, dur: 0.7, hacer: (a, d) => { [1046, 1318, 1568].forEach((f, i) => tono(a, d, { f, t: i * 0.07, dur: 0.4, vol: 0.25 })); } },
+  censura: { n: '🤬 Pi de censura', g: G_S_AVISO, dur: 1, hacer: (a, d) => tono(a, d, { f: 1000, t: 0, dur: 0.95, vol: 0.3, ataque: 0.01, sostiene: 0.85 }) },
+  foto: { n: '📸 Cámara de fotos', g: G_S_AVISO, dur: 0.4, hacer: (a, d) => { ruido(a, d, { t: 0, dur: 0.04, vol: 0.6, f: 3000, q: 0.7 }); ruido(a, d, { t: 0.09, dur: 0.06, vol: 0.5, f: 2000, q: 0.7 }); } },
+  tictac: { n: '⏱ Tic tac', g: G_S_AVISO, dur: 2.1, hacer: (a, d) => { for (let i = 0; i < 4; i++) tono(a, d, { tipo: 'square', f: i % 2 ? 1500 : 2000, t: i * 0.5, dur: 0.03, vol: 0.25 }); } },
+  cuentaregresiva: { n: '⏳ Cuenta regresiva (3, 2, 1…)', g: G_S_AVISO, dur: 3.8, hacer: (a, d) => { [0, 1, 2].forEach(t => tono(a, d, { f: 880, t, dur: 0.25, vol: 0.35, sostiene: 0.15 })); tono(a, d, { f: 1760, t: 3, dur: 0.75, vol: 0.35, sostiene: 0.5 }); } },
+  redoble: { n: '🥁 Redoble de tambor', g: G_S_MUS, dur: 3, hacer: (a, d) => { for (let t = 0; t < 2.2; t += 0.045) redoblante(a, d, t, 0.12 + 0.3 * (t / 2.2)); bombo(a, d, 2.25); platillo(a, d, 2.25, 0.45, 0.7); } },
+  platillo: { n: '💥 Platillo', g: G_S_MUS, dur: 1.6, hacer: (a, d) => platillo(a, d, 0, 0.45, 1.5) },
+  fanfarria: { n: '🎺 Fanfarria (¡victoria!)', g: G_S_MUS, dur: 2.2, hacer: (a, d) => {
+    [[523, 0, 0.15], [523, 0.17, 0.15], [523, 0.34, 0.15], [659, 0.51, 0.4], [784, 0.95, 0.25], [1046, 1.22, 0.9]].forEach(([f, t, dur]) => { tono(a, d, { tipo: 'sawtooth', f, t, dur, vol: 0.18, ataque: 0.02, sostiene: dur * 0.7, filtro: 2500 }); tono(a, d, { tipo: 'sawtooth', f: f / 2, t, dur, vol: 0.08, ataque: 0.02, sostiene: dur * 0.7, filtro: 1500 }); });
+    platillo(a, d, 1.22, 0.25, 0.9);
+  } },
+  suspenso: { n: '😱 Suspenso', g: G_S_MUS, dur: 3.2, hacer: (a, d) => { [55, 58.3, 82.4].forEach(f => tono(a, d, { tipo: 'sawtooth', f, t: 0, dur: 3.1, vol: 0.15, ataque: 2.2, filtro: 600, vib: 2, vibF: 4 })); tono(a, d, { f: 1661, t: 0.5, dur: 2.6, vol: 0.04, ataque: 2, vib: 10, vibF: 7 }); } },
+  latido: { n: '💓 Latido', g: G_S_MUS, dur: 2.2, hacer: (a, d) => { [0, 1].forEach(t => { tono(a, d, { f: 70, f2: 40, t, dur: 0.2, vol: 0.9 }); tono(a, d, { f: 60, f2: 40, t: t + 0.25, dur: 0.2, vol: 0.7 }); }); } },
+  explosion: { n: '💣 Explosión', g: G_S_MUS, dur: 2.5, hacer: (a, d) => { ruido(a, d, { t: 0, dur: 2.4, vol: 0.9, tipo: 'lowpass', f: 1500, f2: 80, ataque: 0.005 }); tono(a, d, { f: 70, f2: 25, t: 0, dur: 1.2, vol: 0.9 }); } },
+  bocinaauto: { n: '🚗 Bocina de auto', g: G_S_CALLE, dur: 1.1, hacer: (a, d) => { [0, 0.45].forEach(t => [400, 500].forEach(f => tono(a, d, { tipo: 'square', f, t, dur: 0.35, vol: 0.12, sostiene: 0.25, filtro: 2000 }))); } },
+  sirena: { n: '🚨 Sirena', g: G_S_CALLE, dur: 3.1, hacer: (a, d) => { const o = tono(a, d, { tipo: 'triangle', f: 650, t: 0, dur: 3, vol: 0.3, ataque: 0.05, sostiene: 2.7 }); for (let i = 0; i < 3; i++) { o.frequency.linearRampToValueAtTime(1300, i + 0.5); o.frequency.linearRampToValueAtTime(650, i + 1); } } },
+  alarma: { n: '⏰ Alarma', g: G_S_CALLE, dur: 2.1, hacer: (a, d) => { for (let i = 0; i < 8; i++) tono(a, d, { tipo: 'square', f: 1000, t: i * 0.25, dur: 0.12, vol: 0.15, sostiene: 0.08, filtro: 4000 }); } },
+  frenada: { n: '🛞 Frenada', g: G_S_CALLE, dur: 1.4, hacer: (a, d) => { ruido(a, d, { t: 0, dur: 1.2, vol: 0.4, f: 2600, f2: 1800, q: 8, ataque: 0.05, sostiene: 0.8 }); tono(a, d, { tipo: 'sawtooth', f: 1900, f2: 1500, t: 0, dur: 1.2, vol: 0.05, ataque: 0.05, sostiene: 0.8, filtro: 3000 }); } },
+  motor: { n: '🏎 Motor que arranca', g: G_S_CALLE, dur: 2.2, hacer: (a, d) => { tono(a, d, { tipo: 'sawtooth', f: 45, f2: 160, t: 0, dur: 2.1, vol: 0.3, ataque: 0.2, filtro: 700, vib: 6, vibF: 25 }); ruido(a, d, { t: 0, dur: 2.1, vol: 0.15, tipo: 'lowpass', f: 300, f2: 900, ataque: 0.2 }); } },
+};
+const sonidosHechos = new Map();
+async function fabricarSonido(k) {
+  if (sonidosHechos.has(k)) return sonidosHechos.get(k);
+  const s = SONIDOS[k], a = new OfflineAudioContext(1, Math.ceil(SR * s.dur), SR);
+  const salida = a.createGain(); salida.gain.value = 0.9; salida.connect(a.destination);
+  s.hacer(a, salida);
+  const buf = await a.startRendering();
+  // nivelar: que todos tengan el mismo volumen máximo (ni bajitos ni saturados)
+  const d = buf.getChannelData(0); let pico = 0;
+  for (let i = 0; i < d.length; i++) { const v = Math.abs(d[i]); if (v > pico) pico = v; }
+  if (pico > 0) { const f = 0.85 / pico; for (let i = 0; i < d.length; i++) d[i] *= f; }
+  sonidosHechos.set(k, buf); return buf;
+}
+$('sel-sonido').innerHTML = GRUPOS_SONIDO.map(gr => `<optgroup label="${gr}">` + Object.entries(SONIDOS).filter(([, s]) => s.g === gr)
+  .map(([k, s]) => `<option value="${k}">${s.n}</option>`).join('') + '</optgroup>').join('');
+let oyendo = null;
+$('btn-oir-sonido').onclick = async () => {
+  asegurarAudio(); audioCtx.resume();
+  if (oyendo) { try { oyendo.stop(); } catch (e) {} oyendo = null; }
+  const s = audioCtx.createBufferSource(); s.buffer = await fabricarSonido($('sel-sonido').value);
+  s.connect(audioCtx.destination); s.start(); oyendo = s;
+};
+// 🔊 Sonido acá: un audio más, en una línea nueva, desde la línea amarilla
+$('btn-sonido').onclick = async () => {
+  const k = $('sel-sonido').value, buf = await fabricarSonido(k);
+  const c = nuevoClip({ tipo: 'audio', nombre: SONIDOS[k].n, url: '', buf, desde: 0, hasta: buf.duration, largo: buf.duration });
+  if (clips.length) { c.linea = Math.max(...clips.map(x => x.linea)) + 1; c.ini = Math.max(0, Math.min(tActual, duracionTotal())); }
+  clips.push(c); clipSel = c.id;
+  pintarLista(); mostrarEn(tActual);
+  estado(`${SONIDOS[k].n} quedó en ${nombreLinea(c.linea)}: arrastralo en la línea de tiempo para ubicarlo.`);
+};
+
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal(), efecto = $('sel-efecto').value;
