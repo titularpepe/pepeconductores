@@ -91,9 +91,13 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 /* línea de tiempo (fase 2) */
 .tl { position:relative; background:#111; border:1px solid #2a2a2a; border-radius:8px; margin-top:10px; touch-action:none; user-select:none; -webkit-user-select:none; cursor:pointer; overflow-x:auto; overflow-y:hidden; }
 .tl-in { position:relative; width:100%; min-width:100%; }
-.tl .pista { position:relative; height:34px; }
-.tl .bloque { position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; font-size:0.68rem; color:#fff; padding:2px 4px; white-space:nowrap; border:1px solid #000; }
-.tl .bloque.video { background:#2d4a7a; } .tl .bloque.foto { background:#5a3d7a; } .tl .bloque.sel { outline:2px solid var(--amarillo); z-index:1; }
+.tl .pista { position:relative; height:34px; border-top:1px solid #2a2a2a; }
+.tl .pista .etq { position:absolute; left:2px; top:1px; font-size:0.55rem; color:var(--apagado); pointer-events:none; z-index:2; }
+.tl .bloque { position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; font-size:0.68rem; color:#fff; padding:2px 10px; white-space:nowrap; border:1px solid #000; cursor:grab; }
+.tl .bloque.video { background:#2d4a7a; } .tl .bloque.foto { background:#5a3d7a; } .tl .bloque.audio { background:#1f6b5c; } .tl .bloque.sel { outline:2px solid var(--amarillo); z-index:1; }
+.tl .bloque .borde { position:absolute; top:0; width:8px; height:100%; cursor:ew-resize; background:rgba(255,255,255,0.25); }
+.tl .capa.logo { background:#7a2d4a; }
+.tl .fin-video { position:absolute; top:0; bottom:0; right:0; background:rgba(0,0,0,0.45); border-left:1px dashed #777; pointer-events:none; }
 .tl .capas { position:relative; border-top:1px solid #2a2a2a; }
 .tl .capa { position:absolute; height:18px; border-radius:4px; font-size:0.66rem; padding:1px 10px; white-space:nowrap; overflow:hidden; cursor:grab; color:#fff; }
 .tl .capa.foto { background:#1f7a4d; } .tl .capa.efecto { background:#a35a00; } .tl .capa.sel { outline:2px solid var(--amarillo); z-index:1; }
@@ -112,7 +116,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 <header>
   <img src="/android-chrome-192x192.png" alt="Pepe">
   <h1>PEPE EDITOR</h1>
-  <span style="margin-left:auto;font-size:0.75rem;color:var(--apagado);">fotos y videos · v2</span>
+  <span style="margin-left:auto;font-size:0.75rem;color:var(--apagado);">fotos y videos · v3</span>
 </header>
 
 <main>
@@ -122,8 +126,10 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
     <div id="tl" class="tl" title="Tocá o arrastrá para moverte por el video. Ctrl + ruedita = acercar/alejar">
       <div id="tl-in" class="tl-in">
         <div id="tl-regla" class="regla"></div>
-        <div id="tl-clips" class="pista"></div>
+        <div id="tl-clips"></div>
+        <div id="tl-logos" class="capas"></div>
         <div id="tl-capas" class="capas"></div>
+        <div id="tl-fin" class="fin-video" style="display:none;"></div>
         <div id="tl-marcas"></div>
         <div id="tl-cursor" class="cursor" style="left:0;"></div>
       </div>
@@ -162,8 +168,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
   <div class="caja">
     <h2>✂ Herramientas</h2>
     <div class="fila">
-      <button id="btn-cortar" title="Parte el video en dos donde está la línea amarilla">✂ Cortar acá</button>
-      <label class="btn" title="Pone una foto encima desde la línea amarilla">🖼 Foto acá<input type="file" id="in-capa" accept="image/*" style="display:none;"></label>
+      <button id="btn-cortar" title="Parte en dos el pedazo seleccionado (o el que se ve) donde está la línea amarilla">✂ Cortar acá</button>
       <button id="btn-deshacer" title="Deshacer (Ctrl+Z)">↶</button>
       <button id="btn-rehacer" title="Rehacer (Ctrl+Y)">↷</button>
     </div>
@@ -181,12 +186,12 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
   <div class="caja">
     <h2>1. Fotos y videos</h2>
     <div class="fila">
-      <label class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;">➕ Agregar fotos y videos
-        <input type="file" id="in-clips" accept="image/*,video/*" multiple style="display:none;">
+      <label class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;">➕ Agregar fotos, videos o audios
+        <input type="file" id="in-clips" accept="image/*,video/*,audio/*" multiple style="display:none;">
       </label>
       <span id="total" class="nota" style="margin:0;"></span>
     </div>
-    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Se usan en el orden de la lista (podés subir o bajar cada uno).</div></div>
+    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div></div>
   </div>
 
   <div class="caja">
@@ -223,13 +228,8 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <label class="btn">🎵 Elegir canción (mp3, m4a…)
         <input type="file" id="in-musica" accept="audio/*,video/*" style="display:none;">
       </label>
-      <button id="btn-sin-musica" style="display:none;">✕ Sacar canción</button>
     </div>
-    <div id="musica-info" class="nota"></div>
-    <div id="musica-ctrl" style="display:none;">
-      <div class="fila"><label style="min-width:150px;">Empieza en el segundo</label><input type="number" id="mus-desde" min="0" step="0.5" value="0"><button id="btn-escuchar">▶ Escuchar desde ahí</button></div>
-      <div class="fila"><label style="min-width:150px;">Volumen canción</label><input type="range" id="mus-vol" min="0" max="100" value="80"></div>
-    </div>
+    <div class="nota">La canción va en su propia línea, desde la línea amarilla: arrastrala para elegir dónde empieza y estirá sus puntas para elegir dónde termina. Su volumen y qué parte suena están en "1. Fotos y videos".</div>
     <div class="fila"><label style="min-width:150px;">Sonido de los videos</label><input type="range" id="orig-vol" min="0" max="100" value="100"></div>
     <div class="fila"><label style="min-width:150px;">Tema</label><input type="text" id="mus-tema" placeholder="Nombre del tema" style="flex:1;min-width:140px;"></div>
     <div class="fila"><label style="min-width:150px;">Artista</label><input type="text" id="mus-artista" placeholder="Nombre del artista" style="flex:1;min-width:140px;"></div>
@@ -271,15 +271,19 @@ const $ = id => document.getElementById(id);
 const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
 const chico = document.createElement('canvas'), ctxChico = chico.getContext('2d'); // para el fondo borroso
 chico.width = 36; chico.height = 64;
-// clips: { id, tipo:'video'|'foto', nombre, url, el, dur (foto) | desde, hasta, largo (video),
+// clips: { id, tipo:'video'|'foto'|'audio', nombre, url, el (foto/video) | buf (audio), dur (foto) | desde, hasta, largo (video/audio),
+//          linea (0 = principal), ini (segundo del video final donde empieza),
 //          vel, vol (0-100), giro, filtro:{b,c,s,bn}, trans:'corte'|'fundido' }
+// (15/11, pedido del dueño) Varias líneas de tiempo: lo primero va a la principal; cada foto, video o audio que se agrega
+// después va en una línea nueva y se ubica libre en el tiempo. En pantalla se ve la línea de más abajo que tenga algo en ese momento;
+// los audios de todas las líneas suenan juntos.
 // Al cortar o duplicar, los pedazos comparten el mismo <video> (el); su sonido va por el._fuente/el._gan.
 const clips = [];
 let idSeq = 0;
 function nuevoClip(base) {
-  return Object.assign({ id: ++idSeq, vel: 1, vol: 100, giro: 0, filtro: { b: 100, c: 100, s: 100, bn: false }, trans: 'corte' }, base);
+  return Object.assign({ id: ++idSeq, linea: 0, ini: 0, vel: 1, vol: 100, giro: 0, filtro: { b: 100, c: 100, s: 100, bn: false }, trans: 'corte' }, base);
 }
-// capas sobre la línea de tiempo: fotos encima y efectos, cada una de ini a fin (segundos del video final)
+// capas sobre la línea de tiempo: efectos, cada uno de ini a fin (segundos del video final)
 const capas = [];
 let tActual = 0; // dónde está la línea amarilla
 // logos: x, y = centro (fracción del ancho/alto); tam = fracción del lado chico
@@ -294,9 +298,9 @@ const logos = [
   nuevoLogo('Pepe Conductores', 'logos/conductores.png', false, 0.14, 0.08),
   nuevoLogo('Pepe Pasajeros', 'logos/pasajeros.png', false, 0.5, 0.08),
 ];
-let musica = null; // { nombre, buffer }
 let audioCtx = null, mezcla = null, salidaGrabacion = null;
 let corriendo = null; // { parar: fn }
+var editorListo = false; // true cuando ya está todo cargado (antes no se puede pintar la línea de tiempo)
 
 // ---------- utilidades ----------
 const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`; };
@@ -304,17 +308,23 @@ function estado(t) { $('estado').textContent = t || ''; }
 const fmt1 = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
 // con milésimas (pedido del dueño 12/11): 0:03.457
 const fmt3 = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${(s % 60).toFixed(3).padStart(6, '0')}`; };
-function duracionClip(c) { return c.tipo === 'foto' ? c.dur : Math.max(0.2, (c.hasta - c.desde) / c.vel); }
-function inicios() { let a = 0; return clips.map(c => { const i = a; a += duracionClip(c); return i; }); }
-function clipEn(t) {
-  const ini = inicios();
-  for (let i = 0; i < clips.length; i++) {
-    const d = duracionClip(clips[i]);
-    if (t < ini[i] + d || i === clips.length - 1) return { c: clips[i], i, local: Math.min(Math.max(0, t - ini[i]), d - 0.01) };
-  }
-  return { c: null };
+function duracionClip(c) { return c.tipo === 'foto' ? c.dur : Math.max(0.2, (c.hasta - c.desde) / (c.vel || 1)); }
+const finClip = c => c.ini + duracionClip(c);
+const activoEn = (c, t) => t >= c.ini - 1e-6 && t < finClip(c);
+function duracionTotal() { return clips.reduce((a, c) => Math.max(a, finClip(c)), 0); }
+// lo que se ve en el momento t: gana la línea de más abajo; null = no hay nada (negro)
+function visibleEn(t) {
+  let m = null;
+  for (const c of clips) if (c.tipo !== 'audio' && activoEn(c, t) && (!m || c.linea > m.linea || (c.linea === m.linea && c.ini >= m.ini))) m = c;
+  return m;
 }
-function duracionTotal() { return clips.reduce((a, c) => a + duracionClip(c), 0); }
+const posVideo = (c, t) => Math.min(c.hasta - 0.01, Math.max(c.desde, c.desde + (t - c.ini) * c.vel));
+function lineas() { return [...new Set(clips.map(c => c.linea))].sort((a, b) => a - b); }
+function nombreLinea(n) { const i = lineas().indexOf(n) + 1; return n === 0 ? 'Línea 1 (principal)' : `Línea ${i}`; }
+// escala de la línea de tiempo: un poco más larga que el video, para poder correr cosas más allá del final.
+// Mientras se arrastra algo queda fija (si no, la línea de tiempo se achica o estira debajo del dedo).
+let escalaFija = null;
+function escalaTl() { if (escalaFija) return escalaFija; const t = duracionTotal(); return t ? t * 1.1 + 1 : 0; }
 function asegurarAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -325,47 +335,86 @@ function asegurarAudio() {
 }
 
 // ---------- agregar clips ----------
-$('in-clips').addEventListener('change', async e => {
-  const archivos = [...e.target.files];
-  e.target.value = '';
+function tipoArchivo(f) {
+  const t = f.type || '', n = f.name.toLowerCase();
+  if (t.startsWith('image/') || /\.(jpe?g|png|gif|webp|bmp)$/.test(n)) return 'foto';
+  if (t.startsWith('audio/') || /\.(mp3|m4a|aac|wav|ogg|opus|flac)$/.test(n)) return 'audio';
+  if (t.startsWith('video/') || /\.(mp4|mov|webm|mkv|3gp|m4v)$/.test(n)) return 'video';
+  return null;
+}
+// comoAudio: para la canción (si eligen un video, se usa solo su sonido)
+async function agregarArchivos(archivos, comoAudio) {
   for (const f of archivos) {
+    const tipo = comoAudio ? 'audio' : tipoArchivo(f);
+    if (!tipo) { estado(`No reconozco el archivo ${f.name}.`); continue; }
     const url = URL.createObjectURL(f);
-    if (f.type.startsWith('image/')) {
+    let base;
+    if (tipo === 'foto') {
       const img = new Image();
       await new Promise(ok => { img.onload = ok; img.onerror = ok; img.src = url; });
-      clips.push(nuevoClip({ tipo: 'foto', nombre: f.name, url, el: img, dur: 3 }));
-    } else if (f.type.startsWith('video/')) {
+      base = { tipo: 'foto', nombre: f.name, url, el: img, dur: 3 };
+    } else if (tipo === 'video') {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto'; v.src = url; v.crossOrigin = 'anonymous';
       await new Promise(ok => { v.onloadedmetadata = ok; v.onerror = ok; });
       const largo = isFinite(v.duration) ? v.duration : 10;
-      clips.push(nuevoClip({ tipo: 'video', nombre: f.name, url, el: v, desde: 0, hasta: largo, largo }));
+      base = { tipo: 'video', nombre: f.name, url, el: v, desde: 0, hasta: largo, largo };
+    } else {
+      asegurarAudio();
+      estado(`Leyendo ${f.name}…`);
+      try {
+        const buf = await audioCtx.decodeAudioData(await f.arrayBuffer());
+        base = { tipo: 'audio', nombre: f.name, url, buf, desde: 0, hasta: buf.duration, largo: buf.duration };
+        estado('');
+      } catch (err) { estado(`No pude leer el sonido de ${f.name}. Probá con un mp3 o m4a.`); continue; }
     }
+    const c = nuevoClip(base);
+    if (clips.length) { // todo lo que no es lo primero: línea nueva, desde la línea amarilla
+      c.linea = Math.max(...clips.map(x => x.linea)) + 1;
+      c.ini = Math.max(0, Math.min(tActual, duracionTotal()));
+      const sig = siguienteMarca();
+      if (tipo === 'foto' && sig != null) c.dur = +(sig - c.ini).toFixed(3); // foto hasta la próxima marca celeste
+    }
+    clips.push(c); clipSel = c.id;
   }
   pintarLista();
   mostrarEn(tActual);
-});
+}
+$('in-clips').addEventListener('change', e => { const a = [...e.target.files]; e.target.value = ''; agregarArchivos(a, false); });
 
 function pintarLista() {
   const el = $('lista-clips');
-  if (!clips.length) { el.innerHTML = '<div class="vacio">Todavía no agregaste nada.</div>'; $('total').textContent = ''; pintarTimeline(); return; }
+  if (!clips.length) { el.innerHTML = '<div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div>'; $('total').textContent = ''; pintarTimeline(); return; }
   el.innerHTML = '';
-  const ini = inicios();
-  clips.forEach((c, i) => {
+  const orden = [...clips].sort((a, b) => a.linea - b.linea || a.ini - b.ini);
+  let lineaAnt = null, n = 0;
+  orden.forEach(c => {
+    if (c.linea !== lineaAnt) {
+      lineaAnt = c.linea; n = 0;
+      const h = document.createElement('div');
+      h.style.cssText = 'color:var(--amarillo);font-weight:700;font-size:0.78rem;margin:8px 0 4px;';
+      h.textContent = nombreLinea(c.linea);
+      el.appendChild(h);
+    }
+    n++;
     const d = document.createElement('div');
     d.className = 'clip' + (c.id === clipSel ? ' sel' : '');
     d.dataset.id = c.id;
-    const mini = c.tipo === 'foto' ? `<img class="mini" src="${c.url}">` : `<video class="mini" src="${c.url}#t=${(c.desde + 0.3).toFixed(1)}" muted playsinline></video>`;
+    const mini = c.tipo === 'foto' ? `<img class="mini" src="${c.url}">`
+      : c.tipo === 'audio' ? '<div class="mini" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎵</div>'
+      : `<video class="mini" src="${c.url}#t=${(c.desde + 0.3).toFixed(1)}" muted playsinline></video>`;
+    const lugar = `<div class="fila"><label>Empieza en</label><input type="number" min="0" step="0.001" value="${c.ini.toFixed(3)}" data-k="ini"><label>seg</label>
+      <button data-a="aca" title="Que empiece donde está la línea amarilla">⇤ Acá</button></div>`;
     const corte = c.tipo === 'foto'
-      ? `<div class="fila"><label>Dura</label><input type="number" min="0.5" step="0.5" value="${c.dur}" data-k="dur"> <label>seg</label></div>`
+      ? `<div class="fila"><label>Dura</label><input type="number" min="0.2" step="0.5" value="${c.dur}" data-k="dur"> <label>seg</label></div>`
       : `<div class="fila"><label style="min-width:42px;">Inicio</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.001" value="${c.desde}" data-k="desde" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="desde">${fmt3(c.desde)}</span></div>
          <div class="fila"><label style="min-width:42px;">Final</label><input type="range" min="0" max="${c.largo.toFixed(2)}" step="0.001" value="${c.hasta}" data-k="hasta" style="flex:1;"><span class="nota" style="margin:0;min-width:44px;" data-v="hasta">${fmt3(c.hasta)}</span></div>`;
     const sel = (k, ops) => `<select data-k="${k}">${ops.map(([v, t]) => `<option value="${v}" ${String(c[k]) === String(v) ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
-    const extra = `<div class="fila">
-        ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])}
-        <label title="Volumen de este video">🔊</label><input type="range" min="0" max="100" value="${c.vol}" data-k="vol" style="width:90px;"><span class="nota" style="margin:0;" data-v="vol">${c.vol}%</span>` : ''}
+    const vol = c.tipo !== 'foto' ? `<label title="Volumen">🔊</label><input type="range" min="0" max="100" value="${c.vol}" data-k="vol" style="width:90px;"><span class="nota" style="margin:0;" data-v="vol">${c.vol}%</span>` : '';
+    const extra = c.tipo === 'audio' ? `<div class="fila">${vol}</div>` : `<div class="fila">
+        ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])} ${vol}` : ''}
         <button data-a="gira" title="Girar 90°">⟳ Girar</button>
-        ${i > 0 ? `<label>Entrada</label>${sel('trans', [['corte', 'Corte'], ['fundido', 'Fundido']])}` : ''}
+        <label>Entrada</label>${sel('trans', [['corte', 'Corte'], ['fundido', 'Fundido']])}
       </div>
       <details><summary>🎨 Filtros</summary>
         <div class="fila"><label style="min-width:76px;">Brillo</label><input type="range" min="40" max="160" value="${c.filtro.b}" data-f="b" style="flex:1;"></div>
@@ -373,69 +422,52 @@ function pintarLista() {
         <div class="fila"><label style="min-width:76px;">Color</label><input type="range" min="0" max="200" value="${c.filtro.s}" data-f="s" style="flex:1;"></div>
         <div class="fila"><label><input type="checkbox" data-f="bn" ${c.filtro.bn ? 'checked' : ''}> Blanco y negro</label><button data-a="normal">Como estaba</button></div>
       </details>`;
-    d.innerHTML = `${mini}<div class="datos"><div class="nombre">${c.tipo === 'foto' ? '🖼️' : '🎬'} ${i + 1}. ${c.nombre.replace(/[<>&"]/g, '')} <span class="nota">(${fmt1(duracionClip(c))})</span></div>${corte}${extra}</div>
-      <div class="acc"><button data-a="sube" title="Subir">▲</button><button data-a="baja" title="Bajar">▼</button><button data-a="dup" title="Duplicar">⧉</button><button data-a="saca" title="Sacar" style="color:var(--rojo);">✕</button></div>`;
+    const icono = c.tipo === 'foto' ? '🖼️' : c.tipo === 'audio' ? '🎵' : '🎬';
+    d.innerHTML = `${mini}<div class="datos"><div class="nombre">${icono} ${n}. ${c.nombre.replace(/[<>&"]/g, '')} <span class="nota">(${fmt1(duracionClip(c))})</span></div>${lugar}${corte}${extra}</div>
+      <div class="acc"><button data-a="dup" title="Duplicar (queda justo después, en la misma línea)">⧉</button><button data-a="saca" title="Sacar (solo este, de su línea)" style="color:var(--rojo);">✕</button></div>`;
+    const q = s => d.querySelector(s);
+    const verAca = () => mostrarEn(Math.max(c.ini, Math.min(tActual, finClip(c) - 0.02)));
     // cortar: mientras se arrastra muestra ese cuadro; al soltar recalcula todo
     d.querySelectorAll('input[data-k=desde], input[data-k=hasta]').forEach(inp => {
       inp.addEventListener('input', () => {
         const v = parseFloat(inp.value);
         if (inp.dataset.k === 'desde') c.desde = Math.min(Math.max(0, v), c.hasta - 0.2);
         else c.hasta = Math.max(Math.min(c.largo, v), c.desde + 0.2);
-        d.querySelector(`[data-v=${inp.dataset.k}]`).textContent = fmt3(c[inp.dataset.k]);
+        q(`[data-v=${inp.dataset.k}]`).textContent = fmt3(c[inp.dataset.k]);
         clipSel = c.id;
-        mostrarEn(inp.dataset.k === 'desde' ? inicios()[i] : inicios()[i] + duracionClip(c) - 0.02);
+        if (c.tipo === 'video') mostrarEn(inp.dataset.k === 'desde' ? c.ini : finClip(c) - 0.02); else pintarTimeline();
       });
       inp.addEventListener('change', () => pintarLista());
     });
-    d.querySelectorAll('input[type=number][data-k]').forEach(inp => inp.addEventListener('change', () => { c.dur = Math.max(0.5, parseFloat(inp.value) || 0); pintarLista(); }));
+    if (q('input[data-k=dur]')) q('input[data-k=dur]').onchange = e => { c.dur = Math.max(0.2, parseFloat(e.target.value) || 0); pintarLista(); redibujar(); };
+    q('input[data-k=ini]').onchange = e => { c.ini = Math.max(0, parseFloat(e.target.value) || 0); clipSel = c.id; pintarLista(); redibujar(); };
+    q('[data-a=aca]').onclick = () => { c.ini = tActual; clipSel = c.id; pintarLista(); redibujar(); };
     d.querySelectorAll('select[data-k]').forEach(s => s.addEventListener('change', () => { c[s.dataset.k] = s.dataset.k === 'vel' ? parseFloat(s.value) : s.value; pintarLista(); redibujar(); }));
-    const vol = d.querySelector('input[data-k=vol]');
-    if (vol) vol.oninput = () => { c.vol = +vol.value; d.querySelector('[data-v=vol]').textContent = c.vol + '%'; };
-    d.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => { c.filtro[inp.dataset.f] = inp.type === 'checkbox' ? inp.checked : parseFloat(inp.value); clipSel = c.id; mostrarEn(Math.max(ini[i], Math.min(tActual, ini[i] + duracionClip(c) - 0.02))); }));
-    d.querySelector('[data-a=normal]').onclick = () => { c.filtro = { b: 100, c: 100, s: 100, bn: false }; pintarLista(); redibujar(); };
-    d.querySelector('[data-a=gira]').onclick = () => { c.giro = (c.giro + 90) % 360; clipSel = c.id; mostrarEn(Math.max(ini[i], Math.min(tActual, ini[i] + duracionClip(c) - 0.02))); };
-    d.querySelector('[data-a=sube]').onclick = () => { if (i > 0) { [clips[i - 1], clips[i]] = [clips[i], clips[i - 1]]; pintarLista(); redibujar(); } };
-    d.querySelector('[data-a=baja]').onclick = () => { if (i < clips.length - 1) { [clips[i + 1], clips[i]] = [clips[i], clips[i + 1]]; pintarLista(); redibujar(); } };
-    d.querySelector('[data-a=dup]').onclick = () => { clips.splice(i + 1, 0, nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro } })); clips[i + 1].id = ++idSeq; pintarLista(); redibujar(); };
-    d.querySelector('[data-a=saca]').onclick = () => { clips.splice(i, 1); pintarLista(); mostrarEn(Math.min(tActual, duracionTotal())); };
+    if (q('input[data-k=vol]')) q('input[data-k=vol]').oninput = e => { c.vol = +e.target.value; q('[data-v=vol]').textContent = c.vol + '%'; aplicarVolumenes(); marcarCambio(); };
+    d.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => { c.filtro[inp.dataset.f] = inp.type === 'checkbox' ? inp.checked : parseFloat(inp.value); clipSel = c.id; verAca(); }));
+    if (q('[data-a=normal]')) q('[data-a=normal]').onclick = () => { c.filtro = { b: 100, c: 100, s: 100, bn: false }; pintarLista(); redibujar(); };
+    if (q('[data-a=gira]')) q('[data-a=gira]').onclick = () => { c.giro = (c.giro + 90) % 360; clipSel = c.id; verAca(); };
+    q('[data-a=dup]').onclick = () => { const o = nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro } }); o.id = ++idSeq; o.ini = finClip(c); clips.push(o); clipSel = o.id; pintarLista(); redibujar(); };
+    q('[data-a=saca]').onclick = () => sacarClip(c);
     el.appendChild(d);
   });
-  $('total').textContent = `${clips.length} pedazo(s) · el video dura ${fmt(duracionTotal())}`;
+  $('total').textContent = `${clips.length} pedazo(s) en ${lineas().length} línea(s) · el video dura ${fmt(duracionTotal())}`;
   pintarTimeline();
 }
+// saca SOLO ese pedazo de su línea: lo demás no se corre
+function sacarClip(c) {
+  const i = clips.indexOf(c); if (i < 0) return;
+  clips.splice(i, 1);
+  if (clipSel === c.id) clipSel = null;
+  pintarLista(); mostrarEn(Math.min(tActual, duracionTotal()));
+}
 
-// ---------- canción ----------
-$('in-musica').addEventListener('change', async e => {
+// ---------- canción: va en una línea nueva, como cualquier audio ----------
+$('in-musica').addEventListener('change', e => {
   const f = e.target.files[0];
   e.target.value = '';
-  if (!f) return;
-  asegurarAudio();
-  $('musica-info').textContent = 'Leyendo la canción…';
-  try {
-    const buffer = await audioCtx.decodeAudioData(await f.arrayBuffer());
-    musica = { nombre: f.name, buffer };
-    $('musica-info').textContent = `🎵 ${f.name} (${fmt(buffer.duration)})`;
-    $('musica-ctrl').style.display = '';
-    $('btn-sin-musica').style.display = '';
-    $('mus-desde').max = Math.floor(buffer.duration);
-  } catch (err) {
-    musica = null;
-    $('musica-info').textContent = 'No pude leer ese archivo de audio. Probá con un mp3 o m4a.';
-  }
+  if (f) agregarArchivos([f], true);
 });
-$('btn-sin-musica').onclick = () => { musica = null; $('musica-info').textContent = ''; $('musica-ctrl').style.display = 'none'; $('btn-sin-musica').style.display = 'none'; };
-let escuchando = null;
-$('btn-escuchar').onclick = () => {
-  if (escuchando) { try { escuchando.stop(); } catch (e) {} escuchando = null; $('btn-escuchar').textContent = '▶ Escuchar desde ahí'; return; }
-  if (!musica) return;
-  asegurarAudio(); audioCtx.resume();
-  const s = audioCtx.createBufferSource(); s.buffer = musica.buffer;
-  const g = audioCtx.createGain(); g.gain.value = $('mus-vol').value / 100;
-  s.connect(g); g.connect(audioCtx.destination);
-  s.start(0, parseFloat($('mus-desde').value) || 0, 10);
-  s.onended = () => { escuchando = null; $('btn-escuchar').textContent = '▶ Escuchar desde ahí'; };
-  escuchando = s; $('btn-escuchar').textContent = '■ Parar';
-};
 
 // ---------- tendencias ----------
 fetch('https://us-central1-pepe-conductores.cloudfunctions.net/cancionesTendencia?v=2')
@@ -490,6 +522,7 @@ function pintarLogos() {
     if (q('[data-a=saca]')) q('[data-a=saca]').onclick = () => { logos.splice(i, 1); pintarLogos(); redibujar(); };
     el.appendChild(d);
   });
+  if (editorListo) pintarTimeline(); // cada logo marcado tiene su línea en la línea de tiempo
 }
 pintarLogos();
 $('in-logo').addEventListener('change', e => {
@@ -519,13 +552,6 @@ function queHayAhi(p) {
     if (textoPos.x == null) { textoPos.x = (cajaTexto.x + cajaTexto.w / 2) / lienzo.width; textoPos.y = cajaTexto.cy / lienzo.height; }
     return textoPos;
   }
-  for (let i = capas.length - 1; i >= 0; i--) {
-    const k = capas[i];
-    if (k.tipo === 'foto' && tActual >= k.ini && tActual < k.fin && k.img.naturalWidth && dentro(p, cajaLogo(k))) {
-      if (capaSel !== k) { capaSel = k; pintarTimeline(); pintarPanelCapa(); }
-      return k;
-    }
-  }
   return null;
 }
 function empezarArrastre(cx, cy) {
@@ -550,8 +576,7 @@ lienzo.addEventListener('touchend', () => { arrastrando = null; });
 lienzo.addEventListener('mousemove', e => {
   if (arrastrando) return;
   const p = aLienzo(e.clientX, e.clientY);
-  const hay = dentro(p, cajaTexto) || logos.some(l => logoVisible(l, tActual) && dentro(p, cajaLogo(l)))
-    || capas.some(k => k.tipo === 'foto' && tActual >= k.ini && tActual < k.fin && k.img.naturalWidth && dentro(p, cajaLogo(k)));
+  const hay = dentro(p, cajaTexto) || logos.some(l => logoVisible(l, tActual) && dentro(p, cajaLogo(l)));
   lienzo.style.cursor = hay ? 'move' : '';
 });
 
@@ -615,27 +640,31 @@ function filtroCanvas(c, efs) {
   if (efs.some(e => e.efecto === 'desenfoque')) partes.push(`blur(${Math.round(lienzo.width / 90)}px)`);
   return partes.join(' ') || 'none';
 }
-function dibujarEn(t, c, i, local) {
+// c = lo que se ve (o null = negro); local = segundos desde que empezó c
+function dibujarEn(t, c, local) {
   const W = lienzo.width, H = lienzo.height;
   const efs = capas.filter(k => k.tipo === 'efecto' && t >= k.ini && t < k.fin);
   const prog = k => Math.min(1, Math.max(0, (t - k.ini) / Math.max(0.05, k.fin - k.ini)));
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-  ctx.save();
-  let esc = 1, dx = 0, dy = 0;
-  for (const e of efs) {
-    if (e.efecto === 'zoom') esc *= 1 + 0.35 * prog(e);
-    if (e.efecto === 'temblor') { const n = Math.floor(t * 30); dx += (azar(n, 1) - 0.5) * W * 0.05; dy += (azar(n, 2) - 0.5) * H * 0.03; }
+  if (c) {
+    ctx.save();
+    let esc = 1, dx = 0, dy = 0;
+    for (const e of efs) {
+      if (e.efecto === 'zoom') esc *= 1 + 0.35 * prog(e);
+      if (e.efecto === 'temblor') { const n = Math.floor(t * 30); dx += (azar(n, 1) - 0.5) * W * 0.05; dy += (azar(n, 2) - 0.5) * H * 0.03; }
+    }
+    ctx.translate(W / 2 + dx, H / 2 + dy); ctx.scale(esc, esc); ctx.translate(-W / 2, -H / 2);
+    ctx.filter = filtroCanvas(c, efs);
+    dibujarFuente(c.el, c.giro);
+    ctx.restore();
+    // fundido a negro: al entrar (si este pedazo tiene "Fundido") y al salir (si el que sigue pegado en su línea lo tiene)
+    const F = 0.35, dur = duracionClip(c);
+    let negro = 0;
+    if (c.trans === 'fundido') negro = Math.max(negro, 1 - local / F);
+    const sig = clips.find(o => o !== c && o.linea === c.linea && o.tipo !== 'audio' && o.trans === 'fundido' && Math.abs(o.ini - finClip(c)) < 0.05);
+    if (sig) negro = Math.max(negro, 1 - (dur - local) / F);
+    if (negro > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(1, negro)})`; ctx.fillRect(0, 0, W, H); }
   }
-  ctx.translate(W / 2 + dx, H / 2 + dy); ctx.scale(esc, esc); ctx.translate(-W / 2, -H / 2);
-  ctx.filter = filtroCanvas(c, efs);
-  dibujarFuente(c.el, c.giro);
-  ctx.restore();
-  // fundido a negro entre pedazos
-  const F = 0.35, dur = duracionClip(c);
-  let negro = 0;
-  if (i > 0 && c.trans === 'fundido') negro = Math.max(negro, 1 - local / F);
-  if (clips[i + 1] && clips[i + 1].trans === 'fundido') negro = Math.max(negro, 1 - (dur - local) / F);
-  if (negro > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(1, negro)})`; ctx.fillRect(0, 0, W, H); }
   for (const e of efs) {
     const p = prog(e), te = t - e.ini;
     if (e.efecto === 'flash') { ctx.fillStyle = `rgba(255,255,255,${(1 - p) * 0.9})`; ctx.fillRect(0, 0, W, H); }
@@ -664,12 +693,6 @@ function dibujarEn(t, c, i, local) {
       ctx.restore();
     }
   }
-  // fotos encima
-  for (const k of capas) {
-    if (k.tipo !== 'foto' || t < k.ini || t >= k.fin || !k.img.naturalWidth) continue;
-    const b = cajaLogo(k);
-    ctx.drawImage(k.img, b.x, b.y, b.w, b.h);
-  }
   dibujarExtras();
 }
 
@@ -690,17 +713,19 @@ async function procesarMostrar() {
     while (pedidoT != null) {
       const t = pedidoT; pedidoT = null;
       aplicarFormato();
-      const { c, i, local } = clipEn(t);
-      if (!c) {
+      if (!clips.length) {
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, lienzo.width, lienzo.height);
         ctx.fillStyle = '#555'; ctx.font = '28px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('Agregá fotos y videos', lienzo.width / 2, lienzo.height / 2);
         dibujarExtras();
         continue;
       }
-      if (c.tipo === 'video') await irA(c.el, Math.min(c.hasta - 0.01, c.desde + local * c.vel));
+      // al final del video se muestra el último cuadro (no negro)
+      const tv = t >= duracionTotal() - 1e-6 ? Math.max(0, duracionTotal() - 0.02) : t;
+      const c = visibleEn(tv);
+      if (c && c.tipo === 'video') await irA(c.el, posVideo(c, tv));
       if (pedidoT != null) continue; // ya pidieron otro momento: saltear este
-      dibujarEn(t, c, i, local);
+      dibujarEn(t, c, c ? tv - c.ini : 0);
     }
   } finally { mostrando = false; }
 }
@@ -759,15 +784,15 @@ let clipSel = null, capaSel = null, arrastreTl = null;
 // marcas: líneas celestes (varias) para ubicar efectos; se selecciona tocándola y se borra con Supr o ✕
 var marcas = [], marcaSel = null; // marcas = [{ t }]
 function pintarCursor() {
-  const total = duracionTotal();
-  $('tl-cursor').style.left = `${total ? tActual / total * 100 : 0}%`;
+  const total = duracionTotal(), esc = escalaTl();
+  $('tl-cursor').style.left = `${esc ? tActual / esc * 100 : 0}%`;
   $('tl-tiempo').textContent = `${fmt3(tActual)} / ${fmt3(total)}`;
-  if (corriendo && zoomTl > 1 && total) { // con zoom, la línea de tiempo sigue a la línea amarilla
-    const tl = $('tl'), x = tActual / total * $('tl-in').getBoundingClientRect().width;
+  if (corriendo && zoomTl > 1 && esc) { // con zoom, la línea de tiempo sigue a la línea amarilla
+    const tl = $('tl'), x = tActual / esc * $('tl-in').getBoundingClientRect().width;
     if (x < tl.scrollLeft || x > tl.scrollLeft + tl.clientWidth - 30) tl.scrollLeft = x - 40;
   }
   marcas.forEach(m => { if (m.t > total) m.t = total; });
-  $('tl-marcas').innerHTML = total ? marcas.map(m => `<div class="cursor marca${m === marcaSel ? ' sel' : ''}" style="left:${m.t / total * 100}%;"></div>`).join('') : '';
+  $('tl-marcas').innerHTML = esc ? marcas.map(m => `<div class="cursor marca${m === marcaSel ? ' sel' : ''}" style="left:${m.t / esc * 100}%;"></div>`).join('') : '';
   const sel = marcaSel && marcas.includes(marcaSel);
   $('marca-info').style.display = $('btn-sin-marca').style.display = sel ? '' : 'none';
   if (sel) $('marca-info').textContent = `📍 ${fmt3(marcaSel.t)}`;
@@ -799,10 +824,27 @@ function siguienteMarca() {
   const despues = marcas.map(m => m.t).filter(t => t > tActual + 0.2).sort((a, b) => a - b);
   return despues.length ? despues[0] : null;
 }
+// ---------- imán ----------
+// (15/11, pedido del dueño) la línea amarilla también se pega: a las marcas celestes y a los bordes de cada pedazo, efecto y logo.
+// Con Alt apretado no se pega.
+function puntosIman(excepto) {
+  const p = [0, ...marcas.map(m => m.t)];
+  clips.forEach(c => { if (c !== excepto) p.push(c.ini, finClip(c)); });
+  capas.forEach(k => { if (k !== excepto) p.push(k.ini, k.fin); });
+  logos.forEach(l => { if (l !== excepto && l.activo && l.ini != null) p.push(l.ini, l.fin); });
+  return p;
+}
+function pegarA(v, puntos, px = 12) {
+  const lim = px / ($('tl-in').getBoundingClientRect().width || 600) * (escalaTl() || 1);
+  let mejor = v, dist = lim;
+  for (const p of puntos) { const d = Math.abs(v - p); if (d < dist) { dist = d; mejor = p; } }
+  return mejor;
+}
+const pegarCursor = (t, sinIman) => sinIman ? t : pegarA(t, puntosIman(null));
 // regla de segundos: según el zoom, de 5 s hasta milésimas; solo se dibuja la parte que se ve
 var zoomTl = 1;
 function pintarRegla() {
-  const total = duracionTotal();
+  const total = escalaTl();
   if (!total) { $('tl-regla').innerHTML = ''; return; }
   const ancho = $('tl-in').getBoundingClientRect().width || 600, pxPorSeg = ancho / total;
   const PASOS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300];
@@ -820,7 +862,7 @@ function pintarRegla() {
   $('tl-regla').innerHTML = regla;
 }
 function ponerZoom(z, centroT) {
-  const total = duracionTotal(); if (!total) return;
+  const total = escalaTl(); if (!total) return;
   const tl = $('tl'), vis = tl.clientWidth || 600;
   const maxZ = Math.max(1, Math.min(1500000 / vis, total * 70 / 0.001 / vis)); // hasta ver milésimas
   zoomTl = Math.min(maxZ, Math.max(1, z));
@@ -837,35 +879,54 @@ $('tl').addEventListener('wheel', e => {
     return;
   }
   e.preventDefault();
-  const r = $('tl-in').getBoundingClientRect(), total = duracionTotal();
+  const r = $('tl-in').getBoundingClientRect(), total = escalaTl();
   const tMouse = Math.min(total, Math.max(0, (e.clientX - r.left) / r.width * total));
   ponerZoom(zoomTl * (e.deltaY < 0 ? 1.25 : 0.8), tMouse);
 }, { passive: false });
 $('tl').addEventListener('scroll', () => pintarRegla());
-function pintarTimeline() {
-  marcarCambio();
-  const total = duracionTotal() || 1, ini = inicios();
-  const esc = t => String(t).replace(/[<>&"]/g, '');
-  pintarRegla();
-  $('tl-clips').innerHTML = clips.map((c, i) => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${ini[i] / total * 100}%;width:${duracionClip(c) / total * 100}%;">${i + 1}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}</div>`).join('');
-  capas.forEach(k => { k.fin = Math.min(k.fin, total); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
-  // filas: cada efecto/foto va en la primera fila donde no pisa a otro (uno detrás del otro, como en un editor)
+// filas: cada barra va en la primera fila donde no pisa a otra (uno detrás del otro, como en un editor)
+function filas(lista) {
   const filaDe = new Map(), finFila = [];
-  [...capas].sort((a, b) => a.ini - b.ini).forEach(k => {
+  [...lista].sort((a, b) => a.ini - b.ini).forEach(k => {
     let f = finFila.findIndex(fin => fin <= k.ini + 0.001);
     if (f < 0) { f = finFila.length; finFila.push(0); }
     finFila[f] = k.fin; filaDe.set(k, f);
   });
-  $('tl-capas').style.height = capas.length ? `${finFila.length * 21 + 3}px` : '0';
-  $('tl-capas').innerHTML = capas.map((k, n) => `<div class="capa ${k.tipo}${k === capaSel ? ' sel' : ''}" data-n="${n}" style="top:${filaDe.get(k) * 21 + 2}px;left:${k.ini / total * 100}%;width:${(k.fin - k.ini) / total * 100}%;">
-      <span class="borde" data-b="ini" style="left:0;"></span>${k.tipo === 'foto' ? '🖼 ' + esc(k.nombre) : NOMBRE_EFECTO[k.efecto]}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('');
+  return { filaDe, n: finFila.length };
+}
+function pintarTimeline() {
+  marcarCambio();
+  const total = escalaTl() || 1, real = duracionTotal();
+  const esc = t => String(t).replace(/[<>&"]/g, '');
+  pintarRegla();
+  // una línea por cada línea de pedazos (la principal arriba)
+  const nums = lineas();
+  const ICONO = { video: '🎬', foto: '🖼', audio: '🎵' };
+  $('tl-clips').innerHTML = nums.map((n, i) => `<div class="pista"><span class="etq">L${i + 1}</span>` +
+    clips.filter(c => c.linea === n).map(c => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${c.ini / total * 100}%;width:${duracionClip(c) / total * 100}%;">
+      <span class="borde" data-b="ini" style="left:0;"></span>${ICONO[c.tipo]} ${esc(c.nombre)}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('') + '</div>').join('');
+  $('tl-fin').style.display = real ? '' : 'none';
+  $('tl-fin').style.left = `${real / total * 100}%`;
+  // logos: una línea por cada logo marcado (barra = cuándo se ve; "Todo el video" = de punta a punta)
+  const activos = logos.filter(l => l.activo);
+  $('tl-logos').style.height = real && activos.length ? `${activos.length * 21 + 3}px` : '0';
+  $('tl-logos').innerHTML = real ? activos.map((l, n) => {
+    const a = l.ini == null ? 0 : l.ini, b = l.ini == null ? real : l.fin;
+    return `<div class="capa logo" data-logo="${logos.indexOf(l)}" style="top:${n * 21 + 2}px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
+      <span class="borde" data-b="ini" style="left:0;"></span>🏷 ${esc(l.nombre)}<span class="borde" data-b="fin" style="right:0;"></span></div>`;
+  }).join('') : '';
+  capas.forEach(k => { k.fin = Math.min(k.fin, real); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
+  const { filaDe, n } = filas(capas);
+  $('tl-capas').style.height = capas.length ? `${n * 21 + 3}px` : '0';
+  $('tl-capas').innerHTML = capas.map((k, i) => `<div class="capa ${k.tipo}${k === capaSel ? ' sel' : ''}" data-n="${i}" style="top:${filaDe.get(k) * 21 + 2}px;left:${k.ini / total * 100}%;width:${(k.fin - k.ini) / total * 100}%;">
+      <span class="borde" data-b="ini" style="left:0;"></span>${NOMBRE_EFECTO[k.efecto]}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('');
   pintarCursor();
 }
 function pintarPanelCapa() {
   const el = $('capa-panel'), k = capaSel;
   if (!k || !capas.includes(k)) { el.innerHTML = ''; return; }
   el.innerHTML = `<div class="clip" style="display:block;">
-    <div class="fila"><b style="font-size:0.85rem;">${k.tipo === 'foto' ? '🖼 Foto encima' : '✨ Efecto'}</b>
+    <div class="fila"><b style="font-size:0.85rem;">✨ Efecto</b>
       <button id="capa-saca" style="color:var(--rojo);margin-left:auto;">✕ Sacar</button></div>
     <div class="fila">
       <label>Empieza</label><input type="number" id="capa-ini" min="0" step="0.001" value="${k.ini.toFixed(3)}"><label>seg</label>
@@ -875,14 +936,10 @@ function pintarPanelCapa() {
       <button id="capa-aca-ini" title="Que empiece donde está la línea amarilla">⇤ Empezar acá</button>
       <button id="capa-aca-fin" title="Que termine donde está la línea amarilla">Terminar acá ⇥</button>
     </div>
-    ${k.tipo === 'foto'
-      ? `<div class="fila"><label>Tamaño</label><input type="range" id="capa-tam" min="5" max="100" value="${Math.round(k.tam * 100)}" style="flex:1;"></div>
-         <div class="nota">Arrastrala en la vista para ubicarla. En la línea de tiempo: arrastrá la barra verde para moverla y sus puntas para que dure más o menos.</div>`
-      : `<div class="fila"><label>Efecto</label><select id="capa-efecto">${Object.entries(NOMBRE_EFECTO).map(([v, n]) => `<option value="${v}" ${v === k.efecto ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
-         <div class="nota">En la línea de tiempo: arrastrá la barra naranja para moverlo y sus puntas para que dure más o menos.</div>`}
+    <div class="fila"><label>Efecto</label><select id="capa-efecto">${Object.entries(NOMBRE_EFECTO).map(([v, n]) => `<option value="${v}" ${v === k.efecto ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="nota">En la línea de tiempo: arrastrá la barra naranja para moverlo y sus puntas para que dure más o menos.</div>
   </div>`;
   $('capa-saca').onclick = () => { capas.splice(capas.indexOf(k), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); };
-  if ($('capa-tam')) $('capa-tam').oninput = e => { k.tam = e.target.value / 100; redibujar(); };
   // tiempos exactos: escribiendo los segundos o con la línea amarilla
   const ponerTiempos = (ini, fin) => {
     const total = duracionTotal();
@@ -896,7 +953,7 @@ function pintarPanelCapa() {
   $('capa-fin').onchange = e => ponerTiempos(k.ini, parseFloat(e.target.value) || 0);
   $('capa-aca-ini').onclick = () => { const largo = k.fin - k.ini; ponerTiempos(tActual, tActual + largo); };
   $('capa-aca-fin').onclick = () => { if (tActual <= k.ini + 0.1) { estado('La línea amarilla tiene que estar después de donde empieza.'); return; } ponerTiempos(k.ini, tActual); };
-  if ($('capa-efecto')) $('capa-efecto').onchange = e => { k.efecto = e.target.value; pintarTimeline(); redibujar(); };
+  $('capa-efecto').onchange = e => { k.efecto = e.target.value; pintarTimeline(); redibujar(); };
 }
 function marcarClipSel() {
   document.querySelectorAll('#lista-clips .clip').forEach(d => d.classList.toggle('sel', +d.dataset.id === clipSel));
@@ -904,84 +961,125 @@ function marcarClipSel() {
 }
 (() => {
   const tl = $('tl');
-  const aT = x => { const r = $('tl-in').getBoundingClientRect(), total = duracionTotal(); return Math.min(total, Math.max(0, (x - r.left) / r.width * total)); };
+  const aT = x => { const r = $('tl-in').getBoundingClientRect(), total = escalaTl(); return Math.max(0, (x - r.left) / r.width * total); };
   let reanudar = null; // si estaba reproduciendo: la promesa de fin, para seguir desde el punto nuevo al soltar
   tl.addEventListener('pointerdown', e => {
     if (!clips.length || (corriendo && corriendo.grabando)) return;
     if (corriendo) { reanudar = corriendo.fin; corriendo.parar(); }
     tl.setPointerCapture(e.pointerId);
+    escalaFija = escalaTl(); // mientras se arrastra, la escala no cambia
+    const real = duracionTotal();
+    // efectos y logos: se mueven y se estiran (tocarlos NO mueve la línea amarilla)
     const capaEl = e.target.closest('.capa');
     if (capaEl) {
-      const k = capas[+capaEl.dataset.n];
-      capaSel = k;
-      arrastreTl = { modo: e.target.dataset.b || 'mover', k, t0: aT(e.clientX), ini0: k.ini, fin0: k.fin };
+      let k, eraTodo = false;
+      if (capaEl.dataset.logo != null) {
+        const l = logos[+capaEl.dataset.logo];
+        if (l.ini == null) { eraTodo = true; l.ini = 0; l.fin = real; } // deja de ser "Todo el video" recién al moverlo (ver soltar)
+        k = l;
+      } else { k = capas[+capaEl.dataset.n]; capaSel = k; }
+      arrastreTl = { modo: e.target.dataset.b || 'mover', k, eraTodo, t0: aT(e.clientX), ini0: k.ini, fin0: k.fin, x0: e.clientX, movio: false };
       pintarTimeline(); pintarPanelCapa();
-      // (12/11) tocar un efecto o foto NO mueve la línea amarilla: queda donde el dueño pausó
       return;
     }
     // tocar una marca celeste (a menos de 8 px): queda seleccionada y se puede arrastrar
-    const cerca = 8 / $('tl-in').getBoundingClientRect().width * duracionTotal(), tt = aT(e.clientX);
+    const cerca = 8 / $('tl-in').getBoundingClientRect().width * escalaTl(), tt = aT(e.clientX);
     const m = marcas.filter(m => Math.abs(m.t - tt) < cerca).sort((a, b) => Math.abs(a.t - tt) - Math.abs(b.t - tt))[0];
     if (m) { marcaSel = m; capaSel = null; pintarTimeline(); pintarPanelCapa(); arrastreTl = { modo: 'marca', m }; return; }
     if (marcaSel) { marcaSel = null; pintarCursor(); }
+    // pedazo de cualquier línea: queda seleccionado; si se arrastra se mueve (o se estira desde las puntas); si solo se toca, va la línea amarilla ahí
     const b = e.target.closest('.bloque');
-    if (b) { clipSel = +b.dataset.id; marcarClipSel(); }
+    if (b) {
+      const c = clips.find(x => x.id === +b.dataset.id);
+      if (c) {
+        clipSel = c.id; capaSel = null; marcarClipSel(); pintarPanelCapa();
+        arrastreTl = { modo: 'clip', borde: e.target.dataset.b || 'mover', c, t0: aT(e.clientX), x0: e.clientX, movio: false,
+          ini0: c.ini, dur0: duracionClip(c), desde0: c.desde, hasta0: c.hasta };
+        return;
+      }
+    }
     arrastreTl = { modo: 'cursor' };
-    mostrarEn(aT(e.clientX));
+    mostrarEn(pegarCursor(aT(e.clientX), e.altKey));
   });
   tl.addEventListener('pointermove', e => {
     const a = arrastreTl; if (!a) return;
     const t = aT(e.clientX);
-    if (a.modo === 'cursor') { mostrarEn(t); return; }
-    if (a.modo === 'marca') { a.m.t = t; pintarCursor(); return; }
-    const total = duracionTotal(), d = t - a.t0, largo = a.fin0 - a.ini0, k = a.k;
-    // imán: si un borde pasa cerca (12 px) de la línea amarilla, de la marca celeste, del principio o del final, se pega justo ahí
-    const iman = 12 / $('tl-in').getBoundingClientRect().width * total;
-    const puntos = [tActual, 0, total, ...marcas.map(m => m.t)];
-    const pegar = v => { for (const p of puntos) if (Math.abs(v - p) < iman) return p; return v; };
+    if (a.modo === 'cursor') { mostrarEn(pegarCursor(t, e.altKey)); return; }
+    if (a.modo === 'marca') { a.m.t = Math.min(t, duracionTotal()); pintarCursor(); return; }
+    if (!a.movio && Math.abs(e.clientX - a.x0) < 4) return; // un toquecito no mueve nada
+    a.movio = true;
+    const d = t - a.t0;
+    if (a.modo === 'clip') {
+      const c = a.c, puntos = [tActual, ...puntosIman(c)], pegar = v => e.altKey ? v : pegarA(v, puntos);
+      if (a.borde === 'mover') {
+        let ini = a.ini0 + d;
+        const pi = pegar(ini), pf = pegar(ini + a.dur0);
+        if (pi !== ini) ini = pi; else if (pf !== ini + a.dur0) ini = pf - a.dur0;
+        c.ini = Math.max(0, ini);
+      } else if (a.borde === 'ini') { // estirar o achicar desde el principio (el final queda quieto)
+        const fin = a.ini0 + a.dur0, ini = Math.min(pegar(a.ini0 + d), fin - 0.2);
+        if (c.tipo === 'foto') { c.ini = Math.max(0, ini); c.dur = +(fin - c.ini).toFixed(3); }
+        else {
+          const vel = c.vel || 1;
+          const desde = Math.min(Math.max(0, a.desde0 - a.ini0 * vel, a.desde0 + (ini - a.ini0) * vel), a.hasta0 - 0.2 * vel);
+          c.desde = desde; c.ini = a.ini0 + (desde - a.desde0) / vel;
+        }
+      } else { // estirar o achicar desde el final
+        const fin = Math.max(pegar(a.ini0 + a.dur0 + d), a.ini0 + 0.2);
+        if (c.tipo === 'foto') c.dur = +(fin - c.ini).toFixed(3);
+        else { const vel = c.vel || 1; c.hasta = Math.min(c.largo, Math.max(c.desde + 0.2 * vel, a.desde0 + (fin - a.ini0) * vel)); }
+      }
+      pintarTimeline(); redibujar();
+      return;
+    }
+    // efecto o logo
+    const k = a.k, largo = a.fin0 - a.ini0, real = duracionTotal();
+    const puntos = [tActual, real, ...puntosIman(k)], pegar = v => e.altKey ? v : pegarA(v, puntos);
     if (a.modo === 'mover') {
       let ini = a.ini0 + d;
       const pi = pegar(ini), pf = pegar(ini + largo);
       if (pi !== ini) ini = pi; else if (pf !== ini + largo) ini = pf - largo;
-      k.ini = Math.min(Math.max(0, ini), total - largo); k.fin = k.ini + largo; redibujar();
+      k.ini = Math.min(Math.max(0, ini), Math.max(0, real - largo)); k.fin = k.ini + largo;
     }
-    if (a.modo === 'ini') { k.ini = Math.min(Math.max(0, pegar(a.ini0 + d)), k.fin - 0.2); redibujar(); }
-    if (a.modo === 'fin') { k.fin = Math.max(Math.min(total, pegar(a.fin0 + d)), k.ini + 0.2); redibujar(); }
-    pintarTimeline();
-    if ($('capa-ini')) { $('capa-ini').value = k.ini.toFixed(3); $('capa-fin').value = k.fin.toFixed(3); }
+    if (a.modo === 'ini') k.ini = Math.min(Math.max(0, pegar(a.ini0 + d)), k.fin - 0.2);
+    if (a.modo === 'fin') k.fin = Math.max(Math.min(real, pegar(a.fin0 + d)), k.ini + 0.2);
+    redibujar(); pintarTimeline();
+    if (capas.includes(k) && $('capa-ini')) { $('capa-ini').value = k.ini.toFixed(3); $('capa-fin').value = k.fin.toFixed(3); }
   });
-  const soltar = () => {
-    if (arrastreTl && arrastreTl.modo === 'marca') marcarCambio();
-    arrastreTl = null;
+  const soltar = e => {
+    const a = arrastreTl;
+    arrastreTl = null; escalaFija = null;
+    if (a && a.modo === 'marca') marcarCambio();
+    if (a && a.k && logos.includes(a.k)) { // logo: si no se movió y era "Todo el video", sigue siéndolo
+      if (!a.movio && a.eraTodo) { a.k.ini = a.k.fin = null; }
+      pintarLogos();
+    }
+    if (a && a.modo === 'clip') {
+      if (!a.movio && e && e.clientX != null) mostrarEn(pegarCursor(aT(e.clientX), e.altKey)); // solo lo tocó: la línea amarilla va ahí
+      pintarLista();
+    } else pintarTimeline();
     if (reanudar) { const f = reanudar; reanudar = null; f.then(() => verDesde(tActual)); }
   };
   tl.addEventListener('pointerup', soltar); tl.addEventListener('pointercancel', soltar);
 })();
+// ✂ Cortar acá: corta el pedazo seleccionado si la línea amarilla está sobre él; si no, el que se ve en ese momento.
+// Solo cambia esa línea.
 $('btn-cortar').onclick = () => {
   if (corriendo) return;
-  const { c, i, local } = clipEn(tActual);
-  if (!c) return;
-  const dur = duracionClip(c);
+  let c = clips.find(x => x.id === clipSel);
+  if (!c || !activoEn(c, tActual)) c = visibleEn(tActual) || clips.filter(x => activoEn(x, tActual)).sort((a, b) => b.linea - a.linea)[0];
+  if (!c) { estado('La línea amarilla no está sobre ningún pedazo.'); return; }
+  const local = tActual - c.ini, dur = duracionClip(c);
   if (local < 0.2 || local > dur - 0.2) { estado('Mové la línea amarilla un poco más adentro del pedazo que querés cortar.'); return; }
   const otro = nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro }, trans: 'corte' }); otro.id = ++idSeq;
-  if (c.tipo === 'video') { const s = c.desde + local * c.vel; otro.desde = s; c.hasta = s; }
-  else { otro.dur = +(dur - local).toFixed(2); c.dur = +local.toFixed(2); }
-  clips.splice(i + 1, 0, otro);
+  otro.ini = tActual;
+  if (c.tipo === 'foto') { otro.dur = +(dur - local).toFixed(3); c.dur = +local.toFixed(3); }
+  else { const s = c.desde + local * c.vel; otro.desde = s; c.hasta = s; }
+  clips.push(otro);
   clipSel = otro.id;
-  estado(`Cortado: ahora son ${clips.length} pedazos. Si querés sacar uno, tocá su ✕ en la lista.`);
+  estado(`Cortado en ${nombreLinea(c.linea)}. Arrastrá el pedazo nuevo para correrlo, o tocá su ✕ para sacarlo.`);
   pintarLista(); mostrarEn(tActual);
 };
-$('in-capa').addEventListener('change', e => {
-  const f = e.target.files[0]; e.target.value = '';
-  if (!f || !clips.length) { if (!clips.length) estado('Primero agregá fotos o videos.'); return; }
-  const total = duracionTotal();
-  // empieza JUSTO en la línea amarilla; termina en la próxima marca celeste si hay, si no dura 3 s
-  const ini = Math.min(tActual, Math.max(0, total - 0.2)), sig = siguienteMarca();
-  const img = new Image(); img.onload = redibujar; img.src = URL.createObjectURL(f);
-  const k = { tipo: 'foto', nombre: f.name, img, x: 0.5, y: 0.5, tam: 0.4, ini, fin: sig != null ? sig : Math.min(total, ini + 3) };
-  capas.push(k); capaSel = k;
-  pintarTimeline(); pintarPanelCapa(); mostrarEn(tActual);
-});
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal(), efecto = $('sel-efecto').value;
@@ -1000,14 +1098,38 @@ function tic() { return new Promise(r => { let listo = false; const f = () => { 
 function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.05) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
 
 // volúmenes que se pueden mover mientras se reproduce
-let gOrig = null, gMus = null, vidSonando = null; // vidSonando = { v, c }
+let gOrig = null, gAudios = new Map(); // gAudios: id del audio -> su volumen
 function aplicarVolumenes() {
   if (gOrig) gOrig.gain.value = $('orig-vol').value / 100;
-  if (gMus) gMus.gain.value = $('mus-vol').value / 100;
-  if (vidSonando && vidSonando.v._gan) vidSonando.v._gan.gain.value = vidSonando.c.vol / 100;
+  gAudios.forEach((g, id) => { const c = clips.find(x => x.id === id); if (c) g.gain.value = c.vol / 100; });
 }
 $('orig-vol').addEventListener('input', aplicarVolumenes);
-$('mus-vol').addEventListener('input', aplicarVolumenes);
+
+// Pone cada <video> donde tiene que estar en el momento t: el que tiene algo en ese momento suena y avanza; los demás quietos.
+// Si dos pedazos comparten el mismo video (cortado) y están a la vez, manda el de la línea de más abajo.
+function sincronizarVideos(t, aviso) {
+  const manda = new Map();
+  clips.filter(c => c.tipo === 'video' && activoEn(c, t)).sort((a, b) => b.linea - a.linea).forEach(c => { if (!manda.has(c.el)) manda.set(c.el, c); });
+  const ahora = performance.now();
+  clips.forEach(c => {
+    if (c.tipo !== 'video' || manda.has(c.el)) return;
+    const v = c.el;
+    if (!v.paused) v.pause();
+    if (v._gan) v._gan.gain.value = 0;
+    // si le toca dentro de poco, dejarlo listo en su primer cuadro
+    if (c.ini > t && c.ini - t < 1 && !v.seeking && Math.abs(v.currentTime - c.desde) > 0.1) v.currentTime = c.desde;
+  });
+  manda.forEach((c, v) => {
+    const pos = posVideo(c, t);
+    if (v.playbackRate !== c.vel) v.playbackRate = c.vel;
+    if (v._gan) v._gan.gain.value = c.vol / 100;
+    if (v.paused) {
+      if (Math.abs(v.currentTime - pos) > 0.15) v.currentTime = pos;
+      // si el navegador no deja reproducir con sonido, seguir sin sonido antes que quedarse colgado
+      v.play().catch(() => { v.muted = true; v.play().catch(() => {}); if (!aviso.dado) { aviso.dado = true; estado('⚠️ El navegador no dejó usar el sonido de los videos. Tocá "Armar video" de nuevo.'); } });
+    } else if (Math.abs(v.currentTime - pos) > 0.35 && ahora - (v._ultSalto || 0) > 1000) { v.currentTime = pos; v._ultSalto = ahora; }
+  });
+}
 
 let arrancando = false; // entre el clic y que arranca de verdad (para no arrancar dos veces)
 async function reproducir(opciones) {
@@ -1023,28 +1145,18 @@ async function reproducir2({ grabar, desde = 0 }) {
   aplicarFormato();
   const total = duracionTotal();
   desde = Math.min(Math.max(0, desde), Math.max(0, total - 0.05));
-  const arranque = clipEn(desde); // pedazo y punto donde arranca
   let parado = false, recorder = null, partes = [];
   gOrig = audioCtx.createGain(); gOrig.gain.value = $('orig-vol').value / 100; gOrig.connect(mezcla);
-  let fuenteMusica = null;
-  gMus = null;
-  if (musica) {
-    fuenteMusica = audioCtx.createBufferSource(); fuenteMusica.buffer = musica.buffer;
-    // gMus = volumen elegido (se puede cambiar mientras suena); g = bajada suave al final
-    gMus = audioCtx.createGain(); gMus.gain.value = $('mus-vol').value / 100;
-    const g = audioCtx.createGain();
-    const fin = audioCtx.currentTime + (total - desde);
-    g.gain.setValueAtTime(1, Math.max(audioCtx.currentTime, fin - 1));
-    g.gain.linearRampToValueAtTime(0, fin);
-    fuenteMusica.connect(gMus); gMus.connect(g); g.connect(mezcla);
-  }
+  // audios de las líneas (canciones y sonidos): pasan por gFinal, que baja suave el último segundo del video
+  const gFinal = audioCtx.createGain(); gFinal.connect(mezcla);
+  const fuentes = [];
+  gAudios = new Map();
   // los videos suenan a través de la mezcla (una sola fuente por <video>, aunque esté cortado en pedazos)
-  clips.forEach(c => {
-    if (c.tipo !== 'video') return;
-    const v = c.el;
+  const videos = clips.filter(c => c.tipo === 'video');
+  new Set(videos.map(c => c.el)).forEach(v => {
     if (!v._fuente) { v._fuente = audioCtx.createMediaElementSource(v); v._gan = audioCtx.createGain(); v._fuente.connect(v._gan); }
     try { v._gan.disconnect(); } catch (e) {}
-    v._gan.connect(gOrig); v.muted = false;
+    v._gan.connect(gOrig); v._gan.gain.value = 0; v.muted = false;
   });
 
   if (grabar) {
@@ -1064,48 +1176,52 @@ async function reproducir2({ grabar, desde = 0 }) {
   $('btn-ver').disabled = !!grabar; $('btn-ver').textContent = '⏸ Pausa';
 
   // preparar el primer cuadro antes de arrancar
-  if (arranque.c.tipo === 'video') await irA(arranque.c.el, arranque.c.desde + arranque.local * arranque.c.vel);
+  const primero = visibleEn(desde);
+  if (primero && primero.tipo === 'video') await irA(primero.el, posVideo(primero, desde));
   if (recorder) recorder.start(500);
-  if (fuenteMusica) fuenteMusica.start(0, Math.min((parseFloat($('mus-desde').value) || 0) + desde, musica.buffer.duration - 0.1));
-  const t0 = performance.now();
-  const ini = inicios();
-  const cuadro = (t, c, i, local) => {
-    tActual = t; dibujarEn(t, c, i, local); pintarCursor();
-    $('progreso').style.width = `${Math.min(100, t / total * 100)}%`;
-  };
-  for (let i = arranque.i; i < clips.length; i++) {
-    if (parado) break;
-    const c = clips[i], dur = duracionClip(c);
-    const salto = i === arranque.i ? arranque.local : 0; // en el primer pedazo se arranca desde la línea
-    if (c.tipo === 'video') {
-      const v = c.el;
-      vidSonando = { v, c }; aplicarVolumenes();
-      await irA(v, c.desde + salto * c.vel);
-      v.playbackRate = c.vel;
-      // si el navegador no deja reproducir con sonido, seguir sin sonido antes que quedarse colgado
-      try { await v.play(); } catch (e) { v.muted = true; await v.play().catch(() => {}); estado('⚠️ El navegador no dejó usar el sonido de los videos. Tocá "Armar video" de nuevo.'); }
-      let ultimo = -1, quietoDesde = performance.now();
-      while (!parado && v.currentTime < c.hasta && !v.ended) {
-        const local = Math.max(0, (v.currentTime - c.desde) / c.vel);
-        cuadro(ini[i] + local, c, i, local);
-        if (v._gan) v._gan.gain.value = c.vol / 100; // por si movieron la barra de este video
-        if (v.currentTime !== ultimo) { ultimo = v.currentTime; quietoDesde = performance.now(); }
-        else if (performance.now() - quietoDesde > 4000) break; // el video se trabó: pasar al siguiente
-        await tic();
-      }
-      v.pause(); v.playbackRate = 1;
-    } else {
-      const inicio = performance.now() - salto * 1000;
-      while (!parado && performance.now() - inicio < dur * 1000) {
-        const local = (performance.now() - inicio) / 1000;
-        cuadro(ini[i] + local, c, i, local);
-        await tic();
-      }
+  const a0 = audioCtx.currentTime, finAudio = a0 + (total - desde);
+  gFinal.gain.setValueAtTime(1, Math.max(a0, finAudio - 1));
+  gFinal.gain.linearRampToValueAtTime(0, finAudio);
+  clips.forEach(c => {
+    if (c.tipo !== 'audio' || finClip(c) <= desde) return;
+    const salto = Math.max(0, desde - c.ini), off = c.desde + salto, largo = c.hasta - off;
+    if (largo <= 0.01) return;
+    const s = audioCtx.createBufferSource(); s.buffer = c.buf;
+    const g = audioCtx.createGain(); g.gain.value = c.vol / 100;
+    s.connect(g); g.connect(gFinal);
+    s.start(a0 + Math.max(0, c.ini - desde), off, largo);
+    fuentes.push(s); gAudios.set(c.id, g);
+  });
+  const t00 = performance.now();
+  let p0 = t00, tPrev = desde, ultimoCT = -1, quietoDesde = t00;
+  const aviso = { dado: false };
+  while (!parado) {
+    const ahora = performance.now();
+    let t = desde + (ahora - p0) / 1000;
+    // si lo que se ve es un video, el tiempo lo marca ese video (así no se adelanta si el video tarda en cargar);
+    // si se traba más de 1.5 s, el tiempo sigue solo
+    const vis = visibleEn(t);
+    if (vis && vis.tipo === 'video' && !vis.el.paused && !vis.el.seeking) {
+      const ct = vis.el.currentTime;
+      if (ct !== ultimoCT) { ultimoCT = ct; quietoDesde = ahora; }
+      const tv = vis.ini + (ct - vis.desde) / vis.vel;
+      if (ahora - quietoDesde < 1500 && Math.abs(tv - t) < 0.5) { t = Math.max(tPrev, tv); p0 = ahora - (t - desde) * 1000; }
     }
+    tPrev = t;
+    if (t >= total) break;
+    sincronizarVideos(t, aviso);
+    tActual = t;
+    const c = visibleEn(t);
+    dibujarEn(t, c, c ? t - c.ini : 0);
+    pintarCursor();
+    $('progreso').style.width = `${Math.min(100, t / total * 100)}%`;
+    await tic();
   }
-  if (fuenteMusica) { try { fuenteMusica.stop(); } catch (e) {} }
+  videos.forEach(c => { c.el.pause(); c.el.playbackRate = 1; });
+  fuentes.forEach(s => { try { s.stop(); } catch (e) {} });
   try { gOrig.disconnect(); } catch (e) {}
-  gOrig = null; gMus = null; vidSonando = null;
+  try { gFinal.disconnect(); } catch (e) {}
+  gOrig = null; gAudios = new Map();
   corriendo = null;
   $('btn-parar').disabled = false; $('btn-ver').disabled = false; $('btn-exportar').disabled = false; $('btn-inicio').disabled = false;
   $('btn-ver').textContent = '▶ Ver';
@@ -1113,7 +1229,7 @@ async function reproducir2({ grabar, desde = 0 }) {
   if (!recorder) { mostrarEn(tActual); return null; } // muestra el cuadro donde quedó (o adonde movieron la línea)
   await new Promise(ok => { recorder.onstop = ok; recorder.stop(); });
   if (parado) { estado('Cancelado.'); return null; }
-  console.log('grabado en', ((performance.now() - t0) / 1000).toFixed(1), 's');
+  console.log('grabado en', ((performance.now() - t00) / 1000).toFixed(1), 's');
   return new Blob(partes, { type: recorder.mimeType });
 }
 
@@ -1153,7 +1269,7 @@ function fotoProyecto() {
   };
 }
 function claveProyecto(f) {
-  return JSON.stringify([f.clips.map(c => ({ ...c, el: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
+  return JSON.stringify([f.clips.map(c => ({ ...c, el: 0, buf: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
     f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin]), f.texto, f.marcas]);
 }
 function guardarHistoria() {
@@ -1210,7 +1326,7 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'Delete' || e.key === 'Backspace') && !corriendo && borrarMarcaSel()) { e.preventDefault(); return; }
   if (e.key === 'Delete' && !corriendo) {
     if (capaSel && capas.includes(capaSel)) { capas.splice(capas.indexOf(capaSel), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); }
-    else if (clipSel != null) { const i = clips.findIndex(c => c.id === clipSel); if (i >= 0) { clips.splice(i, 1); clipSel = null; pintarLista(); mostrarEn(Math.min(tActual, duracionTotal())); } }
+    else if (clipSel != null) { const c = clips.find(c => c.id === clipSel); if (c) sacarClip(c); } // solo ese pedazo, de su línea
   }
 });
 let ultimoArchivo = null;
@@ -1259,6 +1375,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && cor
   });
 })();
 
+editorListo = true;
+pintarTimeline();
 dibujarCuadro();
 guardarHistoria(); // punto de partida para deshacer
 </script>
