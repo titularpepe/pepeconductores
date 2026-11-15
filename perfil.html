@@ -197,14 +197,14 @@ nav {
       <div class="dato-item" id="item-alias"><div class="dato-label">Alias / CBU</div><div class="dato-val" id="d-alias">—</div></div>
       <div class="dato-item"><div class="dato-label">Email</div><div class="dato-val" id="d-email">—</div></div>
       <div class="dato-item"><div class="dato-label">Miembro desde</div><div class="dato-val" id="d-fecha">—</div></div>
-      <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" style="color:#2ecc71;">✓ Activo</div></div>
+      <div class="dato-item"><div class="dato-label">Estado</div><div class="dato-val" id="d-estado">—</div></div>
       <div class="dato-item"><div class="dato-label">Verificación</div><div class="dato-val" id="d-verificado">—</div></div>
       <div class="dato-item"><div class="dato-label">Calificación</div><div class="dato-val" id="d-votos">—</div></div>
     </div>
 
     <!-- EDICIÓN -->
     <div class="datos-grid" id="datos-edicion" style="display:none;">
-      <div class="dato-item"><div class="dato-label">Nombre completo</div><input class="dato-input" id="e-nombre" type="text"></div>
+      <div class="dato-item"><div class="dato-label">Nombre completo</div><input class="dato-input" id="e-nombre" type="text" readonly title="El nombre no se cambia desde acá" style="opacity:.6;"></div>
       <div class="dato-item"><div class="dato-label">Apodo</div><input class="dato-input" id="e-apodo" type="text" placeholder="Ej: Pepe, Caro..."></div>
       <div class="dato-item"><div class="dato-label">DNI</div><input class="dato-input" id="e-dni" type="text" placeholder="00.000.000"></div>
       <div class="dato-item"><div class="dato-label">Teléfono</div><input class="dato-input" id="e-tel" type="tel" placeholder="+54 9 387 000-0000"></div>
@@ -448,6 +448,15 @@ function renderRol(col) {
   document.getElementById('d-email-edit').textContent = user.email;
   document.getElementById('d-fecha').textContent = fecha;
   document.getElementById('d-verificado').textContent = verificado;
+  // (2026-11-15) Estado REAL de la cuenta (antes decía "✓ Activo" fijo).
+  const est = String(d.estado || '');
+  const ESTADOS = col === 'conductores'
+    ? { aprobado: ['✓ Activo', '#2ecc71'], suspendido: ['⛔ Suspendida', '#e74c3c'], eliminado: ['Eliminada', '#999'] }
+    : { activo: ['✓ Activo', '#2ecc71'], bloqueado: ['⛔ Bloqueada', '#e74c3c'], eliminado: ['Eliminada', '#999'] };
+  const [txtEst, colEst] = ESTADOS[est] || (col === 'conductores' ? ['⏳ En revisión', '#f39c12'] : ['✓ Activo', '#2ecc71']);
+  const elEst = document.getElementById('d-estado');
+  elEst.textContent = txtEst + (est === 'suspendido' && d.motivoSuspension ? ' · ' + d.motivoSuspension : '');
+  elEst.style.color = colEst;
   const vpos = (d.votos && d.votos.positiva != null) ? d.votos.positiva : (d.megusta || 0);
   const vneg = (d.votos && d.votos.negativa != null) ? d.votos.negativa : (d.nomegusta || 0);
   document.getElementById('d-votos').textContent = '👍 ' + vpos + '   👎 ' + vneg;
@@ -456,8 +465,8 @@ function renderRol(col) {
   if (col === 'conductores') {
     itemAlias.style.display = '';
     if (itemAliasEdit) itemAliasEdit.style.display = '';
-    document.getElementById('d-alias').textContent = d.alias || d.cbu || '—';
-    document.getElementById('e-alias').value = d.alias || d.cbu || '';
+    document.getElementById('d-alias').textContent = d.cbu || d.alias || '—';
+    document.getElementById('e-alias').value = d.cbu || d.alias || '';
   } else {
     itemAlias.style.display = 'none';
     if (itemAliasEdit) itemAliasEdit.style.display = 'none';
@@ -677,9 +686,14 @@ function renderSaldo(col) {
       '<div class="dato-item"><div class="dato-label">Deuda pendiente</div><div class="dato-val" style="font-size:1.6rem;color:' + (deuda > 0 ? '#ff4d00' : '#2ecc71') + ';">' + fmt(deuda) + '</div></div>' +
       (deuda > 0 ? botonPagarDeuda() : '<p style="font-size:0.82rem;color:#2ecc71;margin-top:0.8rem;">✓ No tenés deudas.</p>');
   }
-  cont.innerHTML += '<div style="margin-top:1.5rem;"><div class="dato-label" style="margin-bottom:0.6rem;">Mis tarjetas</div>' +
+  // (2026-11-15, pedido del dueño) "Mis tarjetas" solo si la tarjeta está prendida en el panel (config/metodos).
+  cont.innerHTML += '<div id="caja-tarjetas" style="display:none;margin-top:1.5rem;"><div class="dato-label" style="margin-bottom:0.6rem;">Mis tarjetas</div>' +
     '<div class="empty-state" style="padding:1rem 0;">No tenés tarjetas guardadas.</div>' +
     '<button onclick="alert(\'Próximamente vas a poder agregar tu tarjeta de forma segura.\')" style="width:100%;background:transparent;border:1.5px dashed rgba(245,216,0,0.4);color:var(--amarillo);padding:0.8rem;border-radius:10px;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;">+ Agregar tarjeta</button></div>';
+  db.collection('config').doc('metodos').get().then(m => {
+    const caja = document.getElementById('caja-tarjetas');
+    if (caja && m.exists && m.data().tarjeta === true) caja.style.display = '';
+  }).catch(() => {});
 }
 
 window.cambiarRol = function(rol) {
@@ -719,15 +733,17 @@ async function guardarDatos() {
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
 
-  const datosGuardar = { nombre, apodo, telefono: tel };
+  // (2026-11-15) El nombre NO se manda: igual que en la app, nombre y apellido no se cambian desde acá (al
+  // pasajero las reglas se lo rechazaban y daba "Error al guardar" siempre; al conductor le quedaba "Juan Pérez Pérez").
+  const datosGuardar = { apodo, telefono: tel };
   if (_col === 'conductores') {
     const alias = document.getElementById('e-alias').value.trim();
     datosGuardar.alias = alias;
+    datosGuardar.cbu = alias; // (2026-11-15) la app y el pasajero leen 'cbu' primero: se guardan los dos, como la app
   }
   // Guardar — DNI inamovible nunca se toca
   try {
     await db.collection(_col).doc(_uid).set(datosGuardar, { merge: true });
-    if (auth.currentUser) await auth.currentUser.updateProfile({ displayName: nombre });
   } catch(e) {
     btn.disabled = false; btn.textContent = '✓ Guardar';
     mostrarMsg(msg, '❌ Error al guardar. Intentá de nuevo.', false);

@@ -382,6 +382,8 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
   <button class="tab-nav-btn" onclick="showPage('pasajero',this)">👤 Pasajeros</button>
   <button class="tab-nav-btn" onclick="showPage('seguridad',this)">🛡️ Seguridad</button>
   <button class="tab-nav-btn" onclick="showPage('registro',this)">📋 Requisitos</button>
+  <button class="tab-nav-btn" onclick="showPage('home',this); setTimeout(function(){document.getElementById('descargas-section').scrollIntoView({behavior:'smooth'});},100)">⬇️ Descargas</button>
+  <button class="tab-nav-btn" onclick="showPage('sponsors',this)">🤝 Sponsors</button>
   <button class="tab-nav-btn" onclick="window.location.href='/verificar.html'">🧾 Verificar ticket</button>
 </div>
 
@@ -589,7 +591,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     </div>
     <div style="margin:2rem auto 0;max-width:540px;background:rgba(245,216,0,0.08);border:1px solid rgba(245,216,0,0.3);border-radius:12px;padding:1rem 1.4rem;font-family:'Barlow',sans-serif;font-size:0.95rem;line-height:1.6;color:rgba(255,255,255,0.85);">
       <span style="color:#f5d800;font-weight:700;">Costo del servicio Pepe:</span><br>
-      <span data-tarifa="servicio_efectivo">$300</span> si pagás en efectivo o transferencia al conductor · <span data-tarifa="servicio_digital">$500</span> si pagás con QR o tarjeta
+      <span data-tarifa="servicio_efectivo">$300</span> si pagás en efectivo o transferencia al conductor<span id="txt-pago-digital" style="display:none"> · <span data-tarifa="servicio_digital">$500</span> si pagás <span id="txt-pago-digital-medio">con QR o tarjeta</span></span>
     </div>
     <p style="margin:1.2rem auto 0;max-width:540px;font-family:'Barlow',sans-serif;font-size:0.8rem;color:rgba(255,255,255,0.35);text-align:left;">* Los precios por kilómetro pueden ser modificados según criterios de Pepe Conductores.</p>
   </div>
@@ -734,10 +736,10 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     <div class="security-grid">
       <div class="security-card"><div class="security-icon">🪪</div><div><div class="security-text-title">Registro por DNI único</div><div class="security-text-desc">Cuenta vinculada a un solo teléfono. Nadie puede usar tu cuenta desde otro dispositivo. Imposible de duplicar.</div></div></div>
       <div class="security-card"><div class="security-icon">🔒</div><div><div class="security-text-title">Cifrado de datos</div><div class="security-text-desc">Tu información personal está protegida con cifrado en toda la plataforma. Tus datos solo te pertenecen a vos.</div></div></div>
-      <div class="security-card"><div class="security-icon">📋</div><div><div class="security-text-title">Antecedentes verificados</div><div class="security-text-desc">Cada conductor pasa por verificación de antecedentes penales nacionales y provinciales antes de operar.</div></div></div>
+      <div class="security-card"><div class="security-icon">📋</div><div><div class="security-text-title">Antecedentes verificados</div><div class="security-text-desc">Cada conductor pasa por verificación de antecedentes penales nacionales antes de operar.</div></div></div>
       <div class="security-card"><div class="security-icon">📸</div><div><div class="security-text-title">Foto de validación</div><div class="security-text-desc">Foto tipo carnet obligatoria para conductores y pasajeros. En versiones futuras, foto instantánea al solicitar el viaje.</div></div></div>
       <div class="security-card"><div class="security-icon">🚗</div><div><div class="security-text-title">Revisión vehicular cada 6 meses</div><div class="security-text-desc">Inspección ocular obligatoria para garantizar que el vehículo está en condiciones óptimas de seguridad.</div></div></div>
-      <div class="security-card"><div class="security-icon">📄</div><div><div class="security-text-title">Documentación al día</div><div class="security-text-desc">La app controla vencimientos de seguro, VTV, carnet, cédula y habilitación. Si vence, el conductor queda bloqueado hasta regularizar.</div></div></div>
+      <div class="security-card"><div class="security-icon">📄</div><div><div class="security-text-title">Documentación al día</div><div class="security-text-desc">La app controla los vencimientos de seguro, VTV, carnet y cédula, y le recuerda al conductor que los renueve. Si vencen los antecedentes, la cuenta queda suspendida hasta presentarlos de nuevo.</div></div></div>
       <div class="security-card"><div class="security-icon">🚨</div><div><div class="security-text-title">Cancelación por mala conducta</div><div class="security-text-desc">Conductores y pasajeros pueden cancelar el viaje ante situaciones de riesgo, especificando siempre el motivo.</div></div></div>
       <div class="security-card"><div class="security-icon">🏛️</div><div><div class="security-text-title">Cumplimiento normativo</div><div class="security-text-desc">Solo conductores con categoría profesional habilitada. Cumplimiento de todas las regulaciones provinciales y municipales vigentes.</div></div></div>
     </div>
@@ -1247,7 +1249,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div id="tc-12" style="margin-bottom:1.3rem;">
         <div style="font-size:0.82rem; font-weight:700; color:#f5d800; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">12. Política de Privacidad</div>
         <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">El tratamiento de datos personales se rige por la Ley N° 25.326. Recopilamos: datos de identificación (nombre, DNI), contacto (email, teléfono), verificación (foto DNI, selfie), ubicación en tiempo real durante los Viajes, datos de uso e historial.</p>
-        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Los datos son usados exclusivamente para operar la Plataforma. No se venden ni comparten con terceros, salvo requerimiento judicial. Los datos se conservan durante la vida activa de la Cuenta y hasta 5 años posteriores a la baja.</p>
+        <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;">Los datos son usados exclusivamente para operar la Plataforma. No se venden ni comparten con terceros, salvo requerimiento judicial. Los datos se conservan durante la vida activa de la Cuenta y hasta 3 años posteriores a la baja.</p>
         <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0 0 8px;"><strong style="color:rgba(247,244,238,0.8);">Derechos ARCO:</strong> El Usuario tiene derecho de Acceso, Rectificación, Cancelación y Oposición sobre sus datos personales, ejercibles gratuitamente a través de los canales de contacto habilitados.</p>
         <p style="font-size:0.82rem; color:rgba(247,244,238,0.55); line-height:1.8; margin:0;">Solo usamos cookies técnicas esenciales para autenticación y seguridad. No usamos cookies publicitarias ni compartimos información de navegación con terceros. LA AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA (AAIP) es el organismo de control competente en materia de protección de datos personales.</p>
       </div>
@@ -1427,6 +1429,17 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     });
   }).catch(function(){});
 
+  // (2026-11-15, pedido del dueño) El precio "con QR o tarjeta" aparece SOLO si están prendidos en el panel
+  // (config/metodos, el mismo interruptor que usa la app). Si se apagan, desaparece solo.
+  db.collection('config').doc('metodos').onSnapshot(function(s){
+    const m = (s.exists && s.data()) || {};
+    const qr = m.qr === true, tarjeta = m.tarjeta === true;
+    const caja = document.getElementById('txt-pago-digital');
+    if (caja) caja.style.display = (qr || tarjeta) ? '' : 'none';
+    const medio = document.getElementById('txt-pago-digital-medio');
+    if (medio) medio.textContent = qr && tarjeta ? 'con QR o tarjeta' : qr ? 'con QR' : 'con tarjeta';
+  }, function(){});
+
   // (2026-10-07) Una clave por app: pasajeros, conductor, filtro, pepe, gastos, camara, ludami.
   // Las tarjetas marcadas con data-app solo se muestran si su link está cargado.
   let LINKS_DESCARGA = {};
@@ -1512,10 +1525,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     cont.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;">' +
       lista.map(s => {
         const conHttp = u => /^https?:\/\//i.test(u) ? u : 'https://' + u;
-        const btn = (txt, url) => '<a href="' + url + '" target="_blank" style="display:inline-block;background:rgba(245,216,0,0.12);border:1px solid rgba(245,216,0,0.3);color:var(--amarillo);padding:0.35rem 0.7rem;border-radius:8px;font-size:0.78rem;font-weight:700;text-decoration:none;margin:3px 3px 0 0;">' + txt + '</a>';
+        // (2026-11-15) Link protegido: solo http(s)/tel/wa, y escapado (antes una comilla metía código).
+        const btn = (txt, url) => '<a href="' + (/^(https?:|tel:)/i.test(String(url)) ? esc(String(url)) : '#') + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:rgba(245,216,0,0.12);border:1px solid rgba(245,216,0,0.3);color:var(--amarillo);padding:0.35rem 0.7rem;border-radius:8px;font-size:0.78rem;font-weight:700;text-decoration:none;margin:3px 3px 0 0;">' + txt + '</a>';
         let acc = '';
         if (s.whatsapp) acc += btn('💬 WhatsApp', 'https://wa.me/' + String(s.whatsapp).replace(/\D/g,''));
-        if (s.telefono) acc += btn('📞 Llamar', 'tel:' + s.telefono);
+        if (s.telefono) acc += btn('📞 Llamar', 'tel:' + String(s.telefono).replace(/[^\d+]/g, ''));
         if (s.direccion) acc += btn('📍 Mapa', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.direccion));
         if (s.web) acc += btn('🌐 Web', conHttp(s.web));
         if (s.instagram) acc += btn('📸 Instagram', String(s.instagram).startsWith('http') ? s.instagram : 'https://instagram.com/' + String(s.instagram).replace('@',''));
