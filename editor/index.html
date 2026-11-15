@@ -173,11 +173,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <button id="btn-rehacer" title="Rehacer (Ctrl+Y)">↷</button>
     </div>
     <div class="fila">
-      <select id="sel-efecto">
-        <option value="zoom">🔍 Zoom</option><option value="temblor">📳 Temblor</option><option value="flash">⚡ Flash</option>
-        <option value="bn">⚫ Blanco y negro</option><option value="desenfoque">🌫 Desenfoque</option><option value="vineta">🌑 Viñeta</option>
-        <option value="confeti">🎉 Confeti</option><option value="corazones">❤️ Corazones</option>
-      </select>
+      <select id="sel-efecto" style="max-width:220px;"></select>
       <button id="btn-efecto">✨ Efecto acá</button>
     </div>
     <div id="capa-panel"></div>
@@ -289,7 +285,7 @@ let tActual = 0; // dónde está la línea amarilla
 // logos: x, y = centro (fracción del ancho/alto); tam = fracción del lado chico
 function nuevoLogo(nombre, src, activo, x, y, propio) {
   const img = new Image(); img.onload = () => { if (!corriendo) dibujarCuadro(0); }; img.src = src;
-  return { nombre, img, activo, x, y, tam: 0.16, propio, ini: null, fin: null }; // ini/fin null = todo el video
+  return { nombre, img, activo, x, y, tam: 0.16, propio, ini: null, fin: null, entra: 'corte', sale: 'corte' }; // ini/fin null = todo el video; entra/sale = efecto al aparecer/irse
 }
 // el logo se ve en el momento t? (todo el video, o solo de ini a fin)
 const logoVisible = (l, t) => l.activo && l.img.naturalWidth && (l.ini == null || (t >= l.ini && t < l.fin));
@@ -414,7 +410,10 @@ function pintarLista() {
     const extra = c.tipo === 'audio' ? `<div class="fila">${vol}</div>` : `<div class="fila">
         ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])} ${vol}` : ''}
         <button data-a="gira" title="Girar 90°">⟳ Girar</button>
-        <label>Entrada</label>${sel('trans', [['corte', 'Corte'], ['fundido', 'Fundido']])}
+      </div>
+      <div class="fila">
+        <label>Aparece</label><select data-k="trans">${opcionesAnim(c.trans, [['corte', 'De golpe'], ['fundido', '⬛ Desde negro']])}</select>
+        <label>Se va</label><select data-k="sale">${opcionesAnim(c.sale || 'corte', [['corte', 'De golpe']])}</select>
       </div>
       <details><summary>🎨 Filtros</summary>
         <div class="fila"><label style="min-width:76px;">Brillo</label><input type="range" min="40" max="160" value="${c.filtro.b}" data-f="b" style="flex:1;"></div>
@@ -505,7 +504,10 @@ function pintarLogos() {
       ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.001" value="${l.ini.toFixed(3)}">
         <label>a</label><input type="number" data-k="fin" min="0" step="0.001" value="${l.fin.toFixed(3)}"><label>seg</label>
         <button data-a="aca-ini" title="Que aparezca donde está la línea amarilla">⇤ Acá</button>
-        <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}</div>` : ''}`;
+        <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}</div>
+      <div class="fila" style="padding-left:22px;"><label>Aparece</label><select data-k="entra">${opcionesAnim(l.entra, [['corte', 'De golpe']])}</select>
+        <label>Se va</label><select data-k="sale">${opcionesAnim(l.sale, [['corte', 'De golpe']])}</select></div>` : ''}`;
+    d.querySelectorAll('select[data-k]').forEach(s => s.onchange = () => { l[s.dataset.k] = s.value; marcarCambio(); redibujar(); });
     const total = () => duracionTotal() || 1;
     const poner = (a, b) => { l.ini = Math.min(Math.max(0, a), Math.max(0, total() - 0.2)); l.fin = Math.min(total(), Math.max(l.ini + 0.2, b)); pintarLogos(); redibujar(); };
     d.querySelector('[data-k=activo]').onchange = e => { l.activo = e.target.checked; pintarLogos(); redibujar(); };
@@ -524,7 +526,6 @@ function pintarLogos() {
   });
   if (editorListo) pintarTimeline(); // cada logo marcado tiene su línea en la línea de tiempo
 }
-pintarLogos();
 $('in-logo').addEventListener('change', e => {
   for (const f of e.target.files) if (f.type.startsWith('image/')) logos.push(nuevoLogo(f.name, URL.createObjectURL(f), true, 0.5, 0.5, true));
   e.target.value = '';
@@ -629,34 +630,393 @@ function dibujarFuente(el, giro = 0) {
 }
 
 // ---------- efectos y capas ----------
-const NOMBRE_EFECTO = { zoom: '🔍 Zoom', temblor: '📳 Temblor', flash: '⚡ Flash', bn: '⚫ Blanco y negro', desenfoque: '🌫 Desenfoque', vineta: '🌑 Viñeta', confeti: '🎉 Confeti', corazones: '❤️ Corazones' };
+// (15/11, pedido del dueño) Catálogo grande de efectos, tipo CapCut / Filmora. Todos se dibujan sobre el cuadro final,
+// así que andan igual con fotos y con videos, en la vista y en el video armado.
+// Cada efecto: n = nombre, g = grupo, largo = duración al ponerlo (seg),
+//   mov(p, te, W, H, t) -> { esc, dx, dy, rot, voltear }  (mueve la imagen)
+//   fil(p, te, W, t)    -> filtro CSS para la imagen      (color, desenfoque)
+//   post(g, W, H, p, te, t) -> dibuja encima del cuadro   (luces, partículas, espejos, glitch…)
+// p = cuánto avanzó el efecto (0 a 1); te = segundos desde que empezó; t = segundo del video.
 const azar = (k, n) => { const x = Math.sin(k * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
-function filtroCanvas(c, efs) {
+const suave = p => p * p * (3 - 2 * p);
+// lienzos de ayuda (copias del cuadro para espejos, glitch, etc.)
+const aux = [0, 1, 2].map(() => document.createElement('canvas'));
+function copiaDe(cv, src) {
+  if (cv.width !== lienzo.width || cv.height !== lienzo.height) { cv.width = lienzo.width; cv.height = lienzo.height; }
+  const x = cv.getContext('2d'); x.globalCompositeOperation = 'copy'; x.filter = 'none'; x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-over';
+  return cv;
+}
+const copiaLienzo = () => copiaDe(aux[0], lienzo);
+function separarRGB(g, W, H, d) {
+  const src = copiaLienzo();
+  const tinte = (cv, color) => { copiaDe(cv, src); const x = cv.getContext('2d'); x.globalCompositeOperation = 'multiply'; x.fillStyle = color; x.fillRect(0, 0, W, H); x.globalCompositeOperation = 'source-over'; return cv; };
+  const r = tinte(aux[1], '#f00'), c = tinte(aux[2], '#0ff');
+  g.save(); g.fillStyle = '#000'; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'lighter'; g.drawImage(r, -d, 0); g.drawImage(c, d, 0); g.restore();
+}
+// grano: un ruido chico que se repite, corrido al azar en cada cuadro
+const ruido = document.createElement('canvas'); ruido.width = ruido.height = 160;
+(() => { const x = ruido.getContext('2d'), im = x.createImageData(160, 160); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); })();
+function grano(g, W, H, t, alfa) {
+  const n = Math.floor(t * 24);
+  g.save(); g.globalAlpha = alfa; g.globalCompositeOperation = 'overlay';
+  g.translate(-azar(n, 1) * 160, -azar(n, 2) * 160);
+  g.fillStyle = g.createPattern(ruido, 'repeat'); g.fillRect(0, 0, W + 160, H + 160); g.restore();
+}
+function lineasTV(g, W, H, alfa) {
+  g.save(); g.fillStyle = `rgba(0,0,0,${alfa})`;
+  const paso = Math.max(3, Math.round(H / 320));
+  for (let y = 0; y < H; y += paso * 2) g.fillRect(0, y, W, paso);
+  g.restore();
+}
+function vineta(g, W, H, fuerza) {
+  const gr = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${fuerza})`);
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+function tapar(g, W, H, color, alfa, modo) {
+  if (alfa <= 0) return;
+  g.save(); if (modo) g.globalCompositeOperation = modo; g.globalAlpha = Math.min(1, alfa); g.fillStyle = color; g.fillRect(0, 0, W, H); g.restore();
+}
+// cosas que caen o suben (emojis o dibujitos)
+function lluviaDe(g, W, H, te, { emoji, sube, n = 40, tam = 0.05, vel = 0.25, gira }) {
+  const lado = Math.min(W, H);
+  g.save(); g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let k = 0; k < n; k++) {
+    const v = vel * (0.7 + 0.8 * azar(k, 2));
+    let y = ((azar(k, 3) + te * v) % 1.15 - 0.08) * H;
+    if (sube) y = H - y;
+    const x = azar(k, 1) * W + Math.sin(te * 2 + k) * lado * 0.03;
+    const s = lado * tam * (0.6 + 0.8 * azar(k, 4));
+    g.save(); g.translate(x, y); if (gira) g.rotate(te * 2 + k);
+    g.font = `${Math.round(s)}px system-ui, 'Segoe UI Emoji', sans-serif`; g.fillText(emoji, 0, 0);
+    g.restore();
+  }
+  g.restore();
+}
+// confeti que sale disparado: focos = [[x, y, ángulo central, abertura]]; cae con gravedad y gira
+function confetiSaltando(g, W, H, te, focos, n) {
+  const lado = Math.min(W, H), grav = lado * 1.1;
+  focos.forEach(([fx, fy, ang, abre], f) => {
+    for (let k = 0; k < n; k++) {
+      const s = f * 1000 + k;
+      const a = ang + (azar(s, 1) - 0.5) * abre, v = lado * (0.9 + 1.1 * azar(s, 2));
+      const frena = 1 - Math.exp(-te * 2.2); // el aire lo frena
+      const x = fx + Math.cos(a) * v * frena / 2.2 + Math.sin(te * 4 + k) * lado * 0.01;
+      const y = fy + Math.sin(a) * v * frena / 2.2 + grav * 0.25 * te * te;
+      if (y > H + 20) continue;
+      g.save(); g.translate(x, y); g.rotate(te * (4 + 6 * azar(s, 3)) + k);
+      g.scale(1, Math.cos(te * 8 + k)); // da vueltas como papelito
+      g.globalAlpha = Math.max(0, Math.min(1, 2.6 - te));
+      g.fillStyle = COLORES[k % 6]; g.fillRect(-lado * 0.012, -lado * 0.006, lado * 0.024, lado * 0.012);
+      g.restore();
+    }
+  });
+}
+const COLORES = ['#f5d800', '#ff4d4d', '#25D366', '#3aa0ff', '#ff7ad9', '#ffffff'];
+const G_MOV = '🎥 Cámara y movimiento', G_COLOR = '🎨 Color y filtros', G_LUZ = '✨ Luz, lente y fundidos',
+  G_RETRO = '📼 Retro y glitch', G_ESPEJO = '🪞 Espejos y pantallas', G_ENCIMA = '🎉 Cosas que caen y suben';
+const GRUPOS_EFECTO = [G_MOV, G_COLOR, G_LUZ, G_RETRO, G_ESPEJO, G_ENCIMA];
+const EF = {
+  // ----- cámara y movimiento -----
+  zoom: { n: '🔍 Acercar (zoom lento)', g: G_MOV, mov: p => ({ esc: 1 + 0.35 * suave(p) }) },
+  alejar: { n: '🔎 Alejar', g: G_MOV, mov: p => ({ esc: 1.35 - 0.35 * suave(p) }) },
+  golpe: { n: '💥 Zoom golpe (al ritmo)', g: G_MOV, largo: 0.5, mov: p => ({ esc: 1 + 0.3 * (1 - p) * (1 - p) }) },
+  zoomrapido: { n: '⚡ Zoom rápido', g: G_MOV, largo: 0.6, mov: p => ({ esc: 1 + 0.6 * suave(p) }) },
+  kenburns: { n: '🖼 Ken Burns (acerca y corre)', g: G_MOV, largo: 4, mov: (p, te, W) => ({ esc: 1.12 + 0.15 * p, dx: W * 0.06 * (1 - 2 * p) }) },
+  paneoizq: { n: '⬅ Paneo a la izquierda', g: G_MOV, largo: 3, mov: (p, te, W) => ({ esc: 1.2, dx: W * 0.08 * (1 - 2 * p) }) },
+  paneoder: { n: '➡ Paneo a la derecha', g: G_MOV, largo: 3, mov: (p, te, W) => ({ esc: 1.2, dx: -W * 0.08 * (1 - 2 * p) }) },
+  paneoarr: { n: '⬆ Paneo hacia arriba', g: G_MOV, largo: 3, mov: (p, te, W, H) => ({ esc: 1.2, dy: H * 0.08 * (1 - 2 * p) }) },
+  paneoaba: { n: '⬇ Paneo hacia abajo', g: G_MOV, largo: 3, mov: (p, te, W, H) => ({ esc: 1.2, dy: -H * 0.08 * (1 - 2 * p) }) },
+  temblor: { n: '📳 Temblor', g: G_MOV, mov: (p, te, W, H, t) => { const n = Math.floor(t * 30); return { esc: 1.05, dx: (azar(n, 1) - 0.5) * W * 0.05, dy: (azar(n, 2) - 0.5) * H * 0.03 }; } },
+  sacudon: { n: '🌋 Sacudón fuerte', g: G_MOV, largo: 1, mov: (p, te, W, H, t) => { const n = Math.floor(t * 30), f = 1 - p * 0.6; return { esc: 1.12, dx: (azar(n, 1) - 0.5) * W * 0.14 * f, dy: (azar(n, 2) - 0.5) * H * 0.08 * f, rot: (azar(n, 3) - 0.5) * 0.08 * f }; } },
+  rebote: { n: '🏀 Rebote', g: G_MOV, mov: (p, te, W, H) => ({ esc: 1.05, dy: -Math.abs(Math.sin(te * 5)) * H * 0.035 }) },
+  latido: { n: '💓 Latido', g: G_MOV, mov: (p, te) => { const f = (te * 2) % 1; return { esc: 1 + 0.08 * Math.max(0, 1 - f * 4) }; } },
+  balanceo: { n: '〰 Balanceo', g: G_MOV, mov: (p, te) => ({ esc: 1.15, rot: Math.sin(te * 3) * 0.06 }) },
+  mareo: { n: '😵 Mareo', g: G_MOV, mov: (p, te) => ({ esc: 1.18, rot: Math.sin(te * 2) * 0.09, dx: 0 }), fil: (p, te, W) => `blur(${Math.round(W / 300)}px) hue-rotate(${Math.sin(te * 2) * 20}deg)` },
+  giro: { n: '🌀 Giro completo', g: G_MOV, largo: 1, mov: p => ({ rot: suave(p) * Math.PI * 2, esc: 1 + 0.25 * Math.sin(Math.PI * p) }) },
+  entraizq: { n: '↪ Entra desde la izquierda', g: G_MOV, largo: 0.6, mov: (p, te, W) => ({ dx: -W * (1 - suave(p)) }) },
+  entrader: { n: '↩ Entra desde la derecha', g: G_MOV, largo: 0.6, mov: (p, te, W) => ({ dx: W * (1 - suave(p)) }) },
+  entraaba: { n: '⤴ Entra desde abajo', g: G_MOV, largo: 0.6, mov: (p, te, W, H) => ({ dy: H * (1 - suave(p)) }) },
+  voltear: { n: '↔ Dar vuelta (espejado)', g: G_MOV, mov: () => ({ voltear: true }) },
+  // ----- color y filtros -----
+  bn: { n: '⚫ Blanco y negro', g: G_COLOR, fil: () => 'grayscale(1)' },
+  sepia: { n: '🟤 Sepia', g: G_COLOR, fil: () => 'sepia(1)' },
+  vintage: { n: '📷 Vintage', g: G_COLOR, fil: () => 'sepia(0.45) contrast(1.1) saturate(0.85)', post: (g, W, H, p, te, t) => { vineta(g, W, H, 0.5); grano(g, W, H, t, 0.12); } },
+  calido: { n: '🌞 Cálido', g: G_COLOR, fil: () => 'saturate(1.25)', post: (g, W, H) => tapar(g, W, H, '#ff8a1e', 0.22, 'soft-light') },
+  frio: { n: '🧊 Frío', g: G_COLOR, fil: () => 'saturate(1.1)', post: (g, W, H) => tapar(g, W, H, '#2a7bff', 0.25, 'soft-light') },
+  rosa: { n: '🌸 Rosa pastel', g: G_COLOR, fil: () => 'saturate(0.85) brightness(1.08)', post: (g, W, H) => tapar(g, W, H, '#ff7ad9', 0.25, 'soft-light') },
+  vivido: { n: '🌈 Colores vivos', g: G_COLOR, fil: () => 'saturate(1.8) contrast(1.1)' },
+  apagado: { n: '🌫 Colores apagados', g: G_COLOR, fil: () => 'saturate(0.35)' },
+  contraste: { n: '◐ Alto contraste', g: G_COLOR, fil: () => 'contrast(1.7)' },
+  dramatico: { n: '🎭 Dramático', g: G_COLOR, fil: () => 'contrast(1.5) saturate(0.6) brightness(0.9)', post: (g, W, H) => vineta(g, W, H, 0.6) },
+  brillante: { n: '☀ Más luz', g: G_COLOR, fil: () => 'brightness(1.35)' },
+  oscuro: { n: '🌙 Más oscuro', g: G_COLOR, fil: () => 'brightness(0.55)' },
+  invertir: { n: '🔄 Negativo', g: G_COLOR, fil: () => 'invert(1)' },
+  arcoiris: { n: '🦄 Arcoíris que cambia', g: G_COLOR, fil: (p, te) => `hue-rotate(${Math.round(te * 140)}deg) saturate(1.4)` },
+  nocturna: { n: '🟢 Visión nocturna', g: G_COLOR, fil: () => 'grayscale(1) brightness(1.4) contrast(1.3)', post: (g, W, H, p, te, t) => { tapar(g, W, H, '#30ff60', 1, 'multiply'); grano(g, W, H, t, 0.25); vineta(g, W, H, 0.8); } },
+  // ----- luz, lente y fundidos -----
+  flash: { n: '⚡ Flash', g: G_LUZ, largo: 0.6, post: (g, W, H, p) => tapar(g, W, H, '#fff', (1 - p) * 0.9) },
+  estrobo: { n: '💡 Estrobo', g: G_LUZ, largo: 1, post: (g, W, H, p, te) => { if (Math.floor(te * 12) % 2) tapar(g, W, H, '#fff', 0.75); } },
+  parpadeo: { n: '🕯 Parpadeo', g: G_LUZ, post: (g, W, H, p, te, t) => tapar(g, W, H, '#000', azar(Math.floor(t * 15), 9) > 0.6 ? 0.5 : 0) },
+  aparecenegro: { n: '🌑 Aparecer desde negro', g: G_LUZ, largo: 1, post: (g, W, H, p) => tapar(g, W, H, '#000', 1 - p) },
+  fundenegro: { n: '⬛ Fundido a negro', g: G_LUZ, largo: 1, post: (g, W, H, p) => tapar(g, W, H, '#000', p) },
+  apareceblanco: { n: '🌕 Aparecer desde blanco', g: G_LUZ, largo: 1, post: (g, W, H, p) => tapar(g, W, H, '#fff', 1 - p) },
+  fundeblanco: { n: '⬜ Fundido a blanco', g: G_LUZ, largo: 1, post: (g, W, H, p) => tapar(g, W, H, '#fff', p) },
+  desenfoque: { n: '🌫 Desenfoque', g: G_LUZ, fil: (p, te, W) => `blur(${Math.round(W / 90)}px)` },
+  enfocar: { n: '🔭 Enfocar (de borroso a nítido)', g: G_LUZ, largo: 1, fil: (p, te, W) => `blur(${(W / 40 * (1 - suave(p))).toFixed(1)}px)` },
+  desenfocar: { n: '😶‍🌫️ Desenfocar (de nítido a borroso)', g: G_LUZ, largo: 1, fil: (p, te, W) => `blur(${(W / 40 * suave(p)).toFixed(1)}px)` },
+  maqueta: { n: '🏙 Efecto maqueta (tilt-shift)', g: G_LUZ, fil: () => 'saturate(1.4) contrast(1.1)', post: (g, W, H) => {
+    // borroso barato: achicar mucho y volver a agrandar
+    const ch = aux[2]; ch.width = Math.ceil(W / 10); ch.height = Math.ceil(H / 10); ch.getContext('2d').drawImage(lienzo, 0, 0, ch.width, ch.height);
+    const borr = aux[1]; if (borr.width !== W || borr.height !== H) { borr.width = W; borr.height = H; }
+    const x = borr.getContext('2d'); x.globalCompositeOperation = 'copy'; x.imageSmoothingEnabled = true; x.drawImage(ch, 0, 0, W, H); x.globalCompositeOperation = 'source-over';
+    // arriba y abajo borroso, el medio nítido (degradado)
+    x.globalCompositeOperation = 'destination-in';
+    const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#000'); gr.addColorStop(0.32, 'rgba(0,0,0,0)'); gr.addColorStop(0.68, 'rgba(0,0,0,0)'); gr.addColorStop(1, '#000');
+    x.fillStyle = gr; x.fillRect(0, 0, W, H); x.globalCompositeOperation = 'source-over';
+    g.drawImage(borr, 0, 0);
+  } },
+  vineta: { n: '🌑 Viñeta (bordes oscuros)', g: G_LUZ, post: (g, W, H) => vineta(g, W, H, 0.85) },
+  brillo: { n: '🌟 Brillo soñado (glow)', g: G_LUZ, post: (g, W, H) => { const src = copiaLienzo(); g.save(); g.filter = `blur(${Math.round(W / 50)}px)`; g.globalAlpha = 0.55; g.globalCompositeOperation = 'screen'; g.drawImage(src, 0, 0); g.restore(); } },
+  fugaluz: { n: '🌅 Luz de película (light leak)', g: G_LUZ, largo: 3, post: (g, W, H, p, te) => {
+    g.save(); g.globalCompositeOperation = 'screen';
+    [[0.2 + 0.5 * Math.sin(te * 0.7), 0.2, 'rgba(255,120,40,0.55)'], [0.9, 0.6 + 0.3 * Math.sin(te * 0.9), 'rgba(255,50,130,0.45)']].forEach(([fx, fy, col]) => {
+      const gr = g.createRadialGradient(fx * W, fy * H, 0, fx * W, fy * H, Math.max(W, H) * 0.55); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    });
+    g.restore();
+  } },
+  destello: { n: '✴ Destello de lente', g: G_LUZ, largo: 2, post: (g, W, H, p) => {
+    const x = W * (0.1 + 0.8 * p), y = H * 0.22, lado = Math.min(W, H);
+    g.save(); g.globalCompositeOperation = 'screen';
+    const gr = g.createRadialGradient(x, y, 0, x, y, lado * 0.45); gr.addColorStop(0, 'rgba(255,255,230,0.95)'); gr.addColorStop(0.2, 'rgba(255,220,150,0.4)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    // reflejos en línea hacia el centro
+    [0.4, 0.7, 1.15].forEach((f, i) => {
+      const rx = x + (W / 2 - x) * f * 2, ry = y + (H / 2 - y) * f * 2, r = lado * (0.03 + 0.03 * i);
+      const g2 = g.createRadialGradient(rx, ry, 0, rx, ry, r); g2.addColorStop(0, ['rgba(120,200,255,0.35)', 'rgba(255,160,80,0.3)', 'rgba(160,255,160,0.25)'][i]); g2.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = g2; g.beginPath(); g.arc(rx, ry, r, 0, Math.PI * 2); g.fill();
+    });
+    g.restore();
+  } },
+  bokeh: { n: '🔆 Luces bokeh', g: G_LUZ, largo: 3, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H);
+    g.save(); g.globalCompositeOperation = 'screen';
+    for (let k = 0; k < 18; k++) {
+      const x = (azar(k, 1) * W + te * lado * 0.03 * (azar(k, 5) - 0.5) * 4 + W) % W, y = (azar(k, 2) * H - te * lado * 0.04 * azar(k, 6) + H * 2) % H;
+      const r = lado * (0.04 + 0.08 * azar(k, 3)), a = 0.12 + 0.18 * (0.5 + 0.5 * Math.sin(te * 2 + k));
+      g.fillStyle = `hsla(${Math.round(30 + 300 * azar(k, 4))},90%,70%,${a.toFixed(2)})`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    }
+    g.restore();
+  } },
+  cine: { n: '🎬 Bandas de cine', g: G_LUZ, largo: 3, post: (g, W, H, p, te) => { const h = H * 0.12 * Math.min(1, te / 0.4); g.fillStyle = '#000'; g.fillRect(0, 0, W, h); g.fillRect(0, H - h, W, h); } },
+  // ----- retro y glitch -----
+  glitch: { n: '👾 Glitch', g: G_RETRO, largo: 1, post: (g, W, H, p, te, t) => {
+    const n = Math.floor(t * 12);
+    if (azar(n, 7) < 0.35) return; // no todos los cuadros: así parece una falla
+    separarRGB(g, W, H, W * 0.012 * (0.5 + azar(n, 8)));
+    const src = copiaLienzo();
+    for (let i = 0; i < 7; i++) {
+      const y = azar(n, i + 10) * H, h = H * (0.015 + 0.07 * azar(n, i + 20)), off = (azar(n, i + 30) - 0.5) * W * 0.18;
+      g.drawImage(src, 0, y, W, h, off, y, W, h);
+    }
+  } },
+  rgb: { n: '🔴🔵 Separación de colores (RGB)', g: G_RETRO, post: (g, W, H, p, te) => separarRGB(g, W, H, W * (0.006 + 0.008 * Math.abs(Math.sin(te * 3)))) },
+  vhs: { n: '📼 VHS', g: G_RETRO, largo: 3, fil: () => 'saturate(1.3) contrast(1.1)', post: (g, W, H, p, te, t) => {
+    separarRGB(g, W, H, W * 0.006);
+    lineasTV(g, W, H, 0.18);
+    const y = ((te * 0.25) % 1) * H, hb = H * 0.035;
+    const src = copiaLienzo(); g.drawImage(src, 0, y, W, hb, W * 0.02, y, W, hb); tapar(g, W, H, '#000', 0); // banda corrida
+    g.save(); g.fillStyle = 'rgba(255,255,255,0.07)'; g.fillRect(0, y, W, hb); g.restore();
+    grano(g, W, H, t, 0.15);
+    const tam = Math.round(Math.min(W, H) * 0.05);
+    g.save(); g.font = `700 ${tam}px monospace`; g.fillStyle = '#fff'; g.shadowColor = '#000'; g.shadowBlur = 4; g.textBaseline = 'top';
+    g.fillText('▶ PLAY', W * 0.06, H * 0.05); g.fillText('SP ' + fmt(te), W * 0.06, H * 0.05 + tam * 1.3); g.restore();
+  } },
+  pelicula: { n: '🎞 Película vieja', g: G_RETRO, largo: 3, fil: (p, te, W, t) => `sepia(0.75) contrast(1.15) brightness(${(0.88 + 0.16 * azar(Math.floor(t * 12), 3)).toFixed(2)})`, post: (g, W, H, p, te, t) => {
+    grano(g, W, H, t, 0.25);
+    const n = Math.floor(t * 12);
+    g.save(); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = Math.max(1, W / 500);
+    for (let i = 0; i < 2; i++) if (azar(n, i + 40) > 0.4) { const x = azar(n, i + 50) * W; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + (azar(n, i + 60) - 0.5) * 10, H); g.stroke(); }
+    g.restore();
+    vineta(g, W, H, 0.7);
+  } },
+  grano: { n: '🌫 Grano de película', g: G_RETRO, post: (g, W, H, p, te, t) => grano(g, W, H, t, 0.22) },
+  lineastv: { n: '📺 Líneas de TV', g: G_RETRO, post: (g, W, H) => lineasTV(g, W, H, 0.25) },
+  mosaico: { n: '🟪 Mosaico (pixelado)', g: G_RETRO, post: (g, W, H) => {
+    const c = aux[1], tam = Math.max(6, Math.round(Math.min(W, H) / 40));
+    c.width = Math.ceil(W / tam); c.height = Math.ceil(H / tam);
+    const x = c.getContext('2d'); x.drawImage(lienzo, 0, 0, c.width, c.height);
+    g.save(); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, W, H); g.restore();
+  } },
+  rec: { n: '🔴 REC (videocámara)', g: G_RETRO, largo: 3, post: (g, W, H, p, te) => {
+    const tam = Math.round(Math.min(W, H) * 0.055), m = Math.min(W, H) * 0.06;
+    g.save(); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = Math.max(2, tam / 10);
+    const L = tam * 1.6;
+    [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]].forEach(([x, y, sx, sy]) => { g.beginPath(); g.moveTo(x, y + L * sy); g.lineTo(x, y); g.lineTo(x + L * sx, y); g.stroke(); });
+    g.font = `700 ${tam}px monospace`; g.textBaseline = 'middle'; g.fillStyle = '#fff';
+    if (Math.floor(te * 2) % 2 === 0) { g.fillStyle = '#ff2b2b'; g.beginPath(); g.arc(m + tam * 1.2, m + tam * 1.4, tam * 0.35, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#fff'; g.fillText('REC', m + tam * 1.8, m + tam * 1.4);
+    g.textAlign = 'right'; g.fillText(fmt(te) + ':' + String(Math.floor((te % 1) * 30)).padStart(2, '0'), W - m - tam * 0.6, H - m - tam * 1.2);
+    g.restore();
+  } },
+  // ----- espejos y pantallas -----
+  espejo: { n: '🪞 Espejo izquierda/derecha', g: G_ESPEJO, post: (g, W, H) => { const s = copiaLienzo(); g.save(); g.translate(W, 0); g.scale(-1, 1); g.drawImage(s, 0, 0, W / 2, H, 0, 0, W / 2, H); g.restore(); } },
+  espejov: { n: '🪞 Espejo arriba/abajo', g: G_ESPEJO, post: (g, W, H) => { const s = copiaLienzo(); g.save(); g.translate(0, H); g.scale(1, -1); g.drawImage(s, 0, 0, W, H / 2, 0, 0, W, H / 2); g.restore(); } },
+  caleido: { n: '❄ Caleidoscopio', g: G_ESPEJO, post: (g, W, H) => {
+    const s = copiaLienzo(), sx = W / 4, sy = H / 4, sw = W / 4, sh = H / 4;
+    [[0, 0, 1, 1], [W, 0, -1, 1], [0, H, 1, -1], [W, H, -1, -1]].forEach(([tx, ty, ex, ey]) => { g.save(); g.translate(tx, ty); g.scale(ex, ey); g.drawImage(s, sx, sy, sw, sh, 0, 0, W / 2, H / 2); g.restore(); });
+  } },
+  div2: { n: '◫ Pantalla dividida en 2', g: G_ESPEJO, post: (g, W, H) => {
+    const s = copiaLienzo();
+    if (H >= W) { g.drawImage(s, 0, H / 4, W, H / 2, 0, 0, W, H / 2); g.drawImage(s, 0, H / 4, W, H / 2, 0, H / 2, W, H / 2); g.fillStyle = '#000'; g.fillRect(0, H / 2 - 2, W, 4); }
+    else { g.drawImage(s, W / 4, 0, W / 2, H, 0, 0, W / 2, H); g.drawImage(s, W / 4, 0, W / 2, H, W / 2, 0, W / 2, H); g.fillStyle = '#000'; g.fillRect(W / 2 - 2, 0, 4, H); }
+  } },
+  div4: { n: '⊞ Pantalla dividida en 4', g: G_ESPEJO, post: (g, W, H) => {
+    const s = copiaLienzo();
+    for (let i = 0; i < 4; i++) g.drawImage(s, 0, 0, W, H, (i % 2) * W / 2, Math.floor(i / 2) * H / 2, W / 2, H / 2);
+    g.fillStyle = '#000'; g.fillRect(W / 2 - 2, 0, 4, H); g.fillRect(0, H / 2 - 2, W, 4);
+  } },
+  div9: { n: '▦ Pantalla dividida en 9', g: G_ESPEJO, post: (g, W, H) => {
+    const s = copiaLienzo();
+    for (let i = 0; i < 9; i++) g.drawImage(s, 0, 0, W, H, (i % 3) * W / 3, Math.floor(i / 3) * H / 3, W / 3, H / 3);
+  } },
+  // ----- cosas que caen y suben -----
+  confetiboom: { n: '🎊 Confeti: explosión', g: G_ENCIMA, largo: 2.5, post: (g, W, H, p, te) => confetiSaltando(g, W, H, te, [[W / 2, H * 0.45, -Math.PI / 2, Math.PI * 2]], 120) },
+  confeticanon: { n: '🥳 Confeti: cañones de los costados', g: G_ENCIMA, largo: 2.5, post: (g, W, H, p, te) => confetiSaltando(g, W, H, te, [[0, H, -Math.PI / 3, 0.5], [W, H, -Math.PI * 2 / 3, 0.5]], 70) },
+  confeti: { n: '🎉 Confeti: cayendo', g: G_ENCIMA, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H);
+    for (let k = 0; k < 60; k++) {
+      const v = 0.18 + 0.3 * azar(k, 2), y = ((azar(k, 3) + te * v) % 1.15 - 0.08) * H, x = azar(k, 1) * W + Math.sin(te * 2 + k) * lado * 0.03;
+      g.save(); g.translate(x, y); g.rotate(te * 3 + k); g.fillStyle = COLORES[k % COLORES.length]; g.fillRect(-lado * 0.012, -lado * 0.006, lado * 0.024, lado * 0.012); g.restore();
+    }
+  } },
+  corazones: { n: '❤️ Corazones', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '❤️', sube: true }) },
+  nieve: { n: '❄️ Nieve', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H); g.save(); g.fillStyle = 'rgba(255,255,255,0.9)';
+    for (let k = 0; k < 90; k++) { const v = 0.06 + 0.1 * azar(k, 2), y = ((azar(k, 3) + te * v) % 1.05) * H, x = azar(k, 1) * W + Math.sin(te + k) * lado * 0.03, r = lado * (0.003 + 0.007 * azar(k, 4)); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+    g.restore();
+  } },
+  lluvia: { n: '🌧 Lluvia', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => {
+    g.save(); g.strokeStyle = 'rgba(200,220,255,0.55)'; g.lineWidth = Math.max(1, W / 400);
+    for (let k = 0; k < 110; k++) { const v = 1.2 + azar(k, 2), y = ((azar(k, 3) + te * v) % 1.1) * H, x = azar(k, 1) * W; g.beginPath(); g.moveTo(x, y); g.lineTo(x - W * 0.01, y + H * 0.04); g.stroke(); }
+    g.restore(); tapar(g, W, H, '#1a2a44', 0.18);
+  } },
+  brillitos: { n: '✨ Brillitos', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H); g.save(); g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let k = 0; k < 30; k++) { const a = Math.max(0, Math.sin(te * 3 + k * 1.7)); if (a < 0.05) continue; g.globalAlpha = a; g.font = `${Math.round(lado * (0.03 + 0.04 * azar(k, 4)))}px system-ui, 'Segoe UI Emoji'`; g.fillText('✨', azar(k, 1) * W, azar(k, 2) * H); }
+    g.restore();
+  } },
+  burbujas: { n: '🫧 Burbujas', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H); g.save(); g.strokeStyle = 'rgba(255,255,255,0.75)'; g.fillStyle = 'rgba(180,220,255,0.12)'; g.lineWidth = Math.max(1.5, W / 400);
+    for (let k = 0; k < 35; k++) { const v = 0.1 + 0.15 * azar(k, 2), y = H - ((azar(k, 3) + te * v) % 1.15 - 0.08) * H, x = azar(k, 1) * W + Math.sin(te * 1.5 + k) * lado * 0.04, r = lado * (0.015 + 0.035 * azar(k, 4)); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.stroke(); }
+    g.restore();
+  } },
+  fuegosart: { n: '🎆 Fuegos artificiales', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => {
+    const lado = Math.min(W, H), CADA = 0.7;
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let b = Math.max(0, Math.floor(te / CADA) - 2); b <= Math.floor(te / CADA); b++) {
+      const edad = te - b * CADA; if (edad < 0 || edad > 1.6) continue;
+      const cx = W * (0.15 + 0.7 * azar(b, 1)), cy = H * (0.15 + 0.35 * azar(b, 2)), col = Math.round(360 * azar(b, 3));
+      for (let k = 0; k < 40; k++) {
+        const ang = k / 40 * Math.PI * 2, v = lado * 0.32 * (0.6 + 0.4 * azar(b * 50 + k, 4));
+        const x = cx + Math.cos(ang) * v * edad, y = cy + Math.sin(ang) * v * edad + lado * 0.15 * edad * edad;
+        g.fillStyle = `hsla(${col},100%,65%,${Math.max(0, 1 - edad / 1.6).toFixed(2)})`; g.beginPath(); g.arc(x, y, lado * 0.006, 0, Math.PI * 2); g.fill();
+      }
+    }
+    g.restore();
+  } },
+  fuego: { n: '🔥 Fuego', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '🔥', sube: true, vel: 0.35 }) },
+  plata: { n: '💸 Lluvia de plata', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '💸', gira: true }) },
+  globos: { n: '🎈 Globos', g: G_ENCIMA, largo: 3, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '🎈', sube: true, n: 25, tam: 0.08, vel: 0.15 }) },
+  estrellas: { n: '⭐ Estrellas', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '⭐', gira: true }) },
+  risas: { n: '😂 Risas', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '😂', n: 30, gira: true }) },
+  likes: { n: '👍 Likes', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '👍', sube: true, n: 30 }) },
+  autos: { n: '🚗 Autitos', g: G_ENCIMA, post: (g, W, H, p, te) => lluviaDe(g, W, H, te, { emoji: '🚗', n: 25, tam: 0.07 }) },
+};
+const NOMBRE_EFECTO = Object.fromEntries(Object.entries(EF).map(([k, d]) => [k, d.n]));
+// lista prolija, por grupos
+function opcionesEfecto(elegido) {
+  return GRUPOS_EFECTO.map(gr => `<optgroup label="${gr}">` + Object.entries(EF).filter(([, d]) => d.g === gr)
+    .map(([k, d]) => `<option value="${k}" ${k === elegido ? 'selected' : ''}>${d.n}</option>`).join('') + '</optgroup>').join('');
+}
+$('sel-efecto').innerHTML = opcionesEfecto('zoom');
+// ---------- aparecer / irse (logos, fotos y videos) ----------
+// q = 0 escondido … 1 a la vista. Al irse se usa el mismo movimiento al revés (ej: "Izquierda" entra desde la izquierda y se va hacia la izquierda).
+const ANIMS = {
+  aparecer: '🌫 Aparecer suave', crecer: '🔍 Crecer', rebote: '🏀 Rebote (pop)', grande: '💥 Desde grande',
+  izq: '⬅ Izquierda', der: '➡ Derecha', arriba: '⬆ Arriba', abajo: '⬇ Abajo', girar: '🌀 Girar', borroso: '😶‍🌫️ Desenfoque',
+};
+const ANIM_DUR = 0.5; // segundos que dura la entrada o la salida
+function estadoAnim(tipo, q) {
+  q = Math.min(1, Math.max(0, q)); const e = suave(q);
+  switch (tipo) {
+    case 'aparecer': return { alpha: q };
+    case 'crecer': return { esc: Math.max(0.001, e), alpha: Math.min(1, q * 2) };
+    case 'rebote': { const c1 = 1.70158, c3 = c1 + 1, b = 1 + c3 * Math.pow(q - 1, 3) + c1 * Math.pow(q - 1, 2); return { esc: Math.max(0.001, b), alpha: Math.min(1, q * 3) }; }
+    case 'grande': return { esc: 1 + 1.5 * (1 - e), alpha: e };
+    case 'izq': return { dx: -(1 - e) };
+    case 'der': return { dx: 1 - e };
+    case 'arriba': return { dy: -(1 - e) };
+    case 'abajo': return { dy: 1 - e };
+    case 'girar': return { rot: (1 - e) * Math.PI * 2, esc: Math.max(0.001, e) };
+    case 'borroso': return { blur: 1 - q, alpha: q };
+  }
+  return null;
+}
+// en qué parte de la entrada/salida está algo que se ve de ini a fin (null = quieto)
+function animEn(entra, sale, ini, fin, t) {
+  const D = Math.min(ANIM_DUR, (fin - ini) / 2);
+  if (entra && ANIMS[entra] && t - ini < D) return estadoAnim(entra, (t - ini) / D);
+  if (sale && ANIMS[sale] && fin - t < D) return estadoAnim(sale, (fin - t) / D);
+  return null;
+}
+const opcionesAnim = (elegido, primeras) => primeras.concat(Object.entries(ANIMS)).map(([v, n]) => `<option value="${v}" ${v === elegido ? 'selected' : ''}>${n}</option>`).join('');
+function filtroCanvas(c, efs, t) {
   const f = c.filtro, partes = [];
   if (f.b !== 100) partes.push(`brightness(${f.b}%)`);
   if (f.c !== 100) partes.push(`contrast(${f.c}%)`);
   if (f.s !== 100) partes.push(`saturate(${f.s}%)`);
-  if (f.bn || efs.some(e => e.efecto === 'bn')) partes.push('grayscale(1)');
-  if (efs.some(e => e.efecto === 'desenfoque')) partes.push(`blur(${Math.round(lienzo.width / 90)}px)`);
+  if (f.bn) partes.push('grayscale(1)');
+  for (const { e, p, te } of efs) { const d = EF[e.efecto]; if (d && d.fil) partes.push(d.fil(p, te, lienzo.width, t)); }
   return partes.join(' ') || 'none';
+}
+// lo que se vería en t si no estuviera c (la línea de más abajo, por debajo de c)
+function visibleBajo(t, c) {
+  let m = null;
+  for (const o of clips) if (o !== c && o.tipo !== 'audio' && activoEn(o, t) && (o.linea < c.linea || (o.linea === c.linea && o.ini < c.ini)) && (!m || o.linea > m.linea)) m = o;
+  return m;
 }
 // c = lo que se ve (o null = negro); local = segundos desde que empezó c
 function dibujarEn(t, c, local) {
   const W = lienzo.width, H = lienzo.height;
-  const efs = capas.filter(k => k.tipo === 'efecto' && t >= k.ini && t < k.fin);
-  const prog = k => Math.min(1, Math.max(0, (t - k.ini) / Math.max(0.05, k.fin - k.ini)));
+  const efs = capas.filter(k => k.tipo === 'efecto' && t >= k.ini && t < k.fin)
+    .map(e => ({ e, p: Math.min(1, Math.max(0, (t - e.ini) / Math.max(0.05, e.fin - e.ini))), te: t - e.ini }));
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   if (c) {
-    ctx.save();
-    let esc = 1, dx = 0, dy = 0;
-    for (const e of efs) {
-      if (e.efecto === 'zoom') esc *= 1 + 0.35 * prog(e);
-      if (e.efecto === 'temblor') { const n = Math.floor(t * 30); dx += (azar(n, 1) - 0.5) * W * 0.05; dy += (azar(n, 2) - 0.5) * H * 0.03; }
+    let esc = 1, dx = 0, dy = 0, rot = 0, voltear = false;
+    for (const { e, p, te } of efs) {
+      const d = EF[e.efecto]; if (!d || !d.mov) continue;
+      const m = d.mov(p, te, W, H, t);
+      esc *= m.esc == null ? 1 : m.esc; dx += m.dx || 0; dy += m.dy || 0; rot += m.rot || 0; if (m.voltear) voltear = !voltear;
     }
-    ctx.translate(W / 2 + dx, H / 2 + dy); ctx.scale(esc, esc); ctx.translate(-W / 2, -H / 2);
-    ctx.filter = filtroCanvas(c, efs);
-    dibujarFuente(c.el, c.giro);
-    ctx.restore();
+    const pintar = (cl, a) => {
+      ctx.save();
+      if (a) ctx.globalAlpha = a.alpha == null ? 1 : a.alpha;
+      const ea = a && a.esc != null ? a.esc : 1;
+      ctx.translate(W / 2 + dx + (a && a.dx || 0) * W, H / 2 + dy + (a && a.dy || 0) * H);
+      const r = rot + (a && a.rot || 0); if (r) ctx.rotate(r);
+      ctx.scale((voltear ? -esc : esc) * ea, esc * ea); ctx.translate(-W / 2, -H / 2);
+      let f = filtroCanvas(cl, efs, t);
+      if (a && a.blur) f = (f === 'none' ? '' : f + ' ') + `blur(${(a.blur * W / 25).toFixed(1)}px)`;
+      ctx.filter = f;
+      dibujarFuente(cl.el, cl.giro);
+      ctx.restore();
+    };
+    // si está entrando o yéndose con efecto, abajo se ve lo de la línea de abajo
+    const a = animEn(c.trans, c.sale, c.ini, finClip(c), t);
+    if (a) { const bajo = visibleBajo(t, c); if (bajo) pintar(bajo, null); }
+    pintar(c, a);
     // fundido a negro: al entrar (si este pedazo tiene "Fundido") y al salir (si el que sigue pegado en su línea lo tiene)
     const F = 0.35, dur = duracionClip(c);
     let negro = 0;
@@ -665,33 +1025,12 @@ function dibujarEn(t, c, local) {
     if (sig) negro = Math.max(negro, 1 - (dur - local) / F);
     if (negro > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(1, negro)})`; ctx.fillRect(0, 0, W, H); }
   }
-  for (const e of efs) {
-    const p = prog(e), te = t - e.ini;
-    if (e.efecto === 'flash') { ctx.fillStyle = `rgba(255,255,255,${(1 - p) * 0.9})`; ctx.fillRect(0, 0, W, H); }
-    if (e.efecto === 'vineta') {
-      const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
-      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.85)');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    }
-    if (e.efecto === 'confeti' || e.efecto === 'corazones') {
-      const colores = ['#f5d800', '#ff4d4d', '#25D366', '#3aa0ff', '#ff7ad9', '#ffffff'];
-      const lado = Math.min(W, H);
-      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      for (let k = 0; k < 45; k++) {
-        const vel = 0.18 + 0.3 * azar(k, 2);
-        const y = ((azar(k, 3) + te * vel) % 1.15 - 0.08) * H;
-        const x = azar(k, 1) * W + Math.sin(te * 2 + k) * lado * 0.03;
-        if (e.efecto === 'confeti') {
-          ctx.save(); ctx.translate(x, y); ctx.rotate(te * 3 + k);
-          ctx.fillStyle = colores[k % colores.length]; ctx.fillRect(-lado * 0.012, -lado * 0.006, lado * 0.024, lado * 0.012);
-          ctx.restore();
-        } else {
-          ctx.font = `${Math.round(lado * (0.04 + 0.04 * azar(k, 4)))}px system-ui, sans-serif`;
-          ctx.fillText('❤️', x, H - y);
-        }
-      }
-      ctx.restore();
-    }
+  // lo que va encima, en el orden en que se pusieron los efectos
+  for (const { e, p, te } of efs) {
+    const d = EF[e.efecto]; if (!d || !d.post) continue;
+    ctx.save();
+    try { d.post(ctx, W, H, p, te, t); } catch (err) { console.warn('efecto', e.efecto, err); }
+    ctx.restore();
   }
   dibujarExtras();
 }
@@ -724,6 +1063,8 @@ async function procesarMostrar() {
       const tv = t >= duracionTotal() - 1e-6 ? Math.max(0, duracionTotal() - 0.02) : t;
       const c = visibleEn(tv);
       if (c && c.tipo === 'video') await irA(c.el, posVideo(c, tv));
+      const bajo = c && animEn(c.trans, c.sale, c.ini, finClip(c), tv) ? visibleBajo(tv, c) : null; // lo de abajo, mientras entra o se va
+      if (bajo && bajo.tipo === 'video' && bajo.el !== c.el) await irA(bajo.el, posVideo(bajo, tv));
       if (pedidoT != null) continue; // ya pidieron otro momento: saltear este
       dibujarEn(t, c, c ? tv - c.ini : 0);
     }
@@ -773,7 +1114,17 @@ function dibujarExtras() {
   for (const l of logos) {
     if (!logoVisible(l, tActual)) continue;
     const c = cajaLogo(l);
-    ctx.drawImage(l.img, c.x, c.y, c.w, c.h);
+    // efecto al aparecer / al irse
+    const a = animEn(l.entra, l.sale, l.ini == null ? 0 : l.ini, l.ini == null ? duracionTotal() : l.fin, tActual);
+    if (!a) { ctx.drawImage(l.img, c.x, c.y, c.w, c.h); continue; }
+    ctx.save();
+    ctx.globalAlpha = a.alpha == null ? 1 : a.alpha;
+    if (a.blur) ctx.filter = `blur(${(a.blur * Math.min(W, H) / 30).toFixed(1)}px)`;
+    ctx.translate(c.x + c.w / 2 + (a.dx || 0) * W, c.y + c.h / 2 + (a.dy || 0) * H);
+    if (a.rot) ctx.rotate(a.rot);
+    const s = a.esc == null ? 1 : a.esc; ctx.scale(s, s);
+    ctx.drawImage(l.img, -c.w / 2, -c.h / 2, c.w, c.h);
+    ctx.restore();
   }
 }
 
@@ -936,7 +1287,7 @@ function pintarPanelCapa() {
       <button id="capa-aca-ini" title="Que empiece donde está la línea amarilla">⇤ Empezar acá</button>
       <button id="capa-aca-fin" title="Que termine donde está la línea amarilla">Terminar acá ⇥</button>
     </div>
-    <div class="fila"><label>Efecto</label><select id="capa-efecto">${Object.entries(NOMBRE_EFECTO).map(([v, n]) => `<option value="${v}" ${v === k.efecto ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="fila"><label>Efecto</label><select id="capa-efecto">${opcionesEfecto(k.efecto)}</select></div>
     <div class="nota">En la línea de tiempo: arrastrá la barra naranja para moverlo y sus puntas para que dure más o menos.</div>
   </div>`;
   $('capa-saca').onclick = () => { capas.splice(capas.indexOf(k), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); };
@@ -1083,7 +1434,7 @@ $('btn-cortar').onclick = () => {
 $('btn-efecto').onclick = () => {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return; }
   const total = duracionTotal(), efecto = $('sel-efecto').value;
-  const largo = efecto === 'flash' ? 0.6 : 2;
+  const largo = (EF[efecto] && EF[efecto].largo) || 2;
   // empieza JUSTO en la línea amarilla; termina en la próxima marca celeste si hay, si no dura lo de siempre
   const ini = Math.min(tActual, Math.max(0, total - 0.2)), sig = siguienteMarca();
   const k = { tipo: 'efecto', efecto, ini, fin: sig != null ? sig : Math.min(total, ini + largo) };
@@ -1263,14 +1614,14 @@ function fotoProyecto() {
   return {
     clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
     capas: capas.map(k => ({ ...k })),
-    logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin })),
+    logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin, entra: l.entra, sale: l.sale })),
     texto: { x: textoPos.x, y: textoPos.y },
     marcas: marcas.map(m => m.t),
   };
 }
 function claveProyecto(f) {
   return JSON.stringify([f.clips.map(c => ({ ...c, el: 0, buf: 0 })), f.capas.map(k => ({ ...k, img: k.img ? k.img.src : 0 })),
-    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin]), f.texto, f.marcas]);
+    f.logos.map(o => [o.l.nombre, o.activo, o.x, o.y, o.tam, o.ini, o.fin, o.entra, o.sale]), f.texto, f.marcas]);
 }
 function guardarHistoria() {
   clearTimeout(tHistoria); tHistoria = null;
@@ -1288,7 +1639,7 @@ function aplicarFoto(f) {
   try {
     clips.length = 0; f.clips.forEach(c => clips.push({ ...c, filtro: { ...c.filtro } }));
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
-    logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin }); logos.push(o.l); });
+    logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin, entra: o.entra, sale: o.sale }); logos.push(o.l); });
     textoPos.x = f.texto.x; textoPos.y = f.texto.y;
     marcas = (f.marcas || []).map(t => ({ t })); marcaSel = null;
     capaSel = null; clipSel = null;
@@ -1375,6 +1726,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && cor
   });
 })();
 
+pintarLogos(); // (después de cargar los efectos de aparecer/irse)
 editorListo = true;
 pintarTimeline();
 dibujarCuadro();
