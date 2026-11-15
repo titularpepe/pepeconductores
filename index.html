@@ -854,7 +854,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       <div class="mfg"><label>Nombre</label><input type="text" id="reg-nombre" placeholder="Juan"></div>
       <div class="mfg"><label>Apellido</label><input type="text" id="reg-apellido" placeholder="Pérez"></div>
       <div class="mfg"><label>Apodo</label><input type="text" id="reg-apodo" placeholder="Ej: Pepe, Caro..."></div>
-      <div class="mfg"><label>DNI</label><input type="text" id="reg-dni" placeholder="00.000.000"></div>
+      <div class="mfg"><label>DNI</label><input type="text" id="reg-dni" inputmode="numeric" maxlength="10" placeholder="Sin puntos: 30123456"></div>
       <div class="mfg"><label>Género</label>
         <select id="reg-genero"><option value="">Seleccioná...</option><option value="M">Masculino</option><option value="F">Femenino</option></select>
       </div>
@@ -1688,11 +1688,13 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
     }
     const g = id => (document.getElementById(id).value || '').trim();
     const nombre = g('reg-nombre'), apellido = g('reg-apellido'), apodo = g('reg-apodo');
-    const dni = g('reg-dni'), genero = g('reg-genero'), tel = g('reg-tel'), email = g('reg-email');
+    // (2026-11-15) El DNI es sin puntos: se guardan solo los números (7 u 8), igual que en las apps.
+    const dni = g('reg-dni').replace(/\D/g, ''), genero = g('reg-genero'), tel = g('reg-tel'), email = g('reg-email');
     const pass = document.getElementById('reg-pass').value;
     const btn = document.getElementById('btn-reg-submit');
     clearMsgs();
     if (!nombre || !apellido || !dni || !genero || !tel || !email || !pass) return showError('Completá todos los campos.');
+    if (!/^\d{7,8}$/.test(dni)) return showError('Poné tu DNI sin puntos: 7 u 8 números.');
     if (pass.length < 6) return showError('La contraseña debe tener al menos 6 caracteres.');
     btn.disabled = true; btn.textContent = 'Creando cuenta...';
     const dniCol = _regRol === 'conductor' ? 'dni-registrados' : 'dni-pasajeros';
