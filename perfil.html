@@ -274,9 +274,11 @@ nav {
       <input type="hidden" id="menor-edit-id" value="">
       <div class="datos-grid" style="margin-bottom:1rem;">
         <div class="dato-item"><div class="dato-label">Nombre *</div><input id="m-nombre" type="text" placeholder="Nombre" class="dato-input"></div>
-        <div class="dato-item"><div class="dato-label">Apodo</div><input id="m-apodo" type="text" placeholder="Como lo llaman" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Apodo *</div><input id="m-apodo" type="text" placeholder="Como lo llaman" class="dato-input"></div>
         <div class="dato-item"><div class="dato-label">Edad *</div><input id="m-edad" type="number" placeholder="Ej: 12" class="dato-input"></div>
-        <div class="dato-item"><div class="dato-label">DNI</div><input id="m-dni" type="text" placeholder="Sin puntos" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">DNI *</div><input id="m-dni" type="text" inputmode="numeric" maxlength="8" placeholder="Sin puntos" class="dato-input"></div>
+        <div class="dato-item"><div class="dato-label">Sexo *</div><select id="m-sexo" class="dato-input"><option value="">Elegí</option><option value="M">♂ Masculino</option><option value="F">♀ Femenino</option></select></div>
+        <div class="dato-item"><div class="dato-label">Foto del menor *</div><input id="m-foto" type="file" accept="image/*" class="dato-input"><div id="m-foto-actual" style="font-size:0.75rem;color:var(--texto-apagado);margin-top:4px;"></div></div>
         <div class="dato-item"><div class="dato-label">Teléfono *</div><input id="m-telefono" type="tel" placeholder="Ej: 3875001234" class="dato-input"></div>
         <div class="dato-item"><div class="dato-label">Email</div><input id="m-email" type="email" placeholder="correo@ejemplo.com" class="dato-input"></div>
         <div class="dato-item"><div class="dato-label">PIN (4 dígitos) *</div><input id="m-pin" type="text" inputmode="numeric" maxlength="4" placeholder="● ● ● ●" class="dato-input"></div>
@@ -540,6 +542,19 @@ async function renderNotif(col) {
   } catch(e) {
     try { const s2 = await db.collection('mensajes-admin').limit(20).get(); s2.forEach(d => items.push(d.data())); } catch(e2) {}
   }
+  // (2026-11-15) Igual que la app: solo los avisos de las últimas 24 h (máx 3) + los papeles rechazados con motivo.
+  const msDe = v => (v && v.toMillis) ? v.toMillis() : (v ? new Date(v).getTime() : 0);
+  items = items.filter(n => Date.now() - msDe(n.creadoEn) < 24 * 60 * 60 * 1000).slice(0, 3);
+  const dc = _docs.conductores || {};
+  const papeles = Object.entries(dc.motivosRechazo || {}).map(([clave, r]) => {
+    if (clave.includes('__')) return null; // papeles del vehículo: se ven en la app
+    const docId = clave;
+    const v = ({ ...(dc.documentosConductor || {}), ...(dc.documentos || {}) })[docId];
+    const est = v && typeof v === 'object' ? v.estado : v;
+    if (est !== 'rechazado') return null;
+    return { titulo: '❌ Rechazamos tu ' + docId.replace(/_/g, ' '), mensaje: 'Motivo: ' + ((r && r.motivo) || '—') + '. Subilo de nuevo desde la app.', creadoEn: r && r.en ? new Date(r.en) : null };
+  }).filter(Boolean);
+  items = papeles.concat(items);
   if (!items.length) { cont.innerHTML = '<div class="empty-state">🔔 No tenés notificaciones.</div>'; return; }
   cont.innerHTML = items.map(n =>
     '<div class="dato-item" style="margin-bottom:0.7rem;"><div class="dato-val" style="font-size:0.9rem;font-weight:600;">' + escH(n.titulo || n.title || 'Aviso de Pepe') + '</div>' +
@@ -817,7 +832,8 @@ window.enviarSugerencia = async function() {
   const d = _docs[_col] || {};
   try {
     await db.collection('sugerencias').add({
-      texto, categoria: 'general', conductorId: _uid,
+      // (2026-11-15) si escribe como pasajero, va como pasajero (así le llega la respuesta de Pepe)
+      texto, categoria: 'general', ...(_col === 'pasajeros' ? { pasajeroId: _uid } : { conductorId: _uid }),
       nombre: d.nombre || (_userRef && _userRef.displayName) || 'Sin nombre',
       dni: d.dni || 'Sin DNI', email: (_userRef && _userRef.email) || d.email || '',
       leida: false, creadoEn: firebase.firestore.FieldValue.serverTimestamp(),
@@ -865,7 +881,8 @@ async function renderMenores() {
   }).join('');
 }
 function abrirFormMenor() {
-  ['menor-edit-id','m-nombre','m-apodo','m-edad','m-dni','m-telefono','m-email','m-pin'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['menor-edit-id','m-nombre','m-apodo','m-edad','m-dni','m-telefono','m-email','m-pin','m-sexo','m-foto'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('m-foto-actual').textContent = '';
   document.getElementById('menor-form-titulo').textContent = 'Agregar hijo/a';
   document.getElementById('menor-form-msg').style.display = 'none';
   document.getElementById('menor-form-box').classList.add('open');
@@ -886,6 +903,9 @@ function editarMenor(id) {
   document.getElementById('m-telefono').value = m.telefono || '';
   document.getElementById('m-email').value = m.email || '';
   document.getElementById('m-pin').value = m.pin || '';
+  document.getElementById('m-sexo').value = m.sexo || '';
+  document.getElementById('m-foto').value = '';
+  document.getElementById('m-foto-actual').textContent = m.foto ? '✓ Ya tiene foto (elegí otra solo si querés cambiarla)' : '';
   document.getElementById('menor-form-titulo').textContent = 'Editar perfil';
   document.getElementById('menor-form-box').classList.add('open');
   document.getElementById('btn-agregar-menor').style.display = 'none';
@@ -900,14 +920,29 @@ async function guardarMenor() {
   const telefono = document.getElementById('m-telefono').value.trim();
   const email = document.getElementById('m-email').value.trim();
   const pin = document.getElementById('m-pin').value.trim();
-  if (!nombre) return fail('⚠ El nombre es obligatorio.');
-  if (isNaN(edad) || edad < 0 || edad > 17) return fail('⚠ La edad debe ser de un menor (0-17).');
-  if (!telefono) return fail('⚠ El teléfono es obligatorio.');
-  if (!/^\d{4}$/.test(pin)) return fail('⚠ El PIN debe ser de 4 dígitos.');
-  const data = { nombre, apodo, edad, dni, telefono, pin };
-  if (email) data.email = email;
+  // (2026-11-15) Mismos datos obligatorios que la app (antes quedaban sin sexo ni foto y con edad 0).
+  const sexo = document.getElementById('m-sexo').value;
+  const archivoFoto = (document.getElementById('m-foto').files || [])[0];
   const editId = document.getElementById('menor-edit-id').value;
+  const previo = editId ? (_hijosCache.find(h => h.id === editId) || {}) : {};
+  if (!nombre) return fail('⚠ El nombre es obligatorio.');
+  if (!apodo) return fail('⚠ El apodo es obligatorio.');
+  if (isNaN(edad) || edad < 5 || edad > 17) return fail('⚠ La edad tiene que ser entre 5 y 17 años.');
+  if (!/^\d{7,8}$/.test(dni)) return fail('⚠ El DNI tiene que tener 7 u 8 números, sin puntos.');
+  if (sexo !== 'M' && sexo !== 'F') return fail('⚠ Elegí el sexo.');
+  if (telefono.replace(/\D/g, '').length < 8) return fail('⚠ El teléfono no es válido.');
+  if (!/^\d{4}$/.test(pin)) return fail('⚠ El PIN debe ser de 4 dígitos.');
+  if (!archivoFoto && !previo.foto) return fail('⚠ La foto del menor es obligatoria.');
+  if (archivoFoto && (!archivoFoto.type.startsWith('image/') || archivoFoto.size >= 10 * 1024 * 1024)) return fail('⚠ La foto tiene que ser una imagen de menos de 10 MB.');
+  const data = { nombre, apodo, edad, dni, sexo, telefono, pin };
+  if (email) data.email = email;
   try {
+    if (archivoFoto) {
+      msg.textContent = 'Subiendo foto...'; msg.style.color = 'var(--texto-apagado)'; msg.style.display = 'block';
+      const r = storage.ref(`hijos-fotos/${_uid}/${Date.now()}`);
+      await r.put(archivoFoto, { contentType: archivoFoto.type });
+      data.foto = await r.getDownloadURL();
+    }
     if (editId) await db.collection('pasajeros').doc(_uid).collection('hijos').doc(editId).set(data, { merge: true });
     else { data.creadoEn = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('pasajeros').doc(_uid).collection('hijos').add(data); }
   } catch(e) { return fail('❌ Error al guardar.'); }

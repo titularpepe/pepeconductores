@@ -1800,7 +1800,7 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         telefono: d.tel, email: (d.email || '').toLowerCase(), cbu: '', creadoEn: new Date().toISOString(),
         estado: 'pendiente', modoActivo: 'conductor', vehiculos: [], saldo: 0, deudaPepe: 0,
         cancelacionesSeguidas: 0, ciclosCancelaciones: 0,
-        documentos: { dni_frente:'pendiente', dni_dorso:'pendiente', carnet:'pendiente', selfie:'pendiente', seguro_chofer:'pendiente', antecedentes:'pendiente', antecedentesAprobadoEn: null },
+        documentos: { dni_frente:'pendiente', dni_dorso:'pendiente', carnet_frente:'pendiente', carnet_dorso:'pendiente', selfie:'pendiente', seguro_chofer:'pendiente', antecedentes:'pendiente', antecedentesAprobadoEn: null },
         fotosConductor: {}, fotosVehiculos: {}, rechazosSeguidosSinAceptar: 0, viajesHoy: 0, gananciasHoy: 0,
         fechaUltimoReset: '', latUltima: 0, lngUltima: 0, expoPushToken: null, viajesNoCobradosSeguidos: 0,
         viajesCompletados: 0, megusta: 0, nomegusta: 0, historial: [],
@@ -1967,15 +1967,29 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
       msg.style.display = 'block';
       return;
     }
-    window._terceroPasajero = { nombre, dni, tel };
+    // (2026-11-15, pedido del dueño) Antes solo quedaba en la página y se perdía. Ahora se GUARDA en la cuenta
+    // del pasajero (pasajeros/{uid}.personasGuardadas, hasta 10) para usarla al pedir un viaje para otra persona.
     const msg = document.getElementById('tercero-msg');
-    msg.textContent = '✅ Datos guardados. El conductor verá el nombre y DNI del pasajero.';
-    msg.style.background = 'rgba(46,204,113,0.1)';
-    msg.style.color = '#2ecc71';
-    msg.style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('modal-tercero').classList.remove('open');
-    }, 2000);
+    const aviso = (t, ok) => { msg.textContent = t; msg.style.background = ok ? 'rgba(46,204,113,0.1)' : 'rgba(255,77,0,0.1)'; msg.style.color = ok ? '#2ecc71' : '#ff4d00'; msg.style.display = 'block'; };
+    const dniLimpio = dni.replace(/\D/g, '');
+    if (!/^\d{7,8}$/.test(dniLimpio)) { aviso('⚠ El DNI tiene que tener 7 u 8 números, sin puntos.', false); return; }
+    const user = auth.currentUser;
+    if (!user) { aviso('⚠ Iniciá sesión con tu cuenta de pasajero para guardar a la persona.', false); return; }
+    (async () => {
+      try {
+        const ref = doc(db, 'pasajeros', user.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists) { aviso('⚠ Primero registrate como pasajero en la app Pepe Pasajeros.', false); return; }
+        const lista = (Array.isArray(snap.data().personasGuardadas) ? snap.data().personasGuardadas : []).filter(x => x && x.dni !== dniLimpio);
+        lista.unshift({ nombre: nombre.slice(0, 80), dni: dniLimpio, telefono: tel.slice(0, 30) });
+        await updateDoc(ref, { personasGuardadas: lista.slice(0, 10) });
+        aviso('✅ Persona guardada en tu cuenta.', true);
+        setTimeout(() => { document.getElementById('modal-tercero').classList.remove('open'); }, 2000);
+      } catch (e) {
+        console.error('personasGuardadas', e);
+        aviso('❌ No se pudo guardar. Probá de nuevo.', false);
+      }
+    })();
   };
 
   window.doLogout = async function() {
