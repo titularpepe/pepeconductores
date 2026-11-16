@@ -1,5 +1,5 @@
 {
-  "version": 47,
+  "version": 48,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -3461,6 +3461,55 @@
         }
       ],
       "v47": true
+    },
+    {
+      "nombre": "Pregunta sin respuesta",
+      "frases": [
+        "dame una pregunta sin respuesta",
+        "una pregunta sin respuesta",
+        "decime una pregunta sin respuesta",
+        "hazme una pregunta sin respuesta",
+        "haceme una pregunta sin respuesta",
+        "pregunta sin respuesta",
+        "preguntas sin respuesta",
+        "dame otra pregunta sin respuesta",
+        "otra pregunta sin respuesta",
+        "dame una pregunta filosofica",
+        "decime una pregunta filosofica",
+        "haceme una pregunta filosofica",
+        "una pregunta filosofica",
+        "pregunta filosofica",
+        "dame una pregunta para pensar",
+        "decime una pregunta para pensar",
+        "haceme una pregunta para pensar",
+        "una pregunta para pensar",
+        "dame una pregunta dificil",
+        "haceme una pregunta dificil"
+      ],
+      "acciones": [
+        {
+          "tipo": "decir",
+          "textos": [
+            "¿Qué había antes del Big Bang?",
+            "Si un árbol cae en el bosque y nadie lo escucha, ¿hace ruido?",
+            "¿El rojo que ves vos es el mismo rojo que veo yo?",
+            "¿Por qué existe algo en lugar de nada?",
+            "Si le cambiás todas las piezas a un barco, una por una, ¿sigue siendo el mismo barco?",
+            "¿Qué fue primero, el huevo o la gallina?",
+            "¿Tenemos libre albedrío o todo ya estaba decidido?",
+            "¿El universo tiene un final o sigue para siempre?",
+            "¿Cómo sabés que no estás soñando ahora mismo?",
+            "¿Los números se inventaron o se descubrieron?",
+            "Si viajaras al pasado y cambiaras algo, ¿volverías a existir para viajar?",
+            "¿Qué se siente ser otra persona?",
+            "¿Hay vida en otros planetas?",
+            "¿Sos la misma persona que eras de chico?",
+            "¿Adónde va la luz cuando se apaga?",
+            "¿Las máquinas como yo pueden llegar a pensar de verdad?"
+          ]
+        }
+      ],
+      "v48": true
     }
   ]
 }
