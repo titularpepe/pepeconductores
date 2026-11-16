@@ -335,11 +335,45 @@ let escalaFija = null;
 function escalaTl() { if (escalaFija) return escalaFija; const t = duracionTotal(); return t ? t * 1.1 + 1 : 0; }
 function asegurarAudio() {
   if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // a 48 kHz: es lo que necesita el quita ruido (RNNoise); los videos y audios se adaptan solos
+  const AC = window.AudioContext || window.webkitAudioContext;
+  try { audioCtx = new AC({ sampleRate: 48000 }); } catch (e) { audioCtx = new AC(); }
   mezcla = audioCtx.createGain();
   salidaGrabacion = audioCtx.createMediaStreamDestination();
   mezcla.connect(audioCtx.destination);
   mezcla.connect(salidaGrabacion);
+}
+
+// ---------- 🎙 quita ruido (RNNoise, corre en el navegador; licencias en editor/ruido/LICENCIAS.txt) ----------
+// Por cada video: No / Suave / Fuerte. Los archivos se bajan solo la primera vez que algún pedazo lo usa.
+// Camino del sonido de cada <video>: fuente → _seco ────────────────────────────→ _gan (volumen) → mezcla
+//                                    fuente → corta graves (viento) → RNNoise → _limpio ↗
+let ruidoListo = null;
+function prepararRuido() {
+  if (!ruidoListo) ruidoListo = (async () => {
+    if (audioCtx.sampleRate !== 48000 || !audioCtx.audioWorklet) throw new Error('sin 48 kHz / AudioWorklet');
+    const simd = WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]));
+    const [wasm] = await Promise.all([
+      fetch(simd ? 'ruido/rnnoise_simd.wasm' : 'ruido/rnnoise.wasm').then(r => { if (!r.ok) throw new Error('wasm'); return r.arrayBuffer(); }),
+      audioCtx.audioWorklet.addModule('ruido/rnnoise-worklet.js')]);
+    return wasm;
+  })().catch(e => { ruidoListo = null; throw e; });
+  return ruidoListo;
+}
+const MEZCLA_RUIDO = { no: [1, 0], suave: [0.35, 0.8], fuerte: [0, 1] }; // [original, limpio]
+async function conectarRuido(v) {
+  if (v._limpio || !v._fuente) return;
+  const wasm = await prepararRuido();
+  if (v._limpio) return;
+  const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80;
+  const rnn = new AudioWorkletNode(audioCtx, '@sapphi-red/web-noise-suppressor/rnnoise', { processorOptions: { maxChannels: 2, wasmBinary: wasm } });
+  v._limpio = audioCtx.createGain(); v._limpio.gain.value = 0;
+  v._fuente.connect(hp); hp.connect(rnn); rnn.connect(v._limpio); v._limpio.connect(v._gan);
+}
+function ponerRuido(v, c) {
+  const [o, l] = MEZCLA_RUIDO[(v._limpio && c.ruido) || 'no'] || MEZCLA_RUIDO.no;
+  if (v._seco) v._seco.gain.value = o;
+  if (v._limpio) v._limpio.gain.value = l;
 }
 
 // ---------- agregar clips ----------
@@ -423,6 +457,7 @@ function pintarLista() {
         ${c.tipo === 'video' ? `<label>Velocidad</label>${sel('vel', [[0.5, '0.5x lenta'], [1, '1x'], [1.5, '1.5x'], [2, '2x rápida']])} ${vol}` : ''}
         <button data-a="gira" title="Girar 90°">⟳ Girar</button>
       </div>
+      ${c.tipo === 'video' ? `<div class="fila"><label title="Saca ruido de calle, autos, viento y gente de fondo. Pensado para voz: si en el video suena música, la puede deformar.">🎙 Quitar ruido</label>${sel('ruido', [['no', 'No'], ['suave', 'Suave'], ['fuerte', 'Fuerte']])}</div>` : ''}
       <div class="fila">
         <label>Aparece</label><select data-k="trans">${opcionesAnim(c.trans, [['corte', 'De golpe'], ['fundido', '⬛ Desde negro']])}</select>
         <label>Se va</label><select data-k="sale">${opcionesAnim(c.sale || 'corte', [['corte', 'De golpe']])}</select>
@@ -453,7 +488,12 @@ function pintarLista() {
     if (q('input[data-k=dur]')) q('input[data-k=dur]').onchange = e => { c.dur = Math.max(0.2, parseFloat(e.target.value) || 0); pintarLista(); redibujar(); };
     q('input[data-k=ini]').onchange = e => { c.ini = Math.max(0, parseFloat(e.target.value) || 0); clipSel = c.id; pintarLista(); redibujar(); };
     q('[data-a=aca]').onclick = () => { c.ini = tActual; clipSel = c.id; pintarLista(); redibujar(); };
-    d.querySelectorAll('select[data-k]').forEach(s => s.addEventListener('change', () => { c[s.dataset.k] = s.dataset.k === 'vel' ? parseFloat(s.value) : s.value; pintarLista(); redibujar(); }));
+    d.querySelectorAll('select[data-k]').forEach(s => s.addEventListener('change', () => {
+      c[s.dataset.k] = s.dataset.k === 'vel' ? parseFloat(s.value) : s.value;
+      // quita ruido: si ya hay sonido andando, se prepara al toque para que se oiga sin volver a darle ▶
+      if (s.dataset.k === 'ruido' && s.value !== 'no' && c.el && c.el._fuente) conectarRuido(c.el).catch(() => estado('⚠️ Este navegador no deja usar el quita ruido.'));
+      pintarLista(); redibujar();
+    }));
     if (q('input[data-k=vol]')) q('input[data-k=vol]').oninput = e => { c.vol = +e.target.value; q('[data-v=vol]').textContent = c.vol + '%'; aplicarVolumenes(); marcarCambio(); };
     d.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => { c.filtro[inp.dataset.f] = inp.type === 'checkbox' ? inp.checked : parseFloat(inp.value); clipSel = c.id; verAca(); }));
     if (q('[data-a=normal]')) q('[data-a=normal]').onclick = () => { c.filtro = { b: 100, c: 100, s: 100, bn: false }; pintarLista(); redibujar(); };
@@ -1618,6 +1658,7 @@ function sincronizarVideos(t, aviso) {
     const pos = posVideo(c, t);
     if (v.playbackRate !== c.vel) v.playbackRate = c.vel;
     if (v._gan) v._gan.gain.value = c.vol / 100;
+    ponerRuido(v, c);
     if (v.paused) {
       if (Math.abs(v.currentTime - pos) > 0.15) v.currentTime = pos;
       // si el navegador no deja reproducir con sonido, seguir sin sonido antes que quedarse colgado
@@ -1649,10 +1690,15 @@ async function reproducir2({ grabar, desde = 0 }) {
   // los videos suenan a través de la mezcla (una sola fuente por <video>, aunque esté cortado en pedazos)
   const videos = clips.filter(c => c.tipo === 'video');
   new Set(videos.map(c => c.el)).forEach(v => {
-    if (!v._fuente) { v._fuente = audioCtx.createMediaElementSource(v); v._gan = audioCtx.createGain(); v._fuente.connect(v._gan); }
+    if (!v._fuente) { v._fuente = audioCtx.createMediaElementSource(v); v._gan = audioCtx.createGain(); v._seco = audioCtx.createGain(); v._fuente.connect(v._seco); v._seco.connect(v._gan); }
     try { v._gan.disconnect(); } catch (e) {}
     v._gan.connect(gOrig); v._gan.gain.value = 0; v.muted = false;
   });
+  // 🎙 quita ruido: preparar los videos que lo tienen prendido (si el navegador no puede, sigue con el sonido original)
+  const conRuido = [...new Set(videos.filter(c => c.ruido && c.ruido !== 'no').map(c => c.el))];
+  for (const v of conRuido) {
+    try { await conectarRuido(v); } catch (e) { console.warn('quita ruido', e); estado('⚠️ Este navegador no deja usar el quita ruido: sigue con el sonido original.'); break; }
+  }
 
   if (grabar) {
     const stream = lienzo.captureStream(30);
