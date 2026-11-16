@@ -18,10 +18,14 @@
 :root { --negro:#0c0c0c; --gris:#161616; --gris2:#222; --blanco:#f7f4ee; --amarillo:#f5d800; --dorado:#E8B33A; --apagado:rgba(247,244,238,0.6); --rojo:#ff4d4d; --verde:#25D366; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--negro); color:var(--blanco); font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
-header { padding:5px 10px; display:flex; align-items:center; gap:6px; border-bottom:1px solid #222; position:sticky; top:0; background:var(--negro); z-index:5; }
-header img { width:18px; height:18px; border-radius:50%; }
-header h1 { margin:0; font-size:0.72rem; color:var(--dorado); letter-spacing:1px; }
-main { display:grid; grid-template-columns: minmax(0,1fr) 380px; gap:14px; padding:12px 14px; max-width:1600px; margin:0 auto; }
+/* sin barra de encabezado: el logo queda chiquito en la esquina y todo el alto es para el editor */
+.marca-pepe { position:fixed; top:3px; left:6px; z-index:5; display:flex; align-items:center; gap:4px; opacity:0.75; pointer-events:none; }
+.marca-pepe img { width:14px; height:14px; border-radius:50%; }
+.marca-pepe h1 { margin:0; font-size:0.6rem; color:var(--dorado); letter-spacing:1px; font-weight:700; }
+.marca-pepe span { font-size:0.55rem; color:var(--apagado); }
+.armar-fila { display:flex; justify-content:flex-end; margin-bottom:8px; position:sticky; top:0; z-index:3; background:var(--negro); padding-bottom:4px; }
+.col-edicion .armar-fila button { padding:6px 14px; font-size:0.85rem; }
+main { display:grid; grid-template-columns: minmax(0,1fr) 380px; gap:14px; padding:18px 14px 12px; max-width:1600px; margin:0 auto; }
 @media (max-width: 900px) { main { grid-template-columns: 1fr; } .col-vista { order:-1; } }
 .caja { background:var(--gris); border:1px solid #2a2a2a; border-radius:12px; padding:14px; margin-bottom:14px; }
 .caja h2 { margin:0 0 10px; font-size:0.95rem; color:var(--amarillo); text-transform:uppercase; letter-spacing:0.5px; }
@@ -42,18 +46,17 @@ label { font-size:0.82rem; color:var(--apagado); }
 .clip .acc button { padding:3px 8px; font-size:0.8rem; }
 .vacio { color:var(--apagado); font-size:0.88rem; padding:10px 0; }
 canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#000; border-radius:10px; display:block; margin:0 auto; }
-.col-vista { position:sticky; top:72px; align-self:start; }
+.col-vista { position:sticky; top:0; align-self:start; }
 /* PC: como un programa de edición. La vista queda fija y cada columna se mueve por su cuenta
    (antes la vista se iba con la página al bajar a buscar algo). */
 @media (min-width: 901px) {
   html, body { height:100%; overflow:hidden; }
   body { display:flex; flex-direction:column; }
-  header { flex:0 0 auto; }
   main { flex:1 1 auto; min-height:0; width:100%; grid-template-rows:minmax(0,1fr); padding-bottom:0; }
   .col-edicion, .col-vista { min-height:0; align-self:stretch; overflow-y:auto; overscroll-behavior:contain; padding-bottom:16px; }
   .col-vista { position:static; }
   /* la vista ocupa todo el alto que queda (menos línea de tiempo y botones) */
-  canvas { max-height:calc(100vh - 250px); }
+  canvas { max-height:calc(100vh - 190px); }
 }
 /* (12/11) video grande a la izquierda; opciones compactas a la derecha y plegables tocando el título */
 .vista-caja { padding:10px; }
@@ -120,12 +123,11 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 </style>
 </head>
 <body>
-<header>
+<div class="marca-pepe">
   <img src="/android-chrome-192x192.png" alt="Pepe">
   <h1>PEPE EDITOR</h1>
-  <span style="margin-left:auto;font-size:0.75rem;color:var(--apagado);">fotos y videos · v3</span>
-  <button id="btn-exportar" class="prim">⬇ Armar video</button>
-</header>
+  <span>· v3</span>
+</div>
 
 <main>
 <div class="col-vista">
@@ -168,6 +170,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 </div>
 
 <div class="col-edicion">
+  <div class="armar-fila"><button id="btn-exportar" class="prim">⬇ Armar video</button></div>
   <div class="caja">
     <h2>1. Fotos y videos</h2>
     <div class="fila">
