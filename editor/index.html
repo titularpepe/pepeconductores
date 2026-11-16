@@ -65,6 +65,13 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 .col-edicion .caja.cerrada h2::before { content:'▸ '; }
 .col-edicion .caja.cerrada h2 { margin:0; }
 .col-edicion .caja.cerrada > :not(h2) { display:none !important; }
+/* explicaciones escondidas en un triangulito al costado */
+.ayuda { display:none; }
+.ayuda.ver { display:block; }
+button.btn-ayuda, .col-edicion button.btn-ayuda { float:right; background:none; border:0; padding:0 4px; margin:0; font-size:0.8rem; line-height:1.2; color:var(--apagado); text-transform:none; }
+button.btn-ayuda:hover { color:var(--amarillo); }
+button.btn-ayuda::after { content:'◂'; }
+button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 .col-edicion button, .col-edicion .btn { padding:4px 9px; font-size:0.8rem; border-radius:6px; }
 .col-edicion input[type=text], .col-edicion input[type=number], .col-edicion select { padding:4px 6px; font-size:0.8rem; }
 .col-edicion input[type=number] { width:62px; }
@@ -169,7 +176,8 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       </label>
       <span id="total" class="nota" style="margin:0;"></span>
     </div>
-    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div></div>
+    <div class="nota ayuda">Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div>
+    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada.</div></div>
   </div>
 
   <div class="caja">
@@ -216,7 +224,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       </select>
       <label><input type="checkbox" id="txt-fondo" checked> Fondo oscuro</label>
     </div>
-    <div class="nota">Podés <b>arrastrar el texto</b> con el dedo o el mouse sobre la vista previa para ponerlo donde quieras.</div>
+    <div class="nota ayuda">Podés <b>arrastrar el texto</b> con el dedo o el mouse sobre la vista previa para ponerlo donde quieras.</div>
   </div>
 
   <div class="caja">
@@ -226,7 +234,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
         <input type="file" id="in-musica" accept="audio/*,video/*" style="display:none;">
       </label>
     </div>
-    <div class="nota">La canción va en su propia línea, desde la línea amarilla: arrastrala para elegir dónde empieza y estirá sus puntas para elegir dónde termina. Su volumen y qué parte suena están en "1. Fotos y videos".</div>
+    <div class="nota ayuda">La canción va en su propia línea, desde la línea amarilla: arrastrala para elegir dónde empieza y estirá sus puntas para elegir dónde termina. Su volumen y qué parte suena están en "1. Fotos y videos".</div>
     <div class="fila"><label style="min-width:150px;">Sonido de los videos</label><input type="range" id="orig-vol" min="0" max="100" value="100"></div>
     <div class="fila"><label style="min-width:150px;">Tema</label><input type="text" id="mus-tema" placeholder="Nombre del tema" style="flex:1;min-width:140px;"></div>
     <div class="fila"><label style="min-width:150px;">Artista</label><input type="text" id="mus-artista" placeholder="Nombre del artista" style="flex:1;min-width:140px;"></div>
@@ -234,7 +242,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
 
     <details style="margin-top:10px;">
       <summary style="cursor:pointer;color:var(--amarillo);font-size:0.88rem;">🔥 Canciones en tendencia en Argentina</summary>
-      <div class="nota">Lo más escuchado hoy en Spotify Argentina, y separado por rubro. Tip: al publicar en TikTok o Instagram, agregala con su botón "Sonido": el video llega a más gente.</div>
+      <div class="nota ayuda">Lo más escuchado hoy en Spotify Argentina, y separado por rubro. Tip: al publicar en TikTok o Instagram, agregala con su botón "Sonido": el video llega a más gente.</div>
       <div id="lista-tend"><div class="vacio">Cargando…</div></div>
     </details>
   </div>
@@ -247,7 +255,7 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
         <input type="file" id="in-logo" accept="image/*" multiple style="display:none;">
       </label>
     </div>
-    <div class="nota">Marcá los logos que querés y <b>arrastralos con el dedo o el mouse</b> sobre la vista previa para ubicarlos.</div>
+    <div class="nota ayuda">Marcá los logos que querés y <b>arrastralos con el dedo o el mouse</b> sobre la vista previa para ubicarlos.</div>
     <div class="fila">
       <label>Formato</label>
       <select id="formato">
@@ -381,7 +389,7 @@ $('in-clips').addEventListener('change', e => { const a = [...e.target.files]; e
 
 function pintarLista() {
   const el = $('lista-clips');
-  if (!clips.length) { el.innerHTML = '<div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div>'; $('total').textContent = ''; pintarTimeline(); return; }
+  if (!clips.length) { el.innerHTML = '<div class="vacio">Todavía no agregaste nada.</div>'; $('total').textContent = ''; pintarTimeline(); return; }
   el.innerHTML = '';
   const orden = [...clips].sort((a, b) => a.linea - b.linea || a.ini - b.ini);
   let lineaAnt = null, n = 0;
@@ -1289,8 +1297,9 @@ function pintarPanelCapa() {
       <button id="capa-aca-fin" title="Que termine donde está la línea amarilla">Terminar acá ⇥</button>
     </div>
     <div class="fila"><label>Efecto</label><select id="capa-efecto">${opcionesEfecto(k.efecto)}</select></div>
-    <div class="nota">En la línea de tiempo: arrastrá la barra naranja para moverlo y sus puntas para que dure más o menos.</div>
+    <div class="nota ayuda">En la línea de tiempo: arrastrá la barra naranja para moverlo y sus puntas para que dure más o menos.</div>
   </div>`;
+  armarAyudas(el);
   $('capa-saca').onclick = () => { capas.splice(capas.indexOf(k), 1); capaSel = null; pintarTimeline(); pintarPanelCapa(); redibujar(); };
   // tiempos exactos: escribiendo los segundos o con la línea amarilla
   const ponerTiempos = (ini, fin) => {
@@ -1858,6 +1867,20 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && cor
   });
 })();
 
+// cada explicación (.ayuda) queda escondida; un triangulito en el título de su panel la abre y la cierra
+function armarAyudas(raiz) {
+  raiz.querySelectorAll('.ayuda:not([data-lista])').forEach(n => {
+    n.dataset.lista = '1';
+    const cont = n.parentElement;
+    const ancla = cont.querySelector(':scope > h2, :scope > summary, :scope > .fila > b');
+    if (!ancla) { n.classList.add('ver'); return; }
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn-ayuda'; b.title = 'Ver / ocultar la explicación';
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); b.classList.toggle('abierta', n.classList.toggle('ver')); };
+    ancla.appendChild(b);
+  });
+}
+armarAyudas(document);
 pintarLogos(); // (después de cargar los efectos de aparecer/irse)
 editorListo = true;
 pintarTimeline();
