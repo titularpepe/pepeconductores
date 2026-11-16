@@ -353,6 +353,28 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
 </style>
 </head>
 <body>
+<!-- (2026-11-15, pedido del dueño) REDES SOCIALES ARRIBA DE TODO, en todas las pantallas -->
+<style>
+.redes-top{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;padding:6px 10px;background:#f5d800;}
+.redes-top span{font-family:'Barlow',sans-serif;font-weight:800;font-size:0.78rem;color:#0c0c0c;margin-right:4px;}
+.redes-top a{display:inline-flex;align-items:center;gap:4px;background:#0c0c0c;color:#f5d800;text-decoration:none;font-family:'Barlow',sans-serif;font-weight:700;font-size:0.78rem;padding:4px 10px;border-radius:20px;transition:transform .15s;}
+.redes-top a:hover{transform:scale(1.07);}
+/* En la portada el menú está fijo arriba: la barra de redes va fija ENCIMA y todo baja 34px. Una sola fila (se desliza en el celular). */
+.redes-top{position:fixed;top:0;left:0;right:0;z-index:101;height:34px;box-sizing:border-box;flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;scrollbar-width:none;}
+.redes-top a{flex-shrink:0;}
+nav{top:34px !important;}
+.mobile-tabs-bar{top:96px !important;}
+.page{padding-top:106px !important;}
+</style>
+<div class="redes-top">
+  <span>Seguinos:</span>
+  <a href="https://www.tiktok.com/@pepeconductores" target="_blank" rel="noopener">🎵 TikTok</a>
+  <a href="https://www.instagram.com/pepeconductores/" target="_blank" rel="noopener">📸 Instagram</a>
+  <a href="https://www.facebook.com/profile.php?id=61596295970327" target="_blank" rel="noopener">📘 Facebook</a>
+  <a href="https://www.youtube.com/channel/UCvdwHpu9kRAyMjwQb6L5Q-g" target="_blank" rel="noopener">▶️ YouTube</a>
+  <a href="https://pepeconductores.com/videos/">🎬 Videos</a>
+  <a href="https://wa.me/5493875157437" target="_blank" rel="noopener">💬 WhatsApp</a>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -409,9 +431,11 @@ footer { padding: 2rem 5%; border-top: 1px solid rgba(255,255,255,0.06); display
         <button class="btn-outline" onclick="window.location.href='/verificar.html'">🧾 Verificar ticket</button>
       </div>
       <!-- (2026-11-14, pedido del dueño) Redes sociales ARRIBA (antes solo estaban al final de la página).
-           TikTok: falta el link de la cuenta. -->
+           (15/11) + TikTok y YouTube, y barra de redes arriba de todo. -->
       <div class="hero-ctas" style="margin-top:1rem;">
+        <a href="https://www.tiktok.com/@pepeconductores" target="_blank" rel="noopener" class="btn-outline">🎵 TikTok</a>
         <a href="https://www.instagram.com/pepeconductores/" target="_blank" rel="noopener" class="btn-outline">📸 Instagram</a>
+        <a href="https://www.youtube.com/channel/UCvdwHpu9kRAyMjwQb6L5Q-g" target="_blank" rel="noopener" class="btn-outline">▶️ YouTube</a>
         <a href="https://www.facebook.com/profile.php?id=61596295970327" target="_blank" rel="noopener" class="btn-outline">📘 Facebook</a>
         <a href="https://wa.me/5493875157437" target="_blank" rel="noopener" class="btn-outline">💬 WhatsApp</a>
       </div>
