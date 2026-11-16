@@ -147,12 +147,6 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <span id="marca-info" class="nota" style="margin:0;display:none;color:#3aa0ff;"></span>
       <button id="btn-sin-marca" title="Borrar la marca seleccionada (Supr)" style="display:none;">✕</button>
     </div>
-  </div>
-</div>
-
-<div class="col-edicion">
-  <div class="caja">
-    <h2>⬇ Armar video</h2>
     <div class="barra"><div id="progreso"></div></div>
     <div class="estado" id="estado"></div>
     <div id="resultado" style="display:none;margin-top:10px;">
@@ -163,6 +157,19 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       </div>
       <div class="nota" id="nota-formato"></div>
     </div>
+  </div>
+</div>
+
+<div class="col-edicion">
+  <div class="caja">
+    <h2>1. Fotos y videos</h2>
+    <div class="fila">
+      <label class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;">➕ Agregar fotos, videos o audios
+        <input type="file" id="in-clips" accept="image/*,video/*,audio/*" multiple style="display:none;">
+      </label>
+      <span id="total" class="nota" style="margin:0;"></span>
+    </div>
+    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div></div>
   </div>
 
   <div class="caja">
@@ -182,17 +189,6 @@ canvas { max-width:100%; max-height:52vh; width:auto; height:auto; background:#0
       <button id="btn-oir-sonido" title="Escuchar el sonido elegido">▶</button>
     </div>
     <div id="capa-panel"></div>
-  </div>
-
-  <div class="caja">
-    <h2>1. Fotos y videos</h2>
-    <div class="fila">
-      <label class="btn prim" style="background:var(--amarillo);color:#111;font-weight:700;">➕ Agregar fotos, videos o audios
-        <input type="file" id="in-clips" accept="image/*,video/*,audio/*" multiple style="display:none;">
-      </label>
-      <span id="total" class="nota" style="margin:0;"></span>
-    </div>
-    <div id="lista-clips"><div class="vacio">Todavía no agregaste nada. Lo primero va a la línea principal; cada foto, video o audio que agregues después va en una línea nueva, desde la línea amarilla.</div></div>
   </div>
 
   <div class="caja">
