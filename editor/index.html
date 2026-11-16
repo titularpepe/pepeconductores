@@ -148,7 +148,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
       <span id="tl-tiempo" class="nota" style="margin:0;min-width:150px;">0:00.000 / 0:00.000</span>
       <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
       <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
-      <button id="btn-desde-marca" title="Ver desde la marca seleccionada (la última que pusiste)">📍▶ Desde la marca</button>
+      <button id="btn-desde-marca" title="Ir a la marca seleccionada (la última que pusiste). Si se está reproduciendo, sigue desde ahí; si está quieto, solo lleva la línea amarilla">📍▶ Desde la marca</button>
       <button id="btn-zoom-menos" title="Alejar la línea de tiempo (Ctrl + ruedita)">🔍−</button>
       <button id="btn-zoom-mas" title="Acercar la línea de tiempo para ver décimas y milésimas (Ctrl + ruedita)">🔍+</button>
       <button id="btn-parar" title="Parar y volver al principio">■ Parar</button>
@@ -1218,8 +1218,9 @@ $('btn-marca').onclick = agregarMarca;
 $('btn-desde-marca').onclick = async () => {
   const m = (marcaSel && marcas.includes(marcaSel)) ? marcaSel : marcas[marcas.length - 1];
   if (!m) { estado('Todavía no pusiste ninguna marca (📍 Marca o tecla M).'); return; }
-  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
-  tActual = m.t; verDesde(m.t);
+  // si se está reproduciendo: salta a la marca y sigue reproduciendo; si está quieto: solo lleva la línea amarilla a la marca
+  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; tActual = m.t; verDesde(m.t); }
+  else mostrarEn(m.t);
 };
 $('btn-sin-marca').onclick = borrarMarcaSel;
 // la próxima marca después de la línea amarilla (para que "Efecto acá" llegue justo hasta ahí); null si no hay
