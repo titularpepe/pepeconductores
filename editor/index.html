@@ -116,6 +116,10 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 #capa-panel { margin-top:6px; }
 .tl .cursor.marca { background:#3aa0ff; width:2px; z-index:2; }
 .tl .cursor.marca.sel { width:4px; margin-left:-2px; background:#7cc4ff; box-shadow:0 0 6px #3aa0ff; }
+.tl .recorte { position:absolute; top:0; bottom:0; z-index:3; background:rgba(37,211,102,0.22); border:2px solid #25D366; border-radius:4px; cursor:grab; box-sizing:border-box; }
+.tl .recorte .borde { position:absolute; top:-2px; bottom:-2px; width:10px; background:#25D366; cursor:ew-resize; }
+.tl .recorte .borde[data-r=ini] { left:-2px; border-radius:4px 0 0 4px; } .tl .recorte .borde[data-r=fin] { right:-2px; border-radius:0 4px 4px 0; }
+#btn-elegir.activo { background:#25D366; color:#111; border-color:#25D366; font-weight:700; }
 .tl .regla { position:relative; height:16px; border-bottom:1px solid #2a2a2a; }
 .tl .regla span { position:absolute; top:0; height:100%; border-left:1px solid #555; font-size:0.6rem; color:var(--apagado); padding-left:2px; line-height:16px; }
 .tl .regla span.chica { height:5px; top:11px; }
@@ -187,6 +191,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
     <h2>✂ Herramientas</h2>
     <div class="fila">
       <button id="btn-cortar" title="Parte en dos el pedazo seleccionado (o el que se ve) donde está la línea amarilla">✂ Cortar acá</button>
+      <button id="btn-elegir" title="Aparece un cuadro verde en la línea de tiempo: corrélo por el video y estiralo o achicalo desde sus puntas para elegir el tramo; miralo y después copialo o cortalo">✂ Elegir tramo</button>
       <button id="btn-deshacer" title="Deshacer (Ctrl+Z)">↶</button>
       <button id="btn-rehacer" title="Rehacer (Ctrl+Y)">↷</button>
     </div>
@@ -199,6 +204,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
       <button id="btn-sonido" title="Pone el sonido en una línea nueva, desde la línea amarilla">🔊 Sonido acá</button>
       <button id="btn-oir-sonido" title="Escuchar el sonido elegido">▶</button>
     </div>
+    <div id="recorte-panel"></div>
     <div id="capa-panel"></div>
   </div>
 
@@ -1308,7 +1314,9 @@ function pintarTimeline() {
   const ICONO = { video: '🎬', foto: '🖼', audio: '🎵' };
   $('tl-clips').innerHTML = nums.map((n, i) => `<div class="pista"><span class="etq">L${i + 1}</span>` +
     clips.filter(c => c.linea === n).map(c => `<div class="bloque ${c.tipo}${c.id === clipSel ? ' sel' : ''}" data-id="${c.id}" style="left:${c.ini / total * 100}%;width:${duracionClip(c) / total * 100}%;">
-      <span class="borde" data-b="ini" style="left:0;"></span>${ICONO[c.tipo]} ${esc(c.nombre)}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('') + '</div>').join('');
+      <span class="borde" data-b="ini" style="left:0;"></span>${ICONO[c.tipo]} ${esc(c.nombre)}${c.vel !== 1 ? ' · ' + c.vel + 'x' : ''}<span class="borde" data-b="fin" style="right:0;"></span></div>`).join('')
+    + (recorte && recorte.c.linea === n ? `<div class="recorte" title="Del medio lo corrés por todo el video; las puntas verdes lo estiran o achican" style="left:${recorte.a / total * 100}%;width:${(recorte.b - recorte.a) / total * 100}%;"><span class="borde" data-r="ini"></span><span class="borde" data-r="fin"></span></div>` : '')
+    + '</div>').join('');
   $('tl-fin').style.display = real ? '' : 'none';
   $('tl-fin').style.left = `${real / total * 100}%`;
   // logos: una línea por cada logo marcado (barra = cuándo se ve; "Todo el video" = de punta a punta)
@@ -1374,6 +1382,9 @@ function marcarClipSel() {
     tl.setPointerCapture(e.pointerId);
     escalaFija = escalaTl(); // mientras se arrastra, la escala no cambia
     const real = duracionTotal();
+    // ✂ cuadro verde del tramo: se corre entero o se estira desde las puntas
+    const rEl = e.target.closest('.recorte');
+    if (rEl && recorte) { arrastreTl = { modo: 'recorte', borde: e.target.dataset.r || 'mover', t0: aT(e.clientX), a0: recorte.a, b0: recorte.b }; return; }
     // efectos y logos: se mueven y se estiran (tocarlos NO mueve la línea amarilla)
     const capaEl = e.target.closest('.capa');
     if (capaEl) {
@@ -1398,7 +1409,7 @@ function marcarClipSel() {
       const c = clips.find(x => x.id === +b.dataset.id);
       if (c) {
         clipSel = c.id; capaSel = null; marcarClipSel(); pintarPanelCapa();
-        arrastreTl = { modo: 'clip', borde: e.target.dataset.b || 'mover', c, t0: aT(e.clientX), x0: e.clientX, movio: false,
+        arrastreTl = { modo: 'clip', borde: e.target.dataset.b || 'mover', c, t0: aT(e.clientX), x0: e.clientX, y0: e.clientY, movio: false,
           ini0: c.ini, dur0: duracionClip(c), desde0: c.desde, hasta0: c.hasta };
         return;
       }
@@ -1411,7 +1422,8 @@ function marcarClipSel() {
     const t = aT(e.clientX);
     if (a.modo === 'cursor') { mostrarEn(pegarCursor(t, e.altKey)); return; }
     if (a.modo === 'marca') { a.m.t = Math.min(t, duracionTotal()); pintarCursor(); return; }
-    if (!a.movio && Math.abs(e.clientX - a.x0) < 4) return; // un toquecito no mueve nada
+    if (a.modo === 'recorte') { moverRecorte(a, t - a.t0, e.altKey); return; }
+    if (!a.movio && Math.abs(e.clientX - a.x0) < 4 && !(a.y0 != null && Math.abs(e.clientY - a.y0) >= 6)) return; // un toquecito no mueve nada
     a.movio = true;
     const d = t - a.t0;
     if (a.modo === 'clip') {
@@ -1421,6 +1433,16 @@ function marcarClipSel() {
         const pi = pegar(ini), pf = pegar(ini + a.dur0);
         if (pi !== ini) ini = pi; else if (pf !== ini + a.dur0) ini = pf - a.dur0;
         c.ini = Math.max(0, ini);
+        // arrastrarlo para arriba o abajo: pasa a otra línea (más abajo de la última = línea nueva)
+        const filasEl = [...$('tl-clips').children], nums = lineas();
+        if (filasEl.length) {
+          const ult = filasEl[filasEl.length - 1].getBoundingClientRect();
+          let destino = null;
+          filasEl.forEach((f, i) => { const r = f.getBoundingClientRect(); if (e.clientY >= r.top && e.clientY < r.bottom) destino = nums[i]; });
+          const soloEnUltima = c.linea === nums[nums.length - 1] && clips.filter(x => x.linea === c.linea).length === 1;
+          if (destino == null && e.clientY >= ult.bottom + 4 && !soloEnUltima) destino = Math.max(...nums) + 1;
+          if (destino != null && destino !== c.linea) { c.linea = destino; if (recorte && recorte.c === c) { recorte = null; pintarRecorte(); } }
+        }
       } else if (a.borde === 'ini') { // estirar o achicar desde el principio (el final queda quieto)
         const fin = a.ini0 + a.dur0, ini = Math.min(pegar(a.ini0 + d), fin - 0.2);
         if (c.tipo === 'foto') { c.ini = Math.max(0, ini); c.dur = +(fin - c.ini).toFixed(3); }
@@ -1467,6 +1489,101 @@ function marcarClipSel() {
   };
   tl.addEventListener('pointerup', soltar); tl.addEventListener('pointercancel', soltar);
 })();
+// ---------- ✂ Elegir tramo (16/11, pedido del dueño: como en Filmora) ----------
+// Aparece un cuadro verde en la línea del pedazo que está en la línea amarilla. Se corre entero por TODO el video de esa
+// línea (si pasa a otro pedazo de la misma línea, se engancha a ese) y se estira o achica desde las puntas, viendo el cuadro.
+// ▶ mira solo ese tramo. 📋 Copiar = copia en una línea nueva, en el mismo lugar.
+// ✂ Cortar = lo saca de su línea (lo que sigue en ESA línea se corre para atrás, sin hueco) y lo pone en una línea nueva.
+// Después el tramo se arrastra a donde se quiera (también para arriba o abajo, a otra línea).
+var recorte = null; // { c, a, b } en segundos del video final
+function moverRecorte(a, d, sinIman) {
+  const r = recorte; if (!r) return;
+  const pegar = (v, puntos) => sinIman ? v : pegarA(v, puntos);
+  if (a.borde === 'mover') {
+    const largo = a.b0 - a.a0;
+    // el pedazo de esa línea que queda debajo del medio del cuadro (o el más cercano)
+    const enLinea = clips.filter(x => x.linea === r.c.linea);
+    const medio = a.a0 + d + largo / 2;
+    const dist = x => (medio >= x.ini && medio < finClip(x)) ? 0 : Math.min(Math.abs(medio - x.ini), Math.abs(medio - finClip(x)));
+    const c = enLinea.reduce((m, x) => dist(x) < dist(m) ? x : m, enLinea[0]);
+    const lo = c.ini, hi = finClip(c), l = Math.min(largo, hi - lo), puntos = [tActual, lo, hi, ...marcas.map(m => m.t)];
+    let x = pegar(a.a0 + d, puntos);
+    if (x === a.a0 + d) x = pegar(a.a0 + d + l, puntos) - l;
+    x = Math.min(Math.max(lo, x), hi - l);
+    r.c = c; r.a = x; r.b = x + l;
+    if (clipSel !== c.id) { clipSel = c.id; marcarClipSel(); }
+    mostrarEn(r.a);
+  } else {
+    const lo = r.c.ini, hi = finClip(r.c), puntos = [tActual, lo, hi, ...marcas.map(m => m.t)];
+    if (a.borde === 'ini') { r.a = Math.min(Math.max(lo, pegar(a.a0 + d, puntos)), r.b - 0.1); mostrarEn(r.a); }
+    else { r.b = Math.max(Math.min(hi, pegar(a.b0 + d, puntos)), r.a + 0.1); mostrarEn(Math.max(r.a, r.b - 0.02)); }
+  }
+  pintarTimeline(); pintarRecorte();
+}
+function pintarRecorte() {
+  const el = $('recorte-panel'), r = recorte;
+  if (!r || !clips.includes(r.c)) { recorte = null; el.innerHTML = ''; $('btn-elegir').classList.remove('activo'); return; }
+  $('btn-elegir').classList.add('activo');
+  el.innerHTML = `<div class="clip" style="display:block;border-color:#25D366;">
+    <div class="fila"><b style="font-size:0.85rem;color:#25D366;">✂ Tramo</b><span class="nota" style="margin:0;">${fmt3(r.a)} → ${fmt3(r.b)} (${(r.b - r.a).toFixed(2)} s)</span></div>
+    <div class="fila">
+      <button id="rec-ver" title="Ver solo este tramo">▶ Ver el tramo</button>
+      <button id="rec-copiar" title="Hace una copia del tramo en una línea nueva; el original queda igual">📋 Copiar</button>
+      <button id="rec-cortar" title="Saca el tramo de su línea (lo que sigue se corre para atrás) y lo pone en una línea nueva">✂ Cortar</button>
+      <button id="rec-cancelar" title="Sacar el cuadro verde (Esc)">✕</button>
+    </div>
+  </div>`;
+  $('rec-ver').onclick = async () => {
+    if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
+    if (!recorte) return;
+    $('resultado').style.display = 'none'; estado('');
+    tActual = recorte.a; await reproducir({ grabar: false, desde: recorte.a, hasta: recorte.b });
+  };
+  $('rec-copiar').onclick = () => sacarTramo(false);
+  $('rec-cortar').onclick = () => sacarTramo(true);
+  $('rec-cancelar').onclick = cancelarRecorte;
+}
+function cancelarRecorte() { recorte = null; pintarRecorte(); pintarTimeline(); }
+$('btn-elegir').onclick = () => {
+  if (corriendo && corriendo.grabando) return;
+  if (recorte) { cancelarRecorte(); return; }
+  let c = clips.find(x => x.id === clipSel);
+  if (!c || !activoEn(c, tActual)) c = visibleEn(tActual) || clips.filter(x => activoEn(x, tActual)).sort((a, b) => b.linea - a.linea)[0] || c;
+  if (!c) { estado('Primero agregá un video o tocá el pedazo que querés cortar.'); return; }
+  const lo = c.ini, hi = finClip(c);
+  let a = Math.min(Math.max(lo, tActual), hi), b = Math.min(hi, a + 2);
+  if (b - a < 0.5) { b = hi; a = Math.max(lo, hi - 2); }
+  recorte = { c, a, b }; clipSel = c.id;
+  marcarClipSel(); pintarTimeline(); pintarRecorte();
+  estado('Corré el cuadro verde por el video y estiralo o achicalo desde sus puntas. Con ▶ Ver el tramo lo mirás antes de cortar.');
+};
+function sacarTramo(cortar) {
+  if (corriendo || !recorte) return;
+  const { c, a, b } = recorte, vel = c.vel || 1, fin = finClip(c), largo = b - a;
+  const enVideo = t => c.desde + (t - c.ini) * vel; // segundo del archivo original
+  const nueva = Math.max(...lineas()) + 1;
+  const copia = nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro }, trans: 'corte', sale: 'corte' }); copia.id = ++idSeq;
+  copia.linea = nueva; copia.ini = a;
+  if (c.tipo === 'foto') copia.dur = +largo.toFixed(3); else { copia.desde = enVideo(a); copia.hasta = enVideo(b); }
+  if (cortar) {
+    // lo que viene después en ESA línea se corre para atrás lo que duraba el tramo (las demás líneas no se tocan)
+    clips.forEach(x => { if (x !== c && x.linea === c.linea && x.ini >= fin - 1e-6) x.ini = Math.max(0, x.ini - largo); });
+    // lo que queda del pedazo después del tramo pasa a ser un pedazo aparte, pegado donde empezaba el tramo
+    if (fin - b > 0.05) {
+      const resto = nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro }, trans: 'corte' }); resto.id = ++idSeq;
+      resto.ini = a;
+      if (c.tipo === 'foto') resto.dur = +(fin - b).toFixed(3); else { resto.desde = enVideo(b); resto.hasta = c.hasta; }
+      clips.push(resto);
+    }
+    if (a - c.ini > 0.05) { if (c.tipo === 'foto') c.dur = +(a - c.ini).toFixed(3); else c.hasta = enVideo(a); c.sale = 'corte'; }
+    else clips.splice(clips.indexOf(c), 1);
+  }
+  clips.push(copia);
+  clipSel = copia.id; recorte = null;
+  estado(`${cortar ? 'Cortado' : 'Copiado'}: el tramo quedó en ${nombreLinea(nueva)}. Arrastralo a donde quieras (también para arriba o abajo, a otra línea).`);
+  pintarRecorte(); pintarLista(); mostrarEn(a);
+}
+
 // ✂ Cortar acá: corta el pedazo seleccionado si la línea amarilla está sobre él; si no, el que se ve en ese momento.
 // Solo cambia esa línea.
 $('btn-cortar').onclick = () => {
@@ -1674,7 +1791,7 @@ async function reproducir(opciones) {
   arrancando = true;
   try { return await reproducir2(opciones); } finally { arrancando = false; }
 }
-async function reproducir2({ grabar, desde = 0 }) {
+async function reproducir2({ grabar, desde = 0, hasta = null }) {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
   if (grabar) desde = 0; // el video final siempre se graba completo, desde el principio
   asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
@@ -1750,7 +1867,7 @@ async function reproducir2({ grabar, desde = 0 }) {
       if (ahora - quietoDesde < 1500 && Math.abs(tv - t) < 0.5) { t = Math.max(tPrev, tv); p0 = ahora - (t - desde) * 1000; }
     }
     tPrev = t;
-    if (t >= total) break;
+    if (t >= total || (hasta != null && t >= hasta)) break;
     sincronizarVideos(t, aviso);
     tActual = t;
     const c = visibleEn(t);
@@ -1858,6 +1975,7 @@ $('btn-rehacer').onclick = rehacer;
 // barra espaciadora = Ver/Pausa; Supr = borrar lo seleccionado (foto/efecto encima o pedazo); Ctrl+Z / Ctrl+Y
 document.addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input[type=text], input[type=number], textarea, select')) return;
+  if (e.key === 'Escape' && recorte) { cancelarRecorte(); return; }
   if ((e.ctrlKey || e.metaKey) && !e.altKey) {
     const k = e.key.toLowerCase();
     if (k === 'z' && !e.shiftKey) { e.preventDefault(); deshacer(); return; }
