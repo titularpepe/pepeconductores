@@ -609,7 +609,9 @@ function cajaLogo(l) {
 // textoPos: centro del texto (fracción) cuando lo arrastraron; null = usar "Lugar"
 const textoPos = { x: null, y: null };
 // cuándo se ve el texto (16/11, pedido del dueño): ini/fin en segundos; null = todo el video. Tiene su barra en la línea de tiempo.
-const textoTiempo = { ini: null, fin: null };
+const textoTiempo = { ini: null, fin: null, entra: 'corte', sale: 'corte' };
+// efectos propios del texto (además de los de aparecer/irse de logos y fotos)
+const TXT_ANIMS = { escribir: '⌨️ Máquina de escribir', palabras: '💬 Palabra por palabra' };
 const textoVisible = t => textoTiempo.ini == null || (t >= textoTiempo.ini && t < textoTiempo.fin);
 function pintarTiempoTexto() {
   const el = $('txt-tiempo'), k = textoTiempo, todo = k.ini == null;
@@ -617,8 +619,11 @@ function pintarTiempoTexto() {
     ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.001" value="${k.ini.toFixed(3)}">
       <label>a</label><input type="number" data-k="fin" min="0" step="0.001" value="${k.fin.toFixed(3)}"><label>seg</label>
       <button data-a="aca-ini" title="Que aparezca donde está la línea amarilla">⇤ Acá</button>
-      <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}`;
+      <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}
+    <label>Aparece</label><select data-k="entra">${opcionesAnim(k.entra, [['corte', 'De golpe'], ...Object.entries(TXT_ANIMS)])}</select>
+    <label>Se va</label><select data-k="sale">${opcionesAnim(k.sale, [['corte', 'De golpe'], ...Object.entries(TXT_ANIMS)])}</select>`;
   const q = x => el.querySelector(x), total = () => duracionTotal() || 1;
+  el.querySelectorAll('select[data-k]').forEach(sl => sl.onchange = () => { k[sl.dataset.k] = sl.value; marcarCambio(); redibujar(); });
   const poner = (a, b) => { k.ini = Math.min(Math.max(0, a), Math.max(0, total() - 0.2)); k.fin = Math.min(total(), Math.max(k.ini + 0.2, b)); pintarTiempoTexto(); pintarTimeline(); redibujar(); };
   q('[data-k=todo]').onchange = e => { if (e.target.checked) { k.ini = k.fin = null; pintarTiempoTexto(); pintarTimeline(); redibujar(); } else poner(tActual, tActual + 3); };
   if (q('[data-k=ini]')) q('[data-k=ini]').onchange = e => { const largo = k.fin - k.ini, v = parseFloat(e.target.value) || 0; poner(v, v + largo); };
@@ -1227,12 +1232,45 @@ function dibujarExtras() {
     const cx = textoPos.x != null ? textoPos.x * W : W / 2;
     const ancho = Math.max(...lineas.map(l => ctx.measureText(l).width)) + tam;
     cajaTexto = { x: cx - ancho / 2, y: y0 - tam * 0.8, w: ancho, h: alto + tam * 0.4, cy: y0 - tam * 0.6 + alto / 2 };
+    // efecto al aparecer / al irse (16/11): los de logos (se mueve la caja entera) o los propios del texto (va saliendo de a poco)
+    const k = textoTiempo, ti = k.ini == null ? 0 : k.ini, tf = k.ini == null ? duracionTotal() : k.fin;
+    const anim = animEn(ANIMS[k.entra] ? k.entra : null, ANIMS[k.sale] ? k.sale : null, ti, tf, tActual);
+    const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter('es', { granularity: 'grapheme' }) : null;
+    const letras = l => seg ? [...seg.segment(l)].map(x => x.segment) : [...l];
+    let tipoParte = null, parte = 1;
+    const Dt = Math.min(Math.max(0.6, letras(texto).length * 0.06), 2.5, (tf - ti) / 2);
+    if (TXT_ANIMS[k.entra] && tActual - ti < Dt) { tipoParte = k.entra; parte = Math.max(0, (tActual - ti) / Dt); }
+    else if (TXT_ANIMS[k.sale] && tf - tActual < Dt) { tipoParte = k.sale; parte = Math.max(0, (tf - tActual) / Dt); }
+    ctx.save();
+    if (anim) {
+      ctx.globalAlpha = anim.alpha == null ? 1 : anim.alpha;
+      if (anim.blur) ctx.filter = `blur(${(anim.blur * Math.min(W, H) / 30).toFixed(1)}px)`;
+      ctx.translate(cx + (anim.dx || 0) * W, cajaTexto.cy + (anim.dy || 0) * H);
+      if (anim.rot) ctx.rotate(anim.rot);
+      const e = anim.esc == null ? 1 : anim.esc; ctx.scale(e, e);
+      ctx.translate(-cx, -cajaTexto.cy);
+    }
     if ($('txt-fondo').checked) {
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(cajaTexto.x, cajaTexto.y, cajaTexto.w, cajaTexto.h);
     }
     ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = $('txt-color').value;
-    lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, cx, y); ctx.fillText(l, cx, y); });
+    if (!tipoParte) lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, cx, y); ctx.fillText(l, cx, y); });
+    else {
+      // de a una letra o de a una palabra; cada renglón crece desde donde empieza (no se corre)
+      const partes = lineas.map(l => tipoParte === 'escribir' ? letras(l) : l.split(' '));
+      let quedan = Math.ceil(parte * partes.reduce((a, p) => a + p.length, 0));
+      ctx.textAlign = 'left';
+      partes.forEach((p, i) => {
+        if (quedan <= 0) return;
+        const y = y0 + i * tam * 1.2, x = cx - ctx.measureText(lineas[i]).width / 2;
+        const trozo = p.slice(0, quedan).join(tipoParte === 'escribir' ? '' : ' ');
+        quedan -= p.length;
+        ctx.strokeText(trozo, x, y); ctx.fillText(trozo, x, y);
+      });
+      ctx.textAlign = 'center';
+    }
+    ctx.restore();
   } else cajaTexto = null;
   const tema = $('mus-tema').value.trim(), artista = $('mus-artista').value.trim();
   if ($('mus-cartel').checked && (tema || artista)) {
@@ -2017,7 +2055,7 @@ function fotoProyecto() {
     clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
     capas: capas.map(k => ({ ...k })),
     logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin, entra: l.entra, sale: l.sale })),
-    texto: { x: textoPos.x, y: textoPos.y, ini: textoTiempo.ini, fin: textoTiempo.fin },
+    texto: { x: textoPos.x, y: textoPos.y, ini: textoTiempo.ini, fin: textoTiempo.fin, entra: textoTiempo.entra, sale: textoTiempo.sale },
     marcas: marcas.map(m => m.t),
   };
 }
@@ -2043,7 +2081,7 @@ function aplicarFoto(f) {
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
     logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin, entra: o.entra, sale: o.sale }); logos.push(o.l); });
     textoPos.x = f.texto.x; textoPos.y = f.texto.y;
-    textoTiempo.ini = f.texto.ini == null ? null : f.texto.ini; textoTiempo.fin = f.texto.fin == null ? null : f.texto.fin; pintarTiempoTexto();
+    textoTiempo.ini = f.texto.ini == null ? null : f.texto.ini; textoTiempo.fin = f.texto.fin == null ? null : f.texto.fin; textoTiempo.entra = f.texto.entra || 'corte'; textoTiempo.sale = f.texto.sale || 'corte'; pintarTiempoTexto();
     marcas = (f.marcas || []).map(t => ({ t })); marcaSel = null;
     capaSel = null; clipSel = null;
     pintarLista(); pintarLogos(); pintarPanelCapa();
