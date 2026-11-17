@@ -106,7 +106,9 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 .tl .bloque { position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; font-size:0.68rem; color:#fff; padding:2px 10px; white-space:nowrap; border:1px solid #000; cursor:grab; }
 .tl .bloque.video { background:#2d4a7a; } .tl .bloque.foto { background:#5a3d7a; } .tl .bloque.audio { background:#1f6b5c; } .tl .bloque.sel { outline:2px solid var(--amarillo); z-index:1; }
 .tl .bloque .borde { position:absolute; top:0; width:8px; height:100%; cursor:ew-resize; background:rgba(255,255,255,0.25); }
-.tl .capa.logo { background:#7a2d4a; } .tl .capa.texto { background:#5c5c1a; }
+.tl .capa.logo { background:#7a2d4a; } .tl .capa.texto { background:#5c5c1a; } .tl .capa.texto.sel { outline:2px solid var(--amarillo); z-index:1; }
+#txt-lista button.act { background:var(--amarillo); color:#111; border-color:var(--amarillo); font-weight:700; }
+#emoji-lista span svg { width:26px; height:26px; }
 .tl .fin-video { position:absolute; top:0; bottom:0; right:0; background:rgba(0,0,0,0.45); border-left:1px dashed #777; pointer-events:none; }
 .tl .capas { position:relative; border-top:1px solid #2a2a2a; }
 .tl .capa { position:absolute; height:18px; border-radius:4px; font-size:0.66rem; padding:1px 10px; white-space:nowrap; overflow:hidden; cursor:grab; color:#fff; }
@@ -217,6 +219,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 
   <div class="caja">
     <h2>2. Texto encima</h2>
+    <div class="fila" id="txt-lista"></div>
     <div class="fila"><input type="text" id="txt" placeholder="Ej: ¡Lanzamiento 17/11! Bajate Pepe 🚗" style="flex:1;min-width:200px;">
       <button id="btn-emojis" title="Elegir emojis para el texto">😀 Emojis</button></div>
     <div id="emoji-caja" style="display:none;"><div id="emoji-grupos"></div><div id="emoji-lista"></div></div>
@@ -606,13 +609,59 @@ function cajaLogo(l) {
   return { x: l.x * W - w / 2, y: l.y * H - h / 2, w, h };
 }
 // arrastrar logos y texto sobre la vista previa
-// textoPos: centro del texto (fracción) cuando lo arrastraron; null = usar "Lugar"
-const textoPos = { x: null, y: null };
+// ---------- varios textos (16/11, pedido del dueño) ----------
+// Cada texto tiene lo suyo: lo escrito, lugar, tamaño, color, letra, fondo, x/y (centro, fracción; null = usar "Lugar"),
+// ini/fin (null = todo el video) y cómo aparece/se va. Los casilleros del panel editan el texto elegido (textoAct).
+function nuevoTexto(base) {
+  return Object.assign({ txt: '', pos: 'abajo', tam: '0.06', color: '#ffffff', letra: 'comun', fondo: true, x: null, y: null, ini: null, fin: null, entra: 'corte', sale: 'corte' }, base);
+}
+const textos = [nuevoTexto()];
+let textoAct = textos[0];
+// (textoPos y textoTiempo = el texto elegido; así el resto del código sigue igual)
+let textoPos = textoAct;
 // cuándo se ve el texto (16/11, pedido del dueño): ini/fin en segundos; null = todo el video. Tiene su barra en la línea de tiempo.
-const textoTiempo = { ini: null, fin: null, entra: 'corte', sale: 'corte' };
+let textoTiempo = textoAct;
 // efectos propios del texto (además de los de aparecer/irse de logos y fotos)
 const TXT_ANIMS = { escribir: '⌨️ Máquina de escribir', palabras: '💬 Palabra por palabra' };
-const textoVisible = t => textoTiempo.ini == null || (t >= textoTiempo.ini && t < textoTiempo.fin);
+const textoVisible = (k, t) => k.ini == null || (t >= k.ini && t < k.fin);
+const escTxt = t => String(t).replace(/[<>&"]/g, '');
+function cargarTexto(k) {
+  textoAct = textoPos = textoTiempo = k;
+  $('txt').value = k.txt; $('txt-pos').value = k.pos; $('txt-tam').value = k.tam; $('txt-color').value = k.color;
+  $('txt-letra').value = k.letra; $('txt-fondo').checked = k.fondo;
+  pintarTiempoTexto(); pintarListaTextos();
+  if (editorListo) pintarTimeline();
+}
+function pintarListaTextos() {
+  $('txt-lista').innerHTML = textos.map((k, i) => `<button type="button" data-i="${i}" class="${k === textoAct ? 'act' : ''}" title="Editar este texto">${i + 1}. ${escTxt(k.txt.replace(RE_RED, '📱').trim().slice(0, 14)) || '(vacío)'}</button>`).join('')
+    + '<button type="button" data-a="nuevo" title="Agregar otro texto (aparece en la línea amarilla, 3 segundos)">➕ Otro texto</button>'
+    + '<button type="button" data-a="borrar" title="Borrar el texto elegido" style="color:var(--rojo);">✕</button>';
+}
+$('txt-lista').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.i != null) { cargarTexto(textos[+b.dataset.i]); return; }
+  if (b.dataset.a === 'nuevo') {
+    const total = duracionTotal(), a = textoAct;
+    const k = nuevoTexto({ pos: 'medio', tam: a.tam, color: a.color, letra: a.letra, fondo: a.fondo });
+    if (total > 0.3) { k.ini = Math.min(tActual, Math.max(0, total - 0.2)); k.fin = Math.min(total, k.ini + 3); }
+    textos.push(k); cargarTexto(k); $('txt').focus(); marcarCambio(); redibujar();
+  }
+  if (b.dataset.a === 'borrar') {
+    const i = textos.indexOf(textoAct);
+    if (textos.length > 1) { textos.splice(i, 1); cargarTexto(textos[Math.max(0, i - 1)]); }
+    else { Object.assign(textoAct, nuevoTexto()); cargarTexto(textoAct); }
+    marcarCambio(); redibujar();
+  }
+});
+// los casilleros escriben en el texto elegido (antes de que se redibuje)
+['input', 'change'].forEach(ev => {
+  $('txt-pos').addEventListener(ev, () => { textoAct.pos = $('txt-pos').value; });
+  $('txt-tam').addEventListener(ev, () => { textoAct.tam = $('txt-tam').value; });
+  $('txt-color').addEventListener(ev, () => { textoAct.color = $('txt-color').value; });
+  $('txt-letra').addEventListener(ev, () => { textoAct.letra = $('txt-letra').value; });
+  $('txt-fondo').addEventListener(ev, () => { textoAct.fondo = $('txt-fondo').checked; });
+});
+$('txt').addEventListener('input', () => { textoAct.txt = $('txt').value; pintarListaTextos(); });
 function pintarTiempoTexto() {
   const el = $('txt-tiempo'), k = textoTiempo, todo = k.ini == null;
   el.innerHTML = `<label><input type="checkbox" data-k="todo" ${todo ? 'checked' : ''}> Todo el video</label>
@@ -631,7 +680,6 @@ function pintarTiempoTexto() {
   if (q('[data-a=aca-ini]')) q('[data-a=aca-ini]').onclick = () => { const largo = k.fin - k.ini; poner(tActual, tActual + largo); };
   if (q('[data-a=aca-fin]')) q('[data-a=aca-fin]').onclick = () => { if (tActual <= k.ini + 0.1) { estado('La línea amarilla tiene que estar después de donde aparece el texto.'); return; } poner(k.ini, tActual); };
 }
-let cajaTexto = null; // la llena dibujarExtras (píxeles del lienzo)
 $('txt-pos').addEventListener('change', () => { textoPos.x = textoPos.y = null; redibujar(); });
 let arrastrando = null;
 function aLienzo(cx, cy) { const r = lienzo.getBoundingClientRect(); return { x: (cx - r.left) / r.width * lienzo.width, y: (cy - r.top) / r.height * lienzo.height }; }
@@ -640,9 +688,12 @@ function queHayAhi(p) {
   for (let i = logos.length - 1; i >= 0; i--) {
     const l = logos[i]; if (logoVisible(l, tActual) && dentro(p, cajaLogo(l))) return l;
   }
-  if (dentro(p, cajaTexto)) {
-    if (textoPos.x == null) { textoPos.x = (cajaTexto.x + cajaTexto.w / 2) / lienzo.width; textoPos.y = cajaTexto.cy / lienzo.height; }
-    return textoPos;
+  for (let i = textos.length - 1; i >= 0; i--) {
+    const k = textos[i], c = k._caja;
+    if (!dentro(p, c)) continue;
+    if (k.x == null) { k.x = (c.x + c.w / 2) / lienzo.width; k.y = c.cy / lienzo.height; }
+    if (k !== textoAct) cargarTexto(k);
+    return k;
   }
   return null;
 }
@@ -668,14 +719,13 @@ lienzo.addEventListener('touchend', () => { arrastrando = null; });
 lienzo.addEventListener('mousemove', e => {
   if (arrastrando) return;
   const p = aLienzo(e.clientX, e.clientY);
-  const hay = dentro(p, cajaTexto) || logos.some(l => logoVisible(l, tActual) && dentro(p, cajaLogo(l)));
+  const hay = textos.some(k => dentro(p, k._caja)) || logos.some(l => logoVisible(l, tActual) && dentro(p, cajaLogo(l)));
   lienzo.style.cursor = hay ? 'move' : '';
 });
 
 // ---------- tipo de letra ----------
 const PESO_LETRA = { 'Montserrat': 800, 'Comic Neue': 700 };
-function fuenteTexto(tam) {
-  const f = $('txt-letra').value;
+function fuenteTexto(tam, f = textoAct.letra) {
   if (f === 'comun') return `800 ${tam}px system-ui, 'Segoe UI', Roboto, sans-serif`;
   return `${PESO_LETRA[f] || 400} ${tam}px '${f}', system-ui, sans-serif`;
 }
@@ -717,13 +767,61 @@ function emojiSeVe(e) {
   for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 0 && (Math.abs(d[i] - d[i + 1]) > 12 || Math.abs(d[i + 1] - d[i + 2]) > 12)) return true; // tiene color
   return false;
 }
+// 📱 redes: en el texto quedan como {IG} {FB} {TT} {YT} y se dibujan como íconos del tamaño de la letra.
+// Dibujos propios simplificados (caja de 100x100), con trazos: no usan imágenes de afuera.
+const CAJA_RED = 'M28 5H72Q95 5 95 28V72Q95 95 72 95H28Q5 95 5 72V28Q5 5 28 5Z';
+const NOTA_TT = 'M51 18H61C61 27 66 33 74 33V43C68 43 64 41 61 39V61A15 15 0 1 1 46 46V56.5A5 5 0 1 0 51 61Z';
+const REDES = {
+  IG: { n: 'Instagram', capas: [{ d: CAJA_RED, ig: true },
+    { d: 'M33 20H67Q80 20 80 33V67Q80 80 67 80H33Q20 80 20 67V33Q20 20 33 20ZM34 27H66Q73 27 73 34V66Q73 73 66 73H34Q27 73 27 66V34Q27 27 34 27Z', f: '#fff', par: 1 },
+    { d: 'M65 50A15 15 0 1 1 35 50A15 15 0 1 1 65 50ZM58.5 50A8.5 8.5 0 1 0 41.5 50A8.5 8.5 0 1 0 58.5 50Z', f: '#fff', par: 1 },
+    { d: 'M71 31A4.5 4.5 0 1 1 62 31A4.5 4.5 0 1 1 71 31Z', f: '#fff' }] },
+  FB: { n: 'Facebook', capas: [{ d: 'M95 50A45 45 0 1 1 5 50A45 45 0 1 1 95 50Z', f: '#1877F2' },
+    { d: 'M57 95V62H68L70 49H57V41C57 37 58.5 34 64 34H70.5V23C69 22.8 65 22.5 60.5 22.5C51 22.5 44 28 44 39V49H33V62H44V95Z', f: '#fff' }] },
+  TT: { n: 'TikTok', capas: [{ d: CAJA_RED, f: '#000' }, { d: NOTA_TT, f: '#25F4EE', dx: -2.5, dy: -2.5 }, { d: NOTA_TT, f: '#FE2C55', dx: 2.5, dy: 2.5 }, { d: NOTA_TT, f: '#fff' }] },
+  YT: { n: 'YouTube', capas: [{ d: 'M8 33Q8 20 21 19Q50 17 79 19Q92 20 92 33V67Q92 80 79 81Q50 83 21 81Q8 80 8 67Z', f: '#FF0000' }, { d: 'M41 36L66 50L41 64Z', f: '#fff' }] },
+};
+const RE_RED = /\{(IG|FB|TT|YT)\}/g;
+function svgRed(k) {
+  const r = REDES[k];
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g-ig" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset="0.3" stop-color="#FA7E1E"/><stop offset="0.55" stop-color="#D62976"/><stop offset="0.8" stop-color="#962FBF"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs>`
+    + r.capas.map(c => `<path d="${c.d}" fill="${c.ig ? 'url(#g-ig)' : c.f}"${c.par ? ' fill-rule="evenodd"' : ''}${c.dx ? ` transform="translate(${c.dx} ${c.dy})"` : ''}/>`).join('') + '</svg>';
+}
+const pathsRed = {};
+function dibujarRed(g, k, x, yCentro, lado) {
+  const r = REDES[k]; if (!r) return;
+  g.save(); g.translate(x, yCentro - lado / 2); g.scale(lado / 100, lado / 100);
+  r.capas.forEach((c, i) => {
+    const p = pathsRed[k + i] || (pathsRed[k + i] = new Path2D(c.d));
+    if (c.ig) { const gr = g.createLinearGradient(0, 100, 100, 0); [['0', '#FEDA75'], ['0.3', '#FA7E1E'], ['0.55', '#D62976'], ['0.8', '#962FBF'], ['1', '#4F5BD5']].forEach(([o, col]) => gr.addColorStop(+o, col)); g.fillStyle = gr; }
+    else g.fillStyle = c.f;
+    if (c.dx) { g.save(); g.translate(c.dx, c.dy); g.fill(p, c.par ? 'evenodd' : 'nonzero'); g.restore(); }
+    else g.fill(p, c.par ? 'evenodd' : 'nonzero');
+  });
+  g.restore();
+}
+// partir un renglón en pedazos de texto y de íconos
+function trozosRed(l) {
+  const out = []; let i = 0; RE_RED.lastIndex = 0; let m;
+  while ((m = RE_RED.exec(l))) { if (m.index > i) out.push(l.slice(i, m.index)); out.push({ red: m[1] }); i = m.index + m[0].length; }
+  if (i < l.length) out.push(l.slice(i));
+  return out;
+}
+const anchoRed = tam => tam * 1.05;
+function medirConRedes(l, tam) { return trozosRed(l).reduce((a, t) => a + (typeof t === 'string' ? ctx.measureText(t).width : anchoRed(tam)), 0); }
+function dibujarConRedes(l, x, y, tam) {
+  for (const t of trozosRed(l)) {
+    if (typeof t === 'string') { ctx.strokeText(t, x, y); ctx.fillText(t, x, y); x += ctx.measureText(t).width; }
+    else { dibujarRed(ctx, t.red, x + tam * 0.05, y, tam * 0.95); x += anchoRed(tam); }
+  }
+}
 let gruposEmoji = null, grupoEmoji = 0;
 function pintarEmojis() {
   // los compuestos (banderas, familias, profesiones…) también se prueban: Windows, por ejemplo, no dibuja las banderas de países
   const compuesto = e => [...e].filter(ch => ch !== '️').length > 1;
-  if (!gruposEmoji) gruposEmoji = EMOJIS.map(([n, viejos, nuevos]) => [n, viejos.split(' ').filter(e => !compuesto(e) || emojiSeVe(e)).concat(nuevos ? nuevos.split(' ').filter(emojiSeVe) : [])]);
+  if (!gruposEmoji) gruposEmoji = [['📱 Redes', Object.keys(REDES).map(k => `{${k}}`)]].concat(EMOJIS.map(([n, viejos, nuevos]) => [n, viejos.split(' ').filter(e => !compuesto(e) || emojiSeVe(e)).concat(nuevos ? nuevos.split(' ').filter(emojiSeVe) : [])]));
   $('emoji-grupos').innerHTML = gruposEmoji.map(([n], i) => `<button type="button" data-g="${i}" title="${n.slice(n.indexOf(' ') + 1)}" class="${i === grupoEmoji ? 'sel' : ''}">${n.split(' ')[0]}</button>`).join('');
-  $('emoji-lista').innerHTML = gruposEmoji[grupoEmoji][1].map(e => `<span>${e}</span>`).join('');
+  $('emoji-lista').innerHTML = gruposEmoji[grupoEmoji][1].map(e => { const r = /^\{(\w+)\}$/.exec(e); return r && REDES[r[1]] ? `<span data-e="${e}" title="${REDES[r[1]].n}">${svgRed(r[1])}</span>` : `<span>${e}</span>`; }).join('');
   $('emoji-lista').scrollTop = 0;
 }
 $('btn-emojis').onclick = () => {
@@ -737,13 +835,14 @@ let cursorTxt = null;
 ['keyup', 'click', 'select', 'input'].forEach(ev => $('txt').addEventListener(ev, () => { cursorTxt = [$('txt').selectionStart, $('txt').selectionEnd]; }));
 $('emoji-lista').addEventListener('click', e => {
   const sp = e.target.closest('span'); if (!sp) return;
-  const t = $('txt'), [a, b] = cursorTxt || [t.value.length, t.value.length];
-  t.value = t.value.slice(0, a) + sp.textContent + t.value.slice(b);
-  const p = a + sp.textContent.length; cursorTxt = [p, p];
+  const t = $('txt'), [a, b] = cursorTxt || [t.value.length, t.value.length], poner = sp.dataset.e || sp.textContent;
+  t.value = t.value.slice(0, a) + poner + t.value.slice(b);
+  const p = a + poner.length; cursorTxt = [p, p];
   t.dispatchEvent(new Event('input'));
   cursorTxt = [p, p];
 });
 $('txt').addEventListener('input', () => { if (editorListo) pintarTimeline(); });
+$('btn-emojis').title = 'Elegir emojis e íconos de redes (Instagram, Facebook, TikTok, YouTube) para el texto';
 ['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'ajuste', 'mus-tema', 'mus-artista', 'mus-cartel'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
 
 function medidas(el) { return el.tagName === 'VIDEO' ? { w: el.videoWidth, h: el.videoHeight } : { w: el.naturalWidth, h: el.naturalHeight }; }
@@ -1215,28 +1314,32 @@ async function procesarMostrar() {
 
 function dibujarExtras() {
   const W = lienzo.width, H = lienzo.height;
-  const texto = $('txt').value.trim();
-  if (texto && textoVisible(tActual)) {
-    const tam = Math.round(Math.min(W, H) * parseFloat($('txt-tam').value) * (W < H ? 1.4 : 1));
-    ctx.font = fuenteTexto(tam);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const k of textos) {
+    k._caja = null;
+    const texto = k.txt.trim();
+    if (!texto || !textoVisible(k, tActual)) continue;
+    const tam = Math.round(Math.min(W, H) * parseFloat(k.tam) * (W < H ? 1.4 : 1));
+    ctx.font = fuenteTexto(tam, k.letra);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const medir = l => medirConRedes(l, tam);
     // cortar en renglones
     const palabras = texto.split(/\s+/), lineas = []; let linea = '';
-    for (const p of palabras) { const prueba = linea ? linea + ' ' + p : p; if (ctx.measureText(prueba).width > W * 0.88 && linea) { lineas.push(linea); linea = p; } else linea = prueba; }
+    for (const p of palabras) { const prueba = linea ? linea + ' ' + p : p; if (medir(prueba) > W * 0.88 && linea) { lineas.push(linea); linea = p; } else linea = prueba; }
     if (linea) lineas.push(linea);
     const alto = tam * 1.2 * lineas.length;
-    const pos = $('txt-pos').value;
-    // si lo arrastraron, textoPos manda (centro del bloque); si no, el "Lugar" elegido
-    const y0 = textoPos.y != null ? textoPos.y * H - alto / 2 + tam * 0.6
+    const pos = k.pos;
+    // si lo arrastraron, x/y mandan (centro del bloque); si no, el "Lugar" elegido
+    const y0 = k.y != null ? k.y * H - alto / 2 + tam * 0.6
       : pos === 'arriba' ? H * 0.12 : pos === 'medio' ? H / 2 - alto / 2 + tam * 0.6 : H * 0.84 - alto + tam * 0.6;
-    const cx = textoPos.x != null ? textoPos.x * W : W / 2;
-    const ancho = Math.max(...lineas.map(l => ctx.measureText(l).width)) + tam;
-    cajaTexto = { x: cx - ancho / 2, y: y0 - tam * 0.8, w: ancho, h: alto + tam * 0.4, cy: y0 - tam * 0.6 + alto / 2 };
-    // efecto al aparecer / al irse (16/11): los de logos (se mueve la caja entera) o los propios del texto (va saliendo de a poco)
-    const k = textoTiempo, ti = k.ini == null ? 0 : k.ini, tf = k.ini == null ? duracionTotal() : k.fin;
+    const cx = k.x != null ? k.x * W : W / 2;
+    const ancho = Math.max(...lineas.map(medir)) + tam;
+    const caja = k._caja = { x: cx - ancho / 2, y: y0 - tam * 0.8, w: ancho, h: alto + tam * 0.4, cy: y0 - tam * 0.6 + alto / 2 };
+    // efecto al aparecer / al irse: los de logos (se mueve la caja entera) o los propios del texto (va saliendo de a poco)
+    const ti = k.ini == null ? 0 : k.ini, tf = k.ini == null ? duracionTotal() : k.fin;
     const anim = animEn(ANIMS[k.entra] ? k.entra : null, ANIMS[k.sale] ? k.sale : null, ti, tf, tActual);
     const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter('es', { granularity: 'grapheme' }) : null;
-    const letras = l => seg ? [...seg.segment(l)].map(x => x.segment) : [...l];
+    // letras: cada ícono de red cuenta como una sola
+    const letras = l => trozosRed(l).flatMap(t => typeof t !== 'string' ? [`{${t.red}}`] : seg ? [...seg.segment(t)].map(x => x.segment) : [...t]);
     let tipoParte = null, parte = 1;
     const Dt = Math.min(Math.max(0.6, letras(texto).length * 0.06), 2.5, (tf - ti) / 2);
     if (TXT_ANIMS[k.entra] && tActual - ti < Dt) { tipoParte = k.entra; parte = Math.max(0, (tActual - ti) / Dt); }
@@ -1245,33 +1348,32 @@ function dibujarExtras() {
     if (anim) {
       ctx.globalAlpha = anim.alpha == null ? 1 : anim.alpha;
       if (anim.blur) ctx.filter = `blur(${(anim.blur * Math.min(W, H) / 30).toFixed(1)}px)`;
-      ctx.translate(cx + (anim.dx || 0) * W, cajaTexto.cy + (anim.dy || 0) * H);
+      ctx.translate(cx + (anim.dx || 0) * W, caja.cy + (anim.dy || 0) * H);
       if (anim.rot) ctx.rotate(anim.rot);
       const e = anim.esc == null ? 1 : anim.esc; ctx.scale(e, e);
-      ctx.translate(-cx, -cajaTexto.cy);
+      ctx.translate(-cx, -caja.cy);
     }
-    if ($('txt-fondo').checked) {
+    if (k.fondo) {
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(cajaTexto.x, cajaTexto.y, cajaTexto.w, cajaTexto.h);
+      ctx.fillRect(caja.x, caja.y, caja.w, caja.h);
     }
-    ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = $('txt-color').value;
-    if (!tipoParte) lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.strokeText(l, cx, y); ctx.fillText(l, cx, y); });
+    ctx.lineWidth = Math.max(2, tam / 10); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.fillStyle = k.color;
+    if (!tipoParte) lineas.forEach((l, i) => { const y = y0 + i * tam * 1.2; ctx.fillStyle = k.color; dibujarConRedes(l, cx - medir(l) / 2, y, tam); });
     else {
       // de a una letra o de a una palabra; cada renglón crece desde donde empieza (no se corre)
       const partes = lineas.map(l => tipoParte === 'escribir' ? letras(l) : l.split(' '));
       let quedan = Math.ceil(parte * partes.reduce((a, p) => a + p.length, 0));
-      ctx.textAlign = 'left';
       partes.forEach((p, i) => {
         if (quedan <= 0) return;
-        const y = y0 + i * tam * 1.2, x = cx - ctx.measureText(lineas[i]).width / 2;
+        const y = y0 + i * tam * 1.2, x = cx - medir(lineas[i]) / 2;
         const trozo = p.slice(0, quedan).join(tipoParte === 'escribir' ? '' : ' ');
         quedan -= p.length;
-        ctx.strokeText(trozo, x, y); ctx.fillText(trozo, x, y);
+        ctx.fillStyle = k.color; dibujarConRedes(trozo, x, y, tam);
       });
-      ctx.textAlign = 'center';
     }
     ctx.restore();
-  } else cajaTexto = null;
+    ctx.textAlign = 'center';
+  }
   const tema = $('mus-tema').value.trim(), artista = $('mus-artista').value.trim();
   if ($('mus-cartel').checked && (tema || artista)) {
     const t = Math.round(Math.min(W, H) * 0.038);
@@ -1438,13 +1540,13 @@ function pintarTimeline() {
   $('tl-fin').style.left = `${real / total * 100}%`;
   // logos: una línea por cada logo marcado (barra = cuándo se ve; "Todo el video" = de punta a punta)
   const activos = logos.filter(l => l.activo);
-  const hayTexto = !!$('txt').value.trim(), dt = hayTexto ? 1 : 0;
+  const conTexto = textos.filter(k => k.txt.trim()), dt = conTexto.length;
   $('tl-logos').style.height = real && (activos.length + dt) ? `${(activos.length + dt) * 21 + 3}px` : '0';
-  const barraTexto = real && hayTexto ? (() => {
-    const a = textoTiempo.ini == null ? 0 : textoTiempo.ini, b = textoTiempo.ini == null ? real : textoTiempo.fin;
-    return `<div class="capa texto" data-texto="1" style="top:2px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
-      <span class="borde" data-b="ini" style="left:0;"></span>🔤 ${esc($('txt').value.trim().slice(0, 40))}<span class="borde" data-b="fin" style="right:0;"></span></div>`;
-  })() : '';
+  const barraTexto = real ? conTexto.map((k, n) => {
+    const a = k.ini == null ? 0 : k.ini, b = k.ini == null ? real : k.fin;
+    return `<div class="capa texto${k === textoAct && dt > 1 ? ' sel' : ''}" data-texto="${textos.indexOf(k) + 1}" style="top:${n * 21 + 2}px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
+      <span class="borde" data-b="ini" style="left:0;"></span>🔤 ${esc(k.txt.replace(RE_RED, (m, r) => ` ${REDES[r].n} `).replace(/\s+/g, ' ').trim().slice(0, 40))}<span class="borde" data-b="fin" style="right:0;"></span></div>`;
+  }).join('') : '';
   $('tl-logos').innerHTML = barraTexto + (real ? activos.map((l, n) => { n += dt;
     const a = l.ini == null ? 0 : l.ini, b = l.ini == null ? real : l.fin;
     return `<div class="capa logo" data-logo="${logos.indexOf(l)}" style="top:${n * 21 + 2}px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
@@ -1513,7 +1615,8 @@ function marcarClipSel() {
     if (capaEl) {
       let k, eraTodo = false;
       if (capaEl.dataset.texto) {
-        const l = textoTiempo;
+        const l = textos[+capaEl.dataset.texto - 1];
+        if (l !== textoAct) cargarTexto(l);
         if (l.ini == null) { eraTodo = true; l.ini = 0; l.fin = real; }
         k = l;
       } else if (capaEl.dataset.logo != null) {
@@ -1604,8 +1707,8 @@ function marcarClipSel() {
     const a = arrastreTl;
     arrastreTl = null; escalaFija = null;
     if (a && a.modo === 'marca') marcarCambio();
-    if (a && a.k === textoTiempo) { // texto: si no se movió y era "Todo el video", sigue siéndolo
-      if (!a.movio && a.eraTodo) { textoTiempo.ini = textoTiempo.fin = null; }
+    if (a && a.k && textos.includes(a.k)) { // texto: si no se movió y era "Todo el video", sigue siéndolo
+      if (!a.movio && a.eraTodo) { a.k.ini = a.k.fin = null; }
       pintarTiempoTexto(); marcarCambio();
     }
     if (a && a.k && logos.includes(a.k)) { // logo: si no se movió y era "Todo el video", sigue siéndolo
@@ -1926,7 +2029,7 @@ async function reproducir2({ grabar, desde = 0, hasta = null }) {
   if (!clips.length) { estado('Primero agregá fotos o videos.'); return null; }
   if (grabar) desde = 0; // el video final siempre se graba completo, desde el principio
   asegurarAudio(); await Promise.race([audioCtx.resume(), esperar(800)]);
-  await Promise.race([document.fonts.load(fuenteTexto(40)).catch(() => {}), esperar(3000)]);
+  await Promise.race([Promise.all(textos.map(k => document.fonts.load(fuenteTexto(40, k.letra)))).catch(() => {}), esperar(3000)]);
   aplicarFormato();
   const total = duracionTotal();
   desde = Math.min(Math.max(0, desde), Math.max(0, total - 0.05));
@@ -2055,7 +2158,7 @@ function fotoProyecto() {
     clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
     capas: capas.map(k => ({ ...k })),
     logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin, entra: l.entra, sale: l.sale })),
-    texto: { x: textoPos.x, y: textoPos.y, ini: textoTiempo.ini, fin: textoTiempo.fin, entra: textoTiempo.entra, sale: textoTiempo.sale },
+    texto: { lista: textos.map(({ _caja, ...k }) => k), act: textos.indexOf(textoAct) },
     marcas: marcas.map(m => m.t),
   };
 }
@@ -2080,8 +2183,8 @@ function aplicarFoto(f) {
     clips.length = 0; f.clips.forEach(c => clips.push({ ...c, filtro: { ...c.filtro } }));
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
     logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin, entra: o.entra, sale: o.sale }); logos.push(o.l); });
-    textoPos.x = f.texto.x; textoPos.y = f.texto.y;
-    textoTiempo.ini = f.texto.ini == null ? null : f.texto.ini; textoTiempo.fin = f.texto.fin == null ? null : f.texto.fin; textoTiempo.entra = f.texto.entra || 'corte'; textoTiempo.sale = f.texto.sale || 'corte'; pintarTiempoTexto();
+    textos.length = 0; f.texto.lista.forEach(k => textos.push({ ...k }));
+    cargarTexto(textos[f.texto.act] || textos[0]);
     marcas = (f.marcas || []).map(t => ({ t })); marcaSel = null;
     capaSel = null; clipSel = null;
     pintarLista(); pintarLogos(); pintarPanelCapa();
@@ -2182,7 +2285,7 @@ function armarAyudas(raiz) {
   });
 }
 armarAyudas(document);
-pintarTiempoTexto();
+cargarTexto(textoAct);
 pintarLogos(); // (después de cargar los efectos de aparecer/irse)
 editorListo = true;
 pintarTimeline();
