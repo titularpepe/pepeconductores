@@ -151,7 +151,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
     <div class="fila controles">
       <span id="tl-tiempo" class="nota" style="margin:0;min-width:150px;">0:00.000 / 0:00.000</span>
       <button id="btn-ver" title="Ver desde la línea amarilla (barra espaciadora)">▶ Ver</button>
-      <button id="btn-inicio" title="Ver desde el principio">⏮ Desde el inicio</button>
+      <button id="btn-inicio" title="Ir al principio. Si se está reproduciendo, sigue desde ahí; si está quieto, solo lleva la línea amarilla">⏮ Desde el inicio</button>
       <button id="btn-desde-marca" title="Ir a la marca seleccionada (la última que pusiste). Si se está reproduciendo, sigue desde ahí; si está quieto, solo lleva la línea amarilla">📍▶ Desde la marca</button>
       <button id="btn-zoom-menos" title="Alejar la línea de tiempo (Ctrl + ruedita)">🔍−</button>
       <button id="btn-zoom-mas" title="Acercar la línea de tiempo para ver décimas y milésimas (Ctrl + ruedita)">🔍+</button>
@@ -1904,9 +1904,10 @@ $('btn-ver').onclick = () => {
   if (corriendo) { if (!corriendo.grabando) corriendo.parar(); return; }
   verDesde(tActual);
 };
+// ⏮ Desde el inicio: si se está reproduciendo, vuelve al principio y sigue; si está quieto, solo lleva la línea amarilla al principio
 $('btn-inicio').onclick = async () => {
-  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; }
-  tActual = 0; verDesde(0);
+  if (corriendo) { if (corriendo.grabando) return; const f = corriendo.fin; corriendo.parar(); await f; tActual = 0; verDesde(0); }
+  else mostrarEn(0);
 };
 // ■ Parar: detiene y vuelve al principio (si se está armando el video, lo cancela)
 $('btn-parar').onclick = async () => {
