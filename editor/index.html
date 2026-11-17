@@ -132,7 +132,32 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 .tl .regla { position:relative; height:16px; border-bottom:1px solid #2a2a2a; }
 .tl .regla span { position:absolute; top:0; height:100%; border-left:1px solid #555; font-size:0.6rem; color:var(--apagado); padding-left:2px; line-height:16px; }
 .tl .regla span.chica { height:5px; top:11px; }
+.tl .regla span.cuadro { height:7px; top:9px; border-left:2px solid #f5d800; opacity:0.8; } /* (17/11) un cuadro */
 #tl-tiempo { font-size:0.95rem !important; color:var(--amarillo) !important; font-weight:700; font-variant-numeric:tabular-nums; }
+
+/* (17/11, pedido del dueño) CINTA ARRIBA, como en Word: en la PC las secciones van en solapas fijas arriba
+   (Fotos y videos, Herramientas, Texto, Canción, Logo y formato) y abajo queda el video con la línea de tiempo,
+   de todo el ancho. Tocando la solapa abierta se pliega para tener más lugar. En el celular queda como antes. */
+@media (min-width: 901px) {
+  #cinta { flex:0 0 auto; background:#101010; border-bottom:1px solid #2a2a2a; padding:4px 14px 0 120px; }
+  #cinta .cinta-tabs { display:flex; gap:4px; align-items:flex-end; }
+  #cinta .cinta-tabs button.tab { border-radius:8px 8px 0 0; border-bottom-color:transparent; background:#161616; font-size:0.85rem; padding:6px 14px; font-weight:600; }
+  #cinta .cinta-tabs button.tab.activa { background:var(--gris); color:var(--amarillo); border-color:var(--dorado); border-bottom-color:var(--gris); }
+  #cinta .cinta-tabs .espacio { flex:1; }
+  #cinta .cinta-tabs #btn-exportar { margin-bottom:4px; padding:6px 16px; font-size:0.9rem; }
+  #cinta .cinta-tabs #btn-plegar { margin-bottom:4px; padding:4px 8px; }
+  #cinta .col-edicion { max-height:30vh; overflow-y:auto; padding:8px 0 6px; background:var(--gris); margin:0 -14px 0 -120px; padding-left:14px; padding-right:14px; border-top:1px solid var(--dorado); }
+  #cinta .col-edicion .armar-fila { display:none; }
+  #cinta .col-edicion .caja { display:none; margin:0; border:0; background:none; padding:0; }
+  #cinta .col-edicion .caja.activa { display:block; }
+  #cinta .col-edicion .caja.cerrada > :not(h2) { display:revert !important; }
+  #cinta .col-edicion .caja > h2 { display:none; }
+  #cinta .col-edicion #lista-clips { display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; }
+  #cinta .col-edicion #lista-clips > * { flex:0 1 460px; }
+  #cinta.plegada .col-edicion { display:none; }
+  body.con-cinta main { grid-template-columns:minmax(0,1fr); max-width:none; }
+  body.con-cinta canvas { max-height:calc(100vh - 190px - var(--cinta-alto, 0px)); }
+}
 </style>
 </head>
 <body>
@@ -1303,7 +1328,8 @@ async function procesarMostrar() {
       // al final del video se muestra el último cuadro (no negro)
       const tv = t >= duracionTotal() - 1e-6 ? Math.max(0, duracionTotal() - 0.02) : t;
       const c = visibleEn(tv);
-      if (c && c.tipo === 'video') await irA(c.el, posVideo(c, tv));
+      // (17/11) +2 ms: el cuadro N empieza justo en N/30 s y, por redondeo, el navegador mostraba el anterior
+      if (c && c.tipo === 'video') await irA(c.el, posVideo(c, tv) + 0.002);
       const bajo = c && animEn(c.trans, c.sale, c.ini, finClip(c), tv) ? visibleBajo(tv, c) : null; // lo de abajo, mientras entra o se va
       if (bajo && bajo.tipo === 'video' && bajo.el !== c.el) await irA(bajo.el, posVideo(bajo, tv));
       if (pedidoT != null) continue; // ya pidieron otro momento: saltear este
@@ -1411,10 +1437,17 @@ function dibujarCuadro() { mostrarEn(tActual); }
 let clipSel = null, capaSel = null, arrastreTl = null;
 // marcas: líneas celestes (varias) para ubicar efectos; se selecciona tocándola y se borra con Supr o ✕
 var marcas = [], marcaSel = null; // marcas = [{ t }]
+// (17/11) el video final se graba a FPS cuadros por segundo: más exacto que un cuadro no se puede cortar
+const FPS = 30;
+function seguirCursor() { // con zoom, si la línea amarilla quedó afuera de lo que se ve, corre la línea de tiempo
+  const esc = escalaTl(); if (!esc || zoomTl <= 1) return;
+  const tl = $('tl'), x = tActual / esc * $('tl-in').getBoundingClientRect().width;
+  if (x < tl.scrollLeft + 20 || x > tl.scrollLeft + tl.clientWidth - 30) tl.scrollLeft = x - tl.clientWidth / 2;
+}
 function pintarCursor() {
   const total = duracionTotal(), esc = escalaTl();
   $('tl-cursor').style.left = `${esc ? tActual / esc * 100 : 0}%`;
-  $('tl-tiempo').textContent = `${fmt3(tActual)} / ${fmt3(total)}`;
+  $('tl-tiempo').textContent = `${fmt3(tActual)} / ${fmt3(total)} · cuadro ${Math.round(tActual * FPS)}`;
   if (corriendo && zoomTl > 1 && esc) { // con zoom, la línea de tiempo sigue a la línea amarilla
     const tl = $('tl'), x = tActual / esc * $('tl-in').getBoundingClientRect().width;
     if (x < tl.scrollLeft || x > tl.scrollLeft + tl.clientWidth - 30) tl.scrollLeft = x - 40;
@@ -1488,12 +1521,17 @@ function pintarRegla() {
     if (s > total + 1e-9 || s > hastaT + medio) break;
     regla += i % 2 === 0 ? `<span style="left:${s / total * 100}%;">${etiqueta(s)}</span>` : `<span class="chica" style="left:${s / total * 100}%;"></span>`;
   }
+  // (17/11) con mucho zoom: una rayita por cada cuadro (1/30 s), para cortar justo en el cuadro
+  if (pxPorSeg / FPS >= 8) {
+    for (let f = Math.max(0, Math.floor(desdeT * FPS)); f / FPS <= Math.min(total, hastaT); f++)
+      regla += `<span class="cuadro" style="left:${f / FPS / total * 100}%;"></span>`;
+  }
   $('tl-regla').innerHTML = regla;
 }
 function ponerZoom(z, centroT) {
   const total = escalaTl(); if (!total) return;
   const tl = $('tl'), vis = tl.clientWidth || 600;
-  const maxZ = Math.max(1, Math.min(1500000 / vis, total * 70 / 0.001 / vis)); // hasta ver milésimas
+  const maxZ = Math.max(1, Math.min(1500000 / vis, total * FPS * 60 / vis)); // (17/11) hasta ver cada cuadro bien grande (60 px)
   zoomTl = Math.min(maxZ, Math.max(1, z));
   $('tl-in').style.width = `${zoomTl * 100}%`;
   const t = centroT != null ? centroT : tActual;
@@ -1822,6 +1860,7 @@ function sacarTramo(cortar) {
 // Solo cambia esa línea.
 $('btn-cortar').onclick = () => {
   if (corriendo) return;
+  tActual = Math.round(tActual * FPS) / FPS; // (17/11) el corte cae justo en un cuadro
   let c = clips.find(x => x.id === clipSel);
   if (!c || !activoEn(c, tActual)) c = visibleEn(tActual) || clips.filter(x => activoEn(x, tActual)).sort((a, b) => b.linea - a.linea)[0];
   if (!c) { estado('La línea amarilla no está sobre ningún pedazo.'); return; }
@@ -1982,7 +2021,8 @@ $('btn-efecto').onclick = () => {
 function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
 // siguiente cuadro: con requestAnimationFrame, pero si Chrome lo frena (ventana tapada por otra) sigue igual a ~30 cuadros/s
 function tic() { return new Promise(r => { let listo = false; const f = () => { if (!listo) { listo = true; r(); } }; requestAnimationFrame(f); setTimeout(f, 33); }); }
-function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.05) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
+// (17/11) margen 5 ms (antes 50 ms): con ← → se avanza de a un cuadro (33 ms) y tiene que verse el cuadro justo
+function irA(v, t) { return new Promise(ok => { if (Math.abs(v.currentTime - t) < 0.005) return ok(); v.onseeked = () => { v.onseeked = null; ok(); }; v.currentTime = t; setTimeout(ok, 1500); }); }
 
 // volúmenes que se pueden mover mientras se reproduce
 let gOrig = null, gAudios = new Map(); // gAudios: id del audio -> su volumen
@@ -2004,7 +2044,8 @@ function sincronizarVideos(t, aviso) {
     if (!v.paused) v.pause();
     if (v._gan) v._gan.gain.value = 0;
     // si le toca dentro de poco, dejarlo listo en su primer cuadro
-    if (c.ini > t && c.ini - t < 1 && !v.seeking && Math.abs(v.currentTime - c.desde) > 0.1) v.currentTime = c.desde;
+    // (17/11) con 2 s de anticipación y al cuadro justo (antes 1 s y con 0,1 s de margen)
+    if (c.ini > t && c.ini - t < 2 && !v.seeking && Math.abs(v.currentTime - c.desde - 0.002) > 0.01) v.currentTime = c.desde + 0.002;
   });
   manda.forEach((c, v) => {
     const pos = posVideo(c, t);
@@ -2039,6 +2080,27 @@ async function reproducir2({ grabar, desde = 0, hasta = null }) {
   const gFinal = audioCtx.createGain(); gFinal.connect(mezcla);
   const fuentes = [];
   gAudios = new Map();
+  // (17/11, pedido del dueño: "imprecisión al pegar videos") Si dos pedazos comparten el mismo <video> (cortado),
+  // al pasar de uno al otro el mismo video tenía que saltar de lugar en plena reproducción y se notaba el corte.
+  // Ahora cada pedazo reproduce con SU propio <video> (copia del mismo archivo), así el siguiente ya está listo
+  // y quieto en su primer cuadro cuando le toca.
+  // Si el pedazo sigue justo donde terminó el anterior del mismo video (corte sin mover nada), sigue con el mismo:
+  // ahí no hay salto y es lo más parejo.
+  const usados = new Set(), ultimoDe = new Map();
+  for (const c of clips.filter(c => c.tipo === 'video').sort((a, b) => a.ini - b.ini)) {
+    const ant = ultimoDe.get(c.el);
+    const seguido = ant && Math.abs(finClip(ant) - c.ini) < 0.002 && Math.abs(ant.hasta - c.desde) < 0.002 && ant.vel === c.vel && ant.linea === c.linea;
+    if (usados.has(c.el) && !seguido) {
+      if (!c._propio || usados.has(c._propio) || c._propio.src !== c.el.src) {
+        const v = document.createElement('video');
+        v.playsInline = true; v.preload = 'auto'; v.crossOrigin = 'anonymous'; v.src = c.el.src;
+        await Promise.race([new Promise(ok => { v.onloadeddata = ok; v.onerror = ok; }), esperar(4000)]);
+        c._propio = v;
+      }
+      c.el = c._propio;
+    }
+    usados.add(c.el); ultimoDe.set(c.el, c);
+  }
   // los videos suenan a través de la mezcla (una sola fuente por <video>, aunque esté cortado en pedazos)
   const videos = clips.filter(c => c.tipo === 'video');
   new Set(videos.map(c => c.el)).forEach(v => {
@@ -2053,7 +2115,7 @@ async function reproducir2({ grabar, desde = 0, hasta = null }) {
   }
 
   if (grabar) {
-    const stream = lienzo.captureStream(30);
+    const stream = lienzo.captureStream(FPS);
     salidaGrabacion.stream.getAudioTracks().forEach(t => stream.addTrack(t));
     const tipos = ['video/mp4;codecs=avc1.42E01F,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
     const tipo = tipos.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
@@ -2218,6 +2280,16 @@ document.addEventListener('keydown', e => {
     if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); rehacer(); return; }
   }
   if (e.code === 'Space') { e.preventDefault(); $('btn-ver').click(); }
+  // (17/11, pedido del dueño: cortar en el cuadro exacto) ← → = un cuadro (1/30 s); con Shift, 10 cuadros.
+  // La línea amarilla queda siempre justo en un cuadro.
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !corriendo && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    const n = (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 10 : 1);
+    const cuadro = Math.round(tActual * FPS) + n;
+    mostrarEn(Math.max(0, cuadro) / FPS);
+    seguirCursor();
+    return;
+  }
   if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey) $('btn-marca').click();
   if ((e.key === 'Delete' || e.key === 'Backspace') && !corriendo && borrarMarcaSel()) { e.preventDefault(); return; }
   if (e.key === 'Delete' && !corriendo) {
@@ -2285,6 +2357,62 @@ function armarAyudas(raiz) {
   });
 }
 armarAyudas(document);
+
+// (17/11, pedido del dueño) CINTA ARRIBA como en Word (solo PC): las secciones de la derecha pasan a solapas fijas arriba.
+(() => {
+  if (!window.matchMedia('(min-width: 901px)').matches) return;
+  const col = document.querySelector('.col-edicion');
+  const cajas = [...col.querySelectorAll(':scope > .caja')];
+  if (!cajas.length) return;
+  const cinta = document.createElement('div'); cinta.id = 'cinta';
+  const tabs = document.createElement('div'); tabs.className = 'cinta-tabs';
+  cinta.appendChild(tabs);
+  document.body.insertBefore(cinta, document.querySelector('main'));
+  cinta.appendChild(col);
+  document.body.classList.add('con-cinta');
+  const NOMBRES = ['📁 Fotos y videos', '✂ Herramientas', '🔤 Texto encima', '🎵 Canción', '🖼 Logo y formato'];
+  let activa = 0;
+  try { activa = Math.min(cajas.length - 1, +(localStorage.getItem('pepeEditorSolapa') || 0)); } catch (e) {}
+  const botones = cajas.map((c, i) => {
+    c.classList.remove('cerrada');
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tab';
+    b.textContent = NOMBRES[i] || c.querySelector('h2').textContent;
+    b.onclick = () => {
+      if (i === activa && !cinta.classList.contains('plegada')) { plegar(true); return; } // tocar la abierta = plegar
+      activa = i; plegar(false); mostrar();
+      try { localStorage.setItem('pepeEditorSolapa', i); } catch (e) {}
+    };
+    tabs.appendChild(b);
+    return b;
+  });
+  const esp = document.createElement('span'); esp.className = 'espacio'; tabs.appendChild(esp);
+  const bPleg = document.createElement('button'); bPleg.id = 'btn-plegar'; bPleg.type = 'button';
+  bPleg.onclick = () => plegar(!cinta.classList.contains('plegada'));
+  tabs.appendChild(bPleg);
+  tabs.appendChild($('btn-exportar')); // "Armar video" siempre a mano, arriba a la derecha
+  // cada explicación (triangulito) estaba en el título de su sección, que acá no se ve: va en la solapa
+  cajas.forEach((c, i) => { const ay = c.querySelector(':scope > h2 > .btn-ayuda'); if (ay) botones[i].appendChild(ay); });
+  function plegar(si) {
+    cinta.classList.toggle('plegada', si);
+    bPleg.textContent = si ? '▾ Mostrar' : '▴ Ocultar';
+    bPleg.title = si ? 'Mostrar las herramientas' : 'Ocultar las herramientas para ver más grande el video';
+    try { localStorage.setItem('pepeEditorPlegada', si ? '1' : ''); } catch (e) {}
+    medir();
+  }
+  function mostrar() {
+    cajas.forEach((c, i) => c.classList.toggle('activa', i === activa));
+    botones.forEach((b, i) => b.classList.toggle('activa', i === activa));
+    medir();
+  }
+  function medir() {
+    document.documentElement.style.setProperty('--cinta-alto', cinta.offsetHeight + 'px');
+    if (typeof pintarTimeline === 'function') { try { pintarTimeline(); } catch (e) {} }
+  }
+  new ResizeObserver(medir).observe(cinta);
+  let plegada = false;
+  try { plegada = localStorage.getItem('pepeEditorPlegada') === '1'; } catch (e) {}
+  mostrar(); plegar(plegada);
+})();
 cargarTexto(textoAct);
 pintarLogos(); // (después de cargar los efectos de aparecer/irse)
 editorListo = true;
