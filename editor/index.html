@@ -106,7 +106,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 .tl .bloque { position:absolute; top:2px; bottom:2px; border-radius:4px; overflow:hidden; font-size:0.68rem; color:#fff; padding:2px 10px; white-space:nowrap; border:1px solid #000; cursor:grab; }
 .tl .bloque.video { background:#2d4a7a; } .tl .bloque.foto { background:#5a3d7a; } .tl .bloque.audio { background:#1f6b5c; } .tl .bloque.sel { outline:2px solid var(--amarillo); z-index:1; }
 .tl .bloque .borde { position:absolute; top:0; width:8px; height:100%; cursor:ew-resize; background:rgba(255,255,255,0.25); }
-.tl .capa.logo { background:#7a2d4a; }
+.tl .capa.logo { background:#7a2d4a; } .tl .capa.texto { background:#5c5c1a; }
 .tl .fin-video { position:absolute; top:0; bottom:0; right:0; background:rgba(0,0,0,0.45); border-left:1px dashed #777; pointer-events:none; }
 .tl .capas { position:relative; border-top:1px solid #2a2a2a; }
 .tl .capa { position:absolute; height:18px; border-radius:4px; font-size:0.66rem; padding:1px 10px; white-space:nowrap; overflow:hidden; cursor:grab; color:#fff; }
@@ -220,6 +220,7 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
     <div class="fila"><input type="text" id="txt" placeholder="Ej: ¡Lanzamiento 17/11! Bajate Pepe 🚗" style="flex:1;min-width:200px;">
       <button id="btn-emojis" title="Elegir emojis para el texto">😀 Emojis</button></div>
     <div id="emoji-caja" style="display:none;"><div id="emoji-grupos"></div><div id="emoji-lista"></div></div>
+    <div class="fila" id="txt-tiempo"></div>
     <div class="fila">
       <label>Lugar</label>
       <select id="txt-pos"><option value="arriba">Arriba</option><option value="medio">Medio</option><option value="abajo" selected>Abajo</option></select>
@@ -607,6 +608,24 @@ function cajaLogo(l) {
 // arrastrar logos y texto sobre la vista previa
 // textoPos: centro del texto (fracción) cuando lo arrastraron; null = usar "Lugar"
 const textoPos = { x: null, y: null };
+// cuándo se ve el texto (16/11, pedido del dueño): ini/fin en segundos; null = todo el video. Tiene su barra en la línea de tiempo.
+const textoTiempo = { ini: null, fin: null };
+const textoVisible = t => textoTiempo.ini == null || (t >= textoTiempo.ini && t < textoTiempo.fin);
+function pintarTiempoTexto() {
+  const el = $('txt-tiempo'), k = textoTiempo, todo = k.ini == null;
+  el.innerHTML = `<label><input type="checkbox" data-k="todo" ${todo ? 'checked' : ''}> Todo el video</label>
+    ${todo ? '' : `<label>de</label><input type="number" data-k="ini" min="0" step="0.001" value="${k.ini.toFixed(3)}">
+      <label>a</label><input type="number" data-k="fin" min="0" step="0.001" value="${k.fin.toFixed(3)}"><label>seg</label>
+      <button data-a="aca-ini" title="Que aparezca donde está la línea amarilla">⇤ Acá</button>
+      <button data-a="aca-fin" title="Que se vaya donde está la línea amarilla">Acá ⇥</button>`}`;
+  const q = x => el.querySelector(x), total = () => duracionTotal() || 1;
+  const poner = (a, b) => { k.ini = Math.min(Math.max(0, a), Math.max(0, total() - 0.2)); k.fin = Math.min(total(), Math.max(k.ini + 0.2, b)); pintarTiempoTexto(); pintarTimeline(); redibujar(); };
+  q('[data-k=todo]').onchange = e => { if (e.target.checked) { k.ini = k.fin = null; pintarTiempoTexto(); pintarTimeline(); redibujar(); } else poner(tActual, tActual + 3); };
+  if (q('[data-k=ini]')) q('[data-k=ini]').onchange = e => { const largo = k.fin - k.ini, v = parseFloat(e.target.value) || 0; poner(v, v + largo); };
+  if (q('[data-k=fin]')) q('[data-k=fin]').onchange = e => poner(k.ini, parseFloat(e.target.value) || 0);
+  if (q('[data-a=aca-ini]')) q('[data-a=aca-ini]').onclick = () => { const largo = k.fin - k.ini; poner(tActual, tActual + largo); };
+  if (q('[data-a=aca-fin]')) q('[data-a=aca-fin]').onclick = () => { if (tActual <= k.ini + 0.1) { estado('La línea amarilla tiene que estar después de donde aparece el texto.'); return; } poner(k.ini, tActual); };
+}
 let cajaTexto = null; // la llena dibujarExtras (píxeles del lienzo)
 $('txt-pos').addEventListener('change', () => { textoPos.x = textoPos.y = null; redibujar(); });
 let arrastrando = null;
@@ -719,6 +738,7 @@ $('emoji-lista').addEventListener('click', e => {
   t.dispatchEvent(new Event('input'));
   cursorTxt = [p, p];
 });
+$('txt').addEventListener('input', () => { if (editorListo) pintarTimeline(); });
 ['txt', 'txt-pos', 'txt-tam', 'txt-color', 'txt-fondo', 'ajuste', 'mus-tema', 'mus-artista', 'mus-cartel'].forEach(id => $(id).addEventListener('input', () => { if (!corriendo) dibujarCuadro(0); }));
 
 function medidas(el) { return el.tagName === 'VIDEO' ? { w: el.videoWidth, h: el.videoHeight } : { w: el.naturalWidth, h: el.naturalHeight }; }
@@ -1191,7 +1211,7 @@ async function procesarMostrar() {
 function dibujarExtras() {
   const W = lienzo.width, H = lienzo.height;
   const texto = $('txt').value.trim();
-  if (texto) {
+  if (texto && textoVisible(tActual)) {
     const tam = Math.round(Math.min(W, H) * parseFloat($('txt-tam').value) * (W < H ? 1.4 : 1));
     ctx.font = fuenteTexto(tam);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1380,12 +1400,18 @@ function pintarTimeline() {
   $('tl-fin').style.left = `${real / total * 100}%`;
   // logos: una línea por cada logo marcado (barra = cuándo se ve; "Todo el video" = de punta a punta)
   const activos = logos.filter(l => l.activo);
-  $('tl-logos').style.height = real && activos.length ? `${activos.length * 21 + 3}px` : '0';
-  $('tl-logos').innerHTML = real ? activos.map((l, n) => {
+  const hayTexto = !!$('txt').value.trim(), dt = hayTexto ? 1 : 0;
+  $('tl-logos').style.height = real && (activos.length + dt) ? `${(activos.length + dt) * 21 + 3}px` : '0';
+  const barraTexto = real && hayTexto ? (() => {
+    const a = textoTiempo.ini == null ? 0 : textoTiempo.ini, b = textoTiempo.ini == null ? real : textoTiempo.fin;
+    return `<div class="capa texto" data-texto="1" style="top:2px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
+      <span class="borde" data-b="ini" style="left:0;"></span>🔤 ${esc($('txt').value.trim().slice(0, 40))}<span class="borde" data-b="fin" style="right:0;"></span></div>`;
+  })() : '';
+  $('tl-logos').innerHTML = barraTexto + (real ? activos.map((l, n) => { n += dt;
     const a = l.ini == null ? 0 : l.ini, b = l.ini == null ? real : l.fin;
     return `<div class="capa logo" data-logo="${logos.indexOf(l)}" style="top:${n * 21 + 2}px;left:${a / total * 100}%;width:${(b - a) / total * 100}%;">
       <span class="borde" data-b="ini" style="left:0;"></span>🏷 ${esc(l.nombre)}<span class="borde" data-b="fin" style="right:0;"></span></div>`;
-  }).join('') : '';
+  }).join('') : '');
   capas.forEach(k => { k.fin = Math.min(k.fin, real); if (k.ini > k.fin - 0.2) k.ini = Math.max(0, k.fin - 0.2); });
   const { filaDe, n } = filas(capas);
   $('tl-capas').style.height = capas.length ? `${n * 21 + 3}px` : '0';
@@ -1448,7 +1474,11 @@ function marcarClipSel() {
     const capaEl = e.target.closest('.capa');
     if (capaEl) {
       let k, eraTodo = false;
-      if (capaEl.dataset.logo != null) {
+      if (capaEl.dataset.texto) {
+        const l = textoTiempo;
+        if (l.ini == null) { eraTodo = true; l.ini = 0; l.fin = real; }
+        k = l;
+      } else if (capaEl.dataset.logo != null) {
         const l = logos[+capaEl.dataset.logo];
         if (l.ini == null) { eraTodo = true; l.ini = 0; l.fin = real; } // deja de ser "Todo el video" recién al moverlo (ver soltar)
         k = l;
@@ -1536,6 +1566,10 @@ function marcarClipSel() {
     const a = arrastreTl;
     arrastreTl = null; escalaFija = null;
     if (a && a.modo === 'marca') marcarCambio();
+    if (a && a.k === textoTiempo) { // texto: si no se movió y era "Todo el video", sigue siéndolo
+      if (!a.movio && a.eraTodo) { textoTiempo.ini = textoTiempo.fin = null; }
+      pintarTiempoTexto(); marcarCambio();
+    }
     if (a && a.k && logos.includes(a.k)) { // logo: si no se movió y era "Todo el video", sigue siéndolo
       if (!a.movio && a.eraTodo) { a.k.ini = a.k.fin = null; }
       pintarLogos();
@@ -1983,7 +2017,7 @@ function fotoProyecto() {
     clips: clips.map(c => ({ ...c, filtro: { ...c.filtro } })),
     capas: capas.map(k => ({ ...k })),
     logos: logos.map(l => ({ l, activo: l.activo, x: l.x, y: l.y, tam: l.tam, ini: l.ini, fin: l.fin, entra: l.entra, sale: l.sale })),
-    texto: { x: textoPos.x, y: textoPos.y },
+    texto: { x: textoPos.x, y: textoPos.y, ini: textoTiempo.ini, fin: textoTiempo.fin },
     marcas: marcas.map(m => m.t),
   };
 }
@@ -2009,6 +2043,7 @@ function aplicarFoto(f) {
     capas.length = 0; f.capas.forEach(k => capas.push({ ...k }));
     logos.length = 0; f.logos.forEach(o => { Object.assign(o.l, { activo: o.activo, x: o.x, y: o.y, tam: o.tam, ini: o.ini, fin: o.fin, entra: o.entra, sale: o.sale }); logos.push(o.l); });
     textoPos.x = f.texto.x; textoPos.y = f.texto.y;
+    textoTiempo.ini = f.texto.ini == null ? null : f.texto.ini; textoTiempo.fin = f.texto.fin == null ? null : f.texto.fin; pintarTiempoTexto();
     marcas = (f.marcas || []).map(t => ({ t })); marcaSel = null;
     capaSel = null; clipSel = null;
     pintarLista(); pintarLogos(); pintarPanelCapa();
@@ -2109,6 +2144,7 @@ function armarAyudas(raiz) {
   });
 }
 armarAyudas(document);
+pintarTiempoTexto();
 pintarLogos(); // (después de cargar los efectos de aparecer/irse)
 editorListo = true;
 pintarTimeline();
