@@ -53,6 +53,11 @@
     const id = new URLSearchParams(location.search).get('id');
     // (2026-10-16) ?c=CODIGO = un CONDUCTOR compartió su ubicación en vivo por WhatsApp (dura 1 hora).
     const codigoConductor = new URLSearchParams(location.search).get('c');
+    // (2026-11-18, visto por el dueño: conductor en MOTO aparecía como autito) Motito vista de arriba, mismos colores.
+    const HTML_MOTO = '<div class="auto-pepe"><svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><filter id="sombraM" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.2" stdDeviation="1.6" flood-color="#000" flood-opacity="0.45"/></filter></defs><g filter="url(#sombraM)"><rect x="28.5" y="3" width="7" height="14" rx="3.5" fill="#222"/><rect x="28.5" y="47" width="7" height="14" rx="3.5" fill="#222"/><rect x="14" y="16" width="36" height="4" rx="2" fill="#3a3a3a"/><circle cx="14" cy="18" r="2.6" fill="#2b3440"/><circle cx="50" cy="18" r="2.6" fill="#2b3440"/><rect x="25" y="14" width="14" height="36" rx="7" fill="#ffffff" stroke="#9a9a9a" stroke-width="0.8"/></g><rect x="27.5" y="22" width="9" height="10" rx="3" fill="#FFD700"/><rect x="27" y="34" width="10" height="13" rx="4" fill="#2b3440"/><rect x="29.5" y="9" width="5" height="2.6" rx="1.2" fill="#fff7b0"/><rect x="29.5" y="53" width="5" height="2.2" rx="1" fill="#e53935"/></svg></div>';
+    // Marcas que solo hacen motos (para la app vieja, que no manda el tipo de vehículo).
+    const MARCAS_MOTO = /\b(gilera|motomel|corven|zanella|keller|mondial|guerrero|brava|bajaj|beta|kawasaki|ktm|benelli|jawa|rouser|royal ?enfield|hero|tvs|siambretta|appia|okinoi|kymco|harley|ducati|triumph|husqvarna|cfmoto|voge|sym|vespa|yamaha)\b/i;
+    const esMoto = d => (d && d.categoria) ? /moto/i.test(d.categoria) : MARCAS_MOTO.test(String((d && d.vehiculo) || ''));
     const HTML_AUTO = '<div class="auto-pepe"><svg width="48" height="48" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="carro" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#d9d9d9"/><stop offset="0.25" stop-color="#ffffff"/><stop offset="0.75" stop-color="#ffffff"/><stop offset="1" stop-color="#d0d0d0"/></linearGradient><filter id="sombra" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.2" stdDeviation="1.6" flood-color="#000" flood-opacity="0.45"/></filter></defs><g filter="url(#sombra)"><rect x="17" y="14" width="4" height="9" rx="1.5" fill="#222"/><rect x="43" y="14" width="4" height="9" rx="1.5" fill="#222"/><rect x="17" y="41" width="4" height="9" rx="1.5" fill="#222"/><rect x="43" y="41" width="4" height="9" rx="1.5" fill="#222"/><rect x="19" y="6" width="26" height="52" rx="10" fill="url(#carro)" stroke="#9a9a9a" stroke-width="0.8"/></g><path d="M22.5 22 Q32 16.5 41.5 22 L39.5 28.5 Q32 26 24.5 28.5 Z" fill="#2b3440"/><rect x="24.5" y="29.5" width="15" height="14" rx="3" fill="#f2f2f2" stroke="#c8c8c8" stroke-width="0.6"/><rect x="24.5" y="34.5" width="15" height="4" fill="#FFD700"/><path d="M24.5 45 Q32 47 39.5 45 L41 50.5 Q32 53.5 23 50.5 Z" fill="#2b3440"/><rect x="21.5" y="7.5" width="6" height="2.6" rx="1.2" fill="#fff7b0"/><rect x="36.5" y="7.5" width="6" height="2.6" rx="1.2" fill="#fff7b0"/><rect x="21.5" y="54.2" width="5.5" height="2.2" rx="1" fill="#e53935"/><rect x="37" y="54.2" width="5.5" height="2.2" rx="1" fill="#e53935"/><rect x="16.5" y="24" width="3" height="2.4" rx="1" fill="#e0e0e0" stroke="#9a9a9a" stroke-width="0.5"/><rect x="44.5" y="24" width="3" height="2.4" rx="1" fill="#e0e0e0" stroke="#9a9a9a" stroke-width="0.5"/></svg></div>';
     const aviso = document.getElementById('aviso');
     const estadoEl = document.getElementById('estado');
@@ -141,7 +146,9 @@
       document.title = 'Ubicación en vivo · Pepe Conductores';
       const mapa = L.map('mapa', { zoomControl: true }).setView([-24.7859, -65.4117], 14);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapa);
-      const icono = L.divIcon({ className: '', html: HTML_AUTO, iconSize: [48, 48], iconAnchor: [24, 24] });
+      const iconoAutoC = L.divIcon({ className: '', html: HTML_AUTO, iconSize: [48, 48], iconAnchor: [24, 24] });
+      const iconoMotoC = L.divIcon({ className: '', html: HTML_MOTO, iconSize: [44, 44], iconAnchor: [22, 22] });
+      let icono = iconoAutoC;
       const detalleEl = document.getElementById('detalle');
       let marcador = null, ultimaPos = null, rumbo = 0, primero = true, ultimoDato = 0, venceEn = 0, terminado = false;
       function terminar(txt) {
@@ -178,7 +185,10 @@
         terminado = false;
         const d = snap.data();
         nombreEl.textContent = (d.apodo || 'Conductor') + (d.numero ? ' (#' + d.numero + ')' : '');
-        detalleEl.textContent = d.vehiculo ? '🚗 ' + d.vehiculo : '';
+        const moto = esMoto(d);
+        detalleEl.textContent = d.vehiculo ? (moto ? '🏍️ ' : '🚗 ') + d.vehiculo : '';
+        const iconoNuevo = moto ? iconoMotoC : iconoAutoC;
+        if (iconoNuevo !== icono) { icono = iconoNuevo; if (marcador) marcador.setIcon(icono); }
         ultimoDato = d.actualizadoEn || Date.now();
         venceEn = d.expiraEn || 0;
         pintarEstado();
