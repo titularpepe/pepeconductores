@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta — Pepe Conductores</title>
+<meta name="description" content="Contanos tu opinión sobre Pepe. Es rápido y nos ayuda a mejorar.">
+<meta property="og:title" content="Encuesta de Pepe 📋">
+<meta property="og:description" content="Contanos tu opinión. Te lleva 1 minuto.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- (2026-11-18, pedido del dueño) ENCUESTAS: las arma el dueño en Superpepe → Super admin → Encuestas.
+     Esta página muestra la encuesta ACTIVA (o la de ?id=...) y guarda las respuestas sin pedir cuenta.
+     Una respuesta por teléfono. Colores y letras de Pepe. -->
+<style>
+:root { --negro:#0c0c0c; --gris:#161616; --gris2:#1f1f1f; --amarillo:#f5d800; --blanco:#f7f4ee; --apagado:rgba(247,244,238,0.55); --borde:rgba(255,255,255,0.08); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--negro); color:var(--blanco); font-family:'Barlow',sans-serif; min-height:100vh; }
+header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--borde); }
+.logo { font-family:'Barlow Condensed',sans-serif; font-size:1.7rem; font-weight:900; color:var(--amarillo); text-decoration:none; }
+.logo span { color:var(--apagado); font-size:0.85rem; font-family:'Barlow',sans-serif; font-weight:300; }
+main { max-width:640px; margin:0 auto; padding:1.5rem 1.25rem 4rem; }
+.titulo { font-family:'Barlow Condensed',sans-serif; font-size:2.1rem; font-weight:900; text-transform:uppercase; line-height:1.05; color:var(--amarillo); }
+.desc { color:var(--apagado); margin:0.6rem 0 1.4rem; line-height:1.5; }
+.barra { height:6px; background:var(--gris2); border-radius:6px; overflow:hidden; margin-bottom:1.4rem; }
+.barra div { height:100%; width:0; background:var(--amarillo); transition:width .3s; }
+.pregunta { background:var(--gris); border:1px solid var(--borde); border-radius:16px; padding:1.25rem; margin-bottom:1rem; }
+.pregunta h3 { font-size:1.1rem; font-weight:600; margin-bottom:0.9rem; line-height:1.35; }
+.pregunta h3 small { display:block; color:var(--apagado); font-weight:400; font-size:0.8rem; margin-top:4px; }
+.opcion { display:block; width:100%; text-align:left; background:var(--gris2); color:var(--blanco); border:2px solid transparent; border-radius:12px; padding:0.9rem 1rem; margin-bottom:0.55rem; font-size:1rem; font-family:'Barlow',sans-serif; cursor:pointer; transition:all .15s; }
+.opcion:hover { border-color:rgba(245,216,0,0.35); }
+.opcion.elegida { border-color:var(--amarillo); background:rgba(245,216,0,0.12); color:var(--amarillo); font-weight:600; }
+.opcion.elegida::before { content:'✓ '; }
+textarea, input[type=tel], input[type=text] { width:100%; background:var(--gris2); color:var(--blanco); border:1px solid var(--borde); border-radius:12px; padding:0.9rem 1rem; font-size:1rem; font-family:'Barlow',sans-serif; }
+textarea { min-height:96px; resize:vertical; }
+textarea:focus, input:focus { outline:none; border-color:var(--amarillo); }
+.btn { display:block; width:100%; background:var(--amarillo); color:#111; border:none; border-radius:14px; padding:1.05rem; font-size:1.1rem; font-weight:800; font-family:'Barlow Condensed',sans-serif; letter-spacing:0.5px; text-transform:uppercase; cursor:pointer; margin-top:0.6rem; }
+.btn:disabled { opacity:0.45; cursor:default; }
+.aviso { color:#ff6b4a; font-size:0.9rem; margin-top:0.6rem; min-height:1.2em; text-align:center; }
+.centro { text-align:center; padding:3rem 0; }
+.centro .grande { font-size:4rem; }
+.centro h2 { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:900; text-transform:uppercase; color:var(--amarillo); margin:0.6rem 0; }
+.centro p { color:var(--apagado); line-height:1.5; }
+.links { margin-top:1.6rem; display:flex; flex-direction:column; gap:0.6rem; }
+.links a { display:block; text-decoration:none; text-align:center; padding:0.9rem; border-radius:12px; font-weight:700; border:1px solid rgba(245,216,0,0.35); color:var(--amarillo); }
+.oculto { display:none; }
+.cargando { width:38px; height:38px; border:3px solid var(--gris2); border-top-color:var(--amarillo); border-radius:50%; animation:g 0.8s linear infinite; margin:3rem auto; }
+@keyframes g { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">🚕 PEPE <span>Salta</span></a>
+</header>
+<main>
+  <div id="cargando" class="cargando"></div>
+
+  <div id="sin-encuesta" class="centro oculto">
+    <div class="grande">📋</div>
+    <h2>No hay encuestas abiertas</h2>
+    <p>Por ahora no tenemos ninguna encuesta. ¡Gracias por pasar!</p>
+    <div class="links"><a href="/">Ir a pepeconductores.com</a></div>
+  </div>
+
+  <div id="ya-respondio" class="centro oculto">
+    <div class="grande">✅</div>
+    <h2>Ya respondiste</h2>
+    <p>Esta encuesta ya la contestaste desde este teléfono. ¡Muchas gracias!</p>
+    <div class="links"><a href="/">Ir a pepeconductores.com</a></div>
+  </div>
+
+  <div id="gracias" class="centro oculto">
+    <div class="grande">🙌</div>
+    <h2>¡Gracias!</h2>
+    <p>Tu opinión nos ayuda a hacer Pepe mejor para todos.</p>
+    <div class="links">
+      <a href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" target="_blank" rel="noopener">📲 Descargá Pepe Pasajeros</a>
+      <a href="https://play.google.com/store/apps/details?id=com.pepeconductores.app" target="_blank" rel="noopener">🚗 Quiero ser conductor</a>
+    </div>
+  </div>
+
+  <div id="encuesta" class="oculto">
+    <div class="titulo" id="enc-titulo"></div>
+    <p class="desc" id="enc-desc"></p>
+    <div class="barra"><div id="progreso"></div></div>
+    <div id="preguntas"></div>
+    <div id="caja-whatsapp" class="pregunta oculto">
+      <h3>¿Querés que te avisemos por WhatsApp cuando haya novedades?<small>Opcional. Solo tu número, sin 0 ni 15 (ej: 3875157437).</small></h3>
+      <input type="tel" id="whatsapp" inputmode="numeric" maxlength="13" placeholder="Tu WhatsApp (opcional)">
+    </div>
+    <button class="btn" id="btn-enviar" disabled>Enviar respuestas</button>
+    <div class="aviso" id="aviso"></div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+  authDomain: "pepe-conductores.firebaseapp.com",
+  projectId: "pepe-conductores",
+  storageBucket: "pepe-conductores.firebasestorage.app",
+  messagingSenderId: "443201366396",
+  appId: "1:443201366396:web:bca7754157145474fb9cf9"
+});
+try { firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfHkfEtAAAAAGmQsxm3pGZTKFvBmE4UdMEVLtz1'), true); } catch (e) {}
+const db = firebase.firestore();
+
+const $ = id => document.getElementById(id);
+const mostrar = id => { ['cargando','sin-encuesta','ya-respondio','gracias','encuesta'].forEach(x => $(x).classList.toggle('oculto', x !== id)); window.scrollTo(0, 0); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Un identificador por teléfono (queda guardado en el navegador): una respuesta por teléfono y por encuesta.
+function idTelefono() {
+  let t = localStorage.getItem('pepeTelId');
+  if (!t) {
+    const r = new Uint8Array(12); crypto.getRandomValues(r);
+    t = 'tel_' + Array.from(r, b => b.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem('pepeTelId', t);
+  }
+  return t;
+}
+
+let enc = null, encId = null, rol = null;
+const resp = {};   // { idPregunta: 'opción' | ['op1','op2'] | 'texto' }
+
+function preguntasVisibles() {
+  const todas = enc.preguntas || [];
+  return todas.filter(p => !p.paraQuien || p.paraQuien === 'todos' || !rol || rol === 'ambos' || p.paraQuien === rol);
+}
+
+function dibujar() {
+  const cont = $('preguntas');
+  let html = '';
+  if (enc.preguntarRol) {
+    html += `<div class="pregunta"><h3>Para empezar: ¿vos sos…?</h3>` +
+      [['pasajero','🧍 Pasajero (pido viajes)'],['conductor','🚗 Conductor'],['ambos','🔄 Las dos cosas']].map(([v, t]) =>
+        `<button class="opcion ${rol === v ? 'elegida' : ''}" data-rol="${v}">${t}</button>`).join('') + `</div>`;
+  }
+  if (!enc.preguntarRol || rol) {
+    preguntasVisibles().forEach((p, i) => {
+      const r = resp[p.id];
+      html += `<div class="pregunta"><h3>${i + 1}. ${esc(p.texto)}${p.tipo === 'varias' ? '<small>Podés elegir varias.</small>' : p.obligatoria === false || p.tipo === 'texto' ? '<small>Opcional.</small>' : ''}</h3>`;
+      if (p.tipo === 'texto') {
+        html += `<textarea data-q="${esc(p.id)}" maxlength="500" placeholder="Escribí acá…">${esc(r || '')}</textarea>`;
+      } else {
+        (p.opciones || []).forEach(o => {
+          const el = p.tipo === 'varias' ? (Array.isArray(r) && r.includes(o)) : r === o;
+          html += `<button class="opcion ${el ? 'elegida' : ''}" data-q="${esc(p.id)}" data-op="${esc(o)}">${esc(o)}</button>`;
+        });
+      }
+      html += `</div>`;
+    });
+  }
+  cont.innerHTML = html;
+  $('caja-whatsapp').classList.toggle('oculto', !enc.pedirWhatsapp || (enc.preguntarRol && !rol));
+  cont.querySelectorAll('[data-rol]').forEach(b => b.onclick = () => { rol = b.dataset.rol; dibujar(); });
+  cont.querySelectorAll('button[data-q]').forEach(b => b.onclick = () => {
+    const p = (enc.preguntas || []).find(x => x.id === b.dataset.q); const o = b.dataset.op;
+    if (p.tipo === 'varias') { const a = Array.isArray(resp[p.id]) ? resp[p.id] : []; resp[p.id] = a.includes(o) ? a.filter(x => x !== o) : [...a, o]; }
+    else resp[p.id] = o;
+    dibujar();
+  });
+  cont.querySelectorAll('textarea[data-q]').forEach(t => t.oninput = () => { resp[t.dataset.q] = t.value; revisar(); });
+  revisar();
+}
+
+function faltantes() {
+  if (enc.preguntarRol && !rol) return 1;
+  return preguntasVisibles().filter(p => p.tipo !== 'texto' && p.obligatoria !== false && !(Array.isArray(resp[p.id]) ? resp[p.id].length : resp[p.id])).length;
+}
+function revisar() {
+  const vis = preguntasVisibles(), total = vis.length + (enc.preguntarRol ? 1 : 0);
+  const hechas = (enc.preguntarRol && rol ? 1 : 0) + vis.filter(p => Array.isArray(resp[p.id]) ? resp[p.id].length : (resp[p.id] || '').trim?.() || resp[p.id]).length;
+  $('progreso').style.width = (total ? Math.round(100 * hechas / total) : 100) + '%';
+  const f = faltantes();
+  $('btn-enviar').disabled = f > 0;
+  $('aviso').textContent = f > 0 && hechas > 0 ? `Te falta${f > 1 ? 'n' : ''} ${f} pregunta${f > 1 ? 's' : ''}.` : '';
+}
+
+$('btn-enviar').onclick = async () => {
+  const btn = $('btn-enviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const respuestas = {};
+  preguntasVisibles().forEach(p => {
+    let v = resp[p.id];
+    if (p.tipo === 'texto') v = (v || '').trim().slice(0, 500);
+    if (v !== undefined && v !== '' && !(Array.isArray(v) && !v.length)) respuestas[p.id] = v;
+  });
+  const datos = { respuestas, creadoEn: firebase.firestore.FieldValue.serverTimestamp() };
+  if (rol) datos.rol = rol;
+  const w = ($('whatsapp').value || '').replace(/\D/g, '').slice(0, 13);
+  if (enc.pedirWhatsapp && w.length >= 10) datos.whatsapp = w;
+  try {
+    await db.collection('encuestas').doc(encId).collection('respuestas').doc(idTelefono()).set(datos);
+    localStorage.setItem('pepeEncuesta_' + encId, '1');
+    mostrar('gracias');
+  } catch (e) {
+    if (e && e.code === 'permission-denied') { localStorage.setItem('pepeEncuesta_' + encId, '1'); mostrar('ya-respondio'); return; }
+    btn.disabled = false; btn.textContent = 'Enviar respuestas';
+    $('aviso').textContent = 'No se pudo enviar. Revisá tu internet y probá de nuevo.';
+  }
+};
+
+(async () => {
+  try {
+    const pedida = new URLSearchParams(location.search).get('id');
+    let snap = null;
+    if (pedida) {
+      snap = await db.collection('encuestas').doc(pedida).get().catch(() => null);
+      if (snap && !snap.exists) snap = null;
+    }
+    if (!snap) {
+      const q = await db.collection('encuestas').where('activa', '==', true).get();
+      const lista = q.docs.sort((a, b) => ((b.data().creadaEn?.seconds || 0) - (a.data().creadaEn?.seconds || 0)));
+      snap = lista[0] || null;
+    }
+    if (!snap) { mostrar('sin-encuesta'); return; }
+    enc = snap.data(); encId = snap.id;
+    if (localStorage.getItem('pepeEncuesta_' + encId)) { mostrar('ya-respondio'); return; }
+    document.title = (enc.titulo || 'Encuesta') + ' — Pepe';
+    $('enc-titulo').textContent = enc.titulo || 'Encuesta de Pepe';
+    $('enc-desc').textContent = enc.descripcion || 'Te lleva 1 minuto. ¡Gracias por ayudarnos!';
+    mostrar('encuesta');
+    dibujar();
+  } catch (e) {
+    mostrar('sin-encuesta');
+  }
+})();
+</script>
+</body>
+</html>

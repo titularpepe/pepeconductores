@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te invitaron a Pepe — Pepe Conductores</title>
+<meta name="description" content="Te invitaron a Pepe, la app de viajes de Salta. Descargala con el código de tu amigo.">
+<meta property="og:title" content="¡Te invitaron a Pepe! 🚕">
+<meta property="og:description" content="La app de viajes de Salta. Descargala con el código de tu amigo.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- (2026-11-18, pedido del dueño) REFERIDOS: página a la que llega quien recibe una invitación
+     (pepeconductores.com/referidos.html?c=CODIGO). Muestra quién invita, el código y los premios
+     (los textos de los premios los pone el dueño en Superpepe → Referidos; mientras el sistema no esté
+     prendido dice "Muy pronto"). Los botones van a Play con el código adentro (Install Referrer). -->
+<style>
+:root { --negro:#0c0c0c; --gris:#161616; --gris2:#1f1f1f; --amarillo:#f5d800; --blanco:#f7f4ee; --apagado:rgba(247,244,238,0.55); --borde:rgba(255,255,255,0.08); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--negro); color:var(--blanco); font-family:'Barlow',sans-serif; min-height:100vh; }
+header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--borde); }
+.logo { font-family:'Barlow Condensed',sans-serif; font-size:1.7rem; font-weight:900; color:var(--amarillo); text-decoration:none; }
+.logo span { color:var(--apagado); font-size:0.85rem; font-family:'Barlow',sans-serif; font-weight:300; }
+main { max-width:640px; margin:0 auto; padding:2rem 1.25rem 4rem; }
+.hero { text-align:center; }
+.hero .emoji { font-size:4rem; }
+.hero h1 { font-family:'Barlow Condensed',sans-serif; font-size:2.6rem; font-weight:900; text-transform:uppercase; line-height:1; margin:0.6rem 0; }
+.hero h1 span { color:var(--amarillo); }
+.hero p { color:var(--apagado); line-height:1.5; font-size:1.05rem; }
+.codigo { margin:1.6rem auto 0; background:var(--gris); border:2px dashed rgba(245,216,0,0.5); border-radius:16px; padding:1rem; max-width:360px; text-align:center; }
+.codigo small { color:var(--apagado); text-transform:uppercase; letter-spacing:2px; font-size:0.7rem; }
+.codigo b { display:block; font-family:'Barlow Condensed',sans-serif; font-size:2.6rem; font-weight:900; color:var(--amarillo); letter-spacing:3px; margin:0.2rem 0 0.5rem; }
+.codigo button { background:transparent; color:var(--blanco); border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:0.45rem 1rem; cursor:pointer; font-family:'Barlow',sans-serif; }
+.btns { display:flex; flex-direction:column; gap:0.7rem; margin-top:1.8rem; }
+.btn { display:block; text-align:center; text-decoration:none; border-radius:14px; padding:1.05rem; font-size:1.15rem; font-weight:800; font-family:'Barlow Condensed',sans-serif; letter-spacing:0.5px; text-transform:uppercase; }
+.btn.lleno { background:var(--amarillo); color:#111; }
+.btn.borde { border:2px solid var(--amarillo); color:var(--amarillo); }
+.seccion { margin-top:2.4rem; }
+.seccion h2 { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:900; text-transform:uppercase; color:var(--amarillo); margin-bottom:0.9rem; }
+.premios { display:grid; gap:0.8rem; }
+.premio { background:var(--gris); border:1px solid var(--borde); border-left:4px solid var(--amarillo); border-radius:14px; padding:1rem 1.1rem; }
+.premio small { color:var(--apagado); text-transform:uppercase; letter-spacing:1.5px; font-size:0.7rem; }
+.premio p { font-size:1.05rem; font-weight:600; margin-top:0.25rem; line-height:1.35; }
+.pronto { background:rgba(245,216,0,0.08); border:1px solid rgba(245,216,0,0.3); color:var(--amarillo); border-radius:14px; padding:1rem; text-align:center; font-weight:600; }
+.pasos { counter-reset:p; display:grid; gap:0.7rem; }
+.paso { background:var(--gris); border:1px solid var(--borde); border-radius:14px; padding:0.9rem 1rem 0.9rem 3.3rem; position:relative; line-height:1.4; }
+.paso::before { counter-increment:p; content:counter(p); position:absolute; left:0.9rem; top:50%; transform:translateY(-50%); width:1.8rem; height:1.8rem; border-radius:50%; background:var(--amarillo); color:#111; font-weight:900; display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; }
+.letra-chica { color:var(--apagado); font-size:0.8rem; line-height:1.5; margin-top:1.4rem; text-align:center; }
+.oculto { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">🚕 PEPE <span>Salta</span></a>
+</header>
+<main>
+  <div class="hero">
+    <div class="emoji">🎉</div>
+    <h1 id="titulo">¡Te invitaron a <span>Pepe</span>!</h1>
+    <p id="subtitulo">Pepe es la app de viajes de Salta: autos, motos, taxiflet, cadetes y conductor designado, con los conductores de acá.</p>
+    <div class="codigo oculto" id="caja-codigo">
+      <small>Tu código de invitación</small>
+      <b id="codigo"></b>
+      <button id="btn-copiar">📋 Copiar código</button>
+    </div>
+  </div>
+
+  <div class="btns">
+    <a class="btn lleno" id="btn-pasajeros" href="https://play.google.com/store/apps/details?id=com.pepepasajeros.app" target="_blank" rel="noopener">📲 Descargá Pepe Pasajeros</a>
+    <a class="btn borde" id="btn-conductores" href="https://play.google.com/store/apps/details?id=com.pepeconductores.app" target="_blank" rel="noopener">🚗 Quiero ser conductor de Pepe</a>
+  </div>
+
+  <div class="seccion">
+    <h2>🎁 Premios</h2>
+    <div id="premios" class="premios"><div class="pronto">Muy pronto: invitá a tus amigos y ganá premios.</div></div>
+  </div>
+
+  <div class="seccion">
+    <h2>¿Cómo funciona?</h2>
+    <div class="pasos">
+      <div class="paso">Descargá Pepe desde el botón de arriba.</div>
+      <div class="paso">Al registrarte poné el código de quien te invitó <span id="paso-codigo"></span>.</div>
+      <div class="paso">Hacé tu primer viaje con Pepe.</div>
+      <div class="paso">¡Listo! Los premios se cargan solos en las dos cuentas.</div>
+    </div>
+  </div>
+
+  <p class="letra-chica" id="letra-chica">Cada persona (DNI) puede ser invitada una sola vez. Los premios se activan cuando la persona invitada termina su primer viaje.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyBkDvFeRdzrR1NsrMyieSy-x9P_PkF7gUs",
+  authDomain: "pepe-conductores.firebaseapp.com",
+  projectId: "pepe-conductores",
+  storageBucket: "pepe-conductores.firebasestorage.app",
+  messagingSenderId: "443201366396",
+  appId: "1:443201366396:web:bca7754157145474fb9cf9"
+});
+try { firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfHkfEtAAAAAGmQsxm3pGZTKFvBmE4UdMEVLtz1'), true); } catch (e) {}
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Código: solo letras y números (ej: PEPE71). Va a Play como "referrer" para que la app lo cargue sola.
+const codigo = (new URLSearchParams(location.search).get('c') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+if (codigo) {
+  $('caja-codigo').classList.remove('oculto');
+  $('codigo').textContent = codigo;
+  $('paso-codigo').innerHTML = '(<b style="color:var(--amarillo)">' + esc(codigo) + '</b>)';
+  const ref = encodeURIComponent('utm_source=referido&utm_content=' + codigo);
+  $('btn-pasajeros').href += '&referrer=' + ref;
+  $('btn-conductores').href += '&referrer=' + ref;
+  $('btn-copiar').onclick = async () => {
+    try { await navigator.clipboard.writeText(codigo); $('btn-copiar').textContent = '✅ Copiado'; }
+    catch { $('btn-copiar').textContent = codigo; }
+  };
+  db.collection('codigosReferido').doc(codigo).get().then(s => {
+    const n = s.exists && s.data().nombre ? String(s.data().nombre).split(' ')[0] : '';
+    if (n) {
+      $('titulo').innerHTML = '¡<span>' + esc(n) + '</span> te invitó a Pepe!';
+      document.title = n + ' te invitó a Pepe';
+    }
+  }).catch(() => {});
+}
+
+// Textos de los premios: los pone el dueño en Superpepe (config/referidos).
+db.collection('config').doc('referidos').get().then(s => {
+  const c = s.exists ? s.data() : {};
+  if (!c.activo) return;
+  const items = [];
+  if (c.premioInvitado) items.push(['Vos (el invitado)', c.premioInvitado]);
+  if (c.premioInvitaPasajero) items.push(['Tu amigo, si es pasajero', c.premioInvitaPasajero]);
+  if (c.premioInvitaConductor) items.push(['Tu amigo, si es conductor', c.premioInvitaConductor]);
+  if (items.length) $('premios').innerHTML = items.map(([q, t]) => `<div class="premio"><small>${esc(q)}</small><p>${esc(t)}</p></div>`).join('');
+  if (c.letraChica) $('letra-chica').textContent = c.letraChica;
+}).catch(() => {});
+</script>
+</body>
+</html>
