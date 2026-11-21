@@ -99,6 +99,12 @@ button.btn-ayuda.abierta::after { content:'▾'; color:var(--amarillo); }
 .clip.sel { border-color:var(--amarillo); }
 .clip details summary { cursor:pointer; font-size:0.8rem; color:var(--apagado); margin-top:4px; }
 /* línea de tiempo (fase 2) */
+/* (20/11, pedido del dueño) Barra de desplazamiento de la línea de tiempo más grande y fácil de agarrar. */
+.tl::-webkit-scrollbar { height:18px; }
+.tl::-webkit-scrollbar-track { background:#1c1c1c; border-radius:9px; }
+.tl::-webkit-scrollbar-thumb { background:#666; border-radius:9px; border:3px solid #1c1c1c; }
+.tl::-webkit-scrollbar-thumb:hover { background:var(--amarillo); }
+.tl { scrollbar-width:auto; scrollbar-color:#666 #1c1c1c; }
 .tl { position:relative; background:#111; border:1px solid #2a2a2a; border-radius:8px; margin-top:10px; touch-action:none; user-select:none; -webkit-user-select:none; cursor:pointer; overflow-x:auto; overflow-y:hidden; }
 .tl-in { position:relative; width:100%; min-width:100%; }
 .tl .pista { position:relative; height:34px; border-top:1px solid #2a2a2a; }
@@ -1640,6 +1646,8 @@ function marcarClipSel() {
   const aT = x => { const r = $('tl-in').getBoundingClientRect(), total = escalaTl(); return Math.max(0, (x - r.left) / r.width * total); };
   let reanudar = null; // si estaba reproduciendo: la promesa de fin, para seguir desde el punto nuevo al soltar
   tl.addEventListener('pointerdown', e => {
+    // (20/11, pedido del dueño) Tocar la BARRA DE DESPLAZAMIENTO de abajo solo corre la vista: ya no mueve la línea amarilla.
+    if (e.clientY - tl.getBoundingClientRect().top >= tl.clientHeight) return;
     if (!clips.length || (corriendo && corriendo.grabando)) return;
     if (corriendo) { reanudar = corriendo.fin; corriendo.parar(); }
     tl.setPointerCapture(e.pointerId);
