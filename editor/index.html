@@ -2326,7 +2326,27 @@ $('btn-exportar').onclick = async () => {
   $('resultado').style.display = '';
   estado('¡Listo!');
   $('progreso').style.width = '100%';
+  guardarSolo(blob, nombre, ext, url);
 };
+// (20/11, pedido del dueño: "que me pregunte dónde guardar, no tener que buscar abajo y tocar Guardar") Apenas termina
+// de armarse, se abre la ventana de "Guardar como" (Chrome de la compu). Si el navegador no la deja abrir sola (pasó
+// mucho rato desde el toque), se baja directo a Descargas. El video también queda abajo, como siempre.
+async function guardarSolo(blob, nombre, ext, url) {
+  try { $('resultado').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+  if (window.showSaveFilePicker) {
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: nombre,
+        types: [{ description: 'Video', accept: { [ext === 'mp4' ? 'video/mp4' : 'video/webm']: ['.' + ext] } }] });
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+      estado('✅ Video guardado.'); return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') { estado('No lo guardaste: tocá "Guardar" abajo cuando quieras.'); return; } // tocó Cancelar
+    }
+  }
+  const a = document.createElement('a'); a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  estado('✅ Video guardado en Descargas (' + nombre + ').');
+}
 $('btn-compartir').onclick = async () => {
   if (!ultimoArchivo) return;
   if (navigator.canShare && navigator.canShare({ files: [ultimoArchivo] })) {
