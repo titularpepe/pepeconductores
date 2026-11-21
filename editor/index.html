@@ -1865,7 +1865,10 @@ $('btn-cortar').onclick = () => {
   if (!c || !activoEn(c, tActual)) c = visibleEn(tActual) || clips.filter(x => activoEn(x, tActual)).sort((a, b) => b.linea - a.linea)[0];
   if (!c) { estado('La línea amarilla no está sobre ningún pedazo.'); return; }
   const local = tActual - c.ini, dur = duracionClip(c);
-  if (local < 0.2 || local > dur - 0.2) { estado('Mové la línea amarilla un poco más adentro del pedazo que querés cortar.'); return; }
+  // (20/11, pedido del dueño: "corté mal y quedó muy pegado") Antes no dejaba cortar a menos de 0,2 s del borde; ahora
+  // alcanza con 1 cuadro, así se puede sacar hasta el primer cuadro de un pedazo.
+  const UN_CUADRO = 1 / FPS - 0.0005;
+  if (local < UN_CUADRO || local > dur - UN_CUADRO) { estado('La línea amarilla está justo en el borde del pedazo: movela al menos un cuadro (flechas ← →).'); return; }
   const otro = nuevoClip({ ...c, id: undefined, filtro: { ...c.filtro }, trans: 'corte' }); otro.id = ++idSeq;
   otro.ini = tActual;
   if (c.tipo === 'foto') { otro.dur = +(dur - local).toFixed(3); c.dur = +local.toFixed(3); }
