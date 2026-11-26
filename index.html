@@ -706,7 +706,7 @@ nav{top:34px !important;}
         <div class="section-label">¿Sos conductor profesional?</div>
         <h3 class="section-title" style="font-size:2.2rem;">Sumate desde<br>el primer día</h3>
         <p class="section-sub" style="margin-bottom:1.5rem;">Pepe Conductores busca choferes de taxi, remis, moto y más.</p>
-        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Quiero ser conductor</button>
+        <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register')); setRegRol('conductor')">Quiero ser conductor</button>
       </div>
       <div class="metric-list">
         <div class="metric-item"><span class="metric-label">Comisión por viaje</span><span class="metric-val">$0 — Ninguna</span></div>
@@ -758,7 +758,7 @@ nav{top:34px !important;}
     <div class="section-label">¿El viaje no es para vos?</div>
     <h2 class="section-title">Pedí un viaje<br>para otra persona</h2>
     <p class="section-sub">Podés solicitar un viaje para un familiar o conocido. El conductor verá el nombre y DNI del pasajero real para mayor seguridad de todos.</p>
-    <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register'))">Registrarme como pasajero</button>
+    <button class="btn-main" onclick="openLogin(); clickTabRegistro(document.getElementById('tab-register')); setRegRol('pasajero')">Registrarme como pasajero</button>
     <button class="btn-main" onclick="solicitarParaTercero()">👥 Pedir viaje para otra persona</button>
   </div>
   <footer><div class="footer-logo">PEPE CONDUCTORES</div><div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;"><div class="footer-copy">© 2026 Pepe Conductores.</div><button onclick="verTerminos()" style="background:transparent;border:none;color:rgba(245,216,0,0.5);font-size:0.78rem;font-family:'Barlow',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='rgba(245,216,0,0.9)'" onmouseout="this.style.color='rgba(245,216,0,0.5)'">Términos y condiciones</button></div><a href="https://wa.me/5493875157437" target="_blank" class="footer-wa">💬 +54 9 387 515-7437</a><div class="footer-redes"><a href="https://www.facebook.com/profile.php?id=61596295970327" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M13.4 24v-8.6h2.9l.4-3.4h-3.3V9.9c0-1 .3-1.6 1.7-1.6h1.8V5.2a24 24 0 0 0-2.6-.1c-2.6 0-4.4 1.6-4.4 4.5V12H7v3.4h2.9V24z" fill="#fff"/></svg> Facebook</a><a href="https://www.instagram.com/pepeconductores/" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/><stop offset=".6" stop-color="#D62976"/><stop offset=".85" stop-color="#962FBF"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#igg)"/><rect x="5" y="5" width="14" height="14" rx="4.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2" fill="#fff"/></svg> Instagram</a></div><!-- (2026-11-04) Data Fiscal de ARCA (F960), pedido del dueño --><div style="margin-top:10px"><a href="http://qr.afip.gob.ar/?qr=WRPju3OhQEBcvYg7nUxPlg,," target="_F960AFIPInfo" rel="noreferrer" title="Data Fiscal"><img src="https://www.afip.gob.ar/images/f960/DATAWEB.jpg" alt="Data Fiscal" width="50" style="display:block"></a></div></footer>
@@ -1534,6 +1534,10 @@ nav{top:34px !important;}
           if (!PERMITIDAS.has(nodo.tagName)) {
             // Etiqueta no permitida (script, img, div, etc.): se saca la etiqueta pero se
             // conserva el texto/hijos de adentro — no se pierde contenido, solo el riesgo.
+            // (2026-11-26, revisión técnica) Los hijos se LIMPIAN antes de subirlos: si no, un <img onerror>
+            // escondido adentro de un <div> pasaba sin revisar. <script>/<style> se tiran enteros.
+            if (nodo.tagName === 'SCRIPT' || nodo.tagName === 'STYLE') { nodo.remove(); return; }
+            limpiar(nodo);
             while (nodo.firstChild) contenedor.insertBefore(nodo.firstChild, nodo);
             contenedor.removeChild(nodo);
             return;
@@ -1548,6 +1552,7 @@ nav{top:34px !important;}
             } else {
               // Sin link http(s) válido (podría ser "javascript:..."): se saca la etiqueta,
               // se conserva el texto.
+              limpiar(nodo);
               while (nodo.firstChild) contenedor.insertBefore(nodo.firstChild, nodo);
               contenedor.removeChild(nodo);
               return;
