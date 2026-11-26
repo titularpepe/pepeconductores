@@ -1,5 +1,5 @@
 {
-  "version": 56,
+  "version": 57,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -4050,6 +4050,28 @@
         }
       ],
       "v56": true
+    },
+    {
+      "nombre": "Crear recordatorio o alerta (v57)",
+      "regex": "^(?:pepe )?(?:crea|crear|creame|creale|pone|poner|poneme|hace|hacer|haceme|arma|armame|programa|programame|guarda|guardame|deja|dejame|anotado|anotar|agendado|agendar|quiero|necesito)(?: me)? (?:un |una |el |la |otro |otra )?(?:nuevo |nueva )?(?:recordatorio|alerta|aviso|avisito|recordatorito)(?: nuevo| nueva)?(?: para| de| que| a)?\\s*(.*)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "recordame {1}"
+        }
+      ],
+      "v57": true
+    },
+    {
+      "nombre": "Recordatorio que empieza con el cuándo (v57)",
+      "regex": "^(?:pepe )?((?:hoy|manana|pasado manana|el (?:lunes|martes|miercoles|jueves|viernes|sabado|domingo)) a las? [0-9]+(?:[: ][0-9]{2})?(?: de la (?:manana|tarde|noche)| del mediodia)? .+)$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "recordame {1}"
+        }
+      ],
+      "v57": true
     }
   ],
   "motor": ""
