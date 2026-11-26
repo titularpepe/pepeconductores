@@ -1,5 +1,5 @@
 {
-  "version": 59,
+  "version": 60,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -4084,6 +4084,17 @@
       ],
       "v58": true,
       "v58b": true
+    },
+    {
+      "nombre": "Callate (sin tocar el volumen, v60)",
+      "regex": "^(?:pepe )?(?:silencio|callate|calla|callese|basta|shh+|sh|chito|para de hablar|deja de hablar|no hables mas|cerra la boca|silencio por favor|callate por favor|ya esta|suficiente)(?: pepe)?(?: por favor)?$",
+      "acciones": [
+        {
+          "tipo": "decir",
+          "texto": "Listo."
+        }
+      ],
+      "v60": true
     }
   ],
   "motor": ""
