@@ -1,5 +1,5 @@
 {
-  "version": 57,
+  "version": 58,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -4072,6 +4072,17 @@
         }
       ],
       "v57": true
+    },
+    {
+      "nombre": "Borrar recordatorios (cualquier forma, v58)",
+      "regex": "^(?:pepe )?(?:borra|borrame|borrar|elimina|eliminame|eliminar|saca|sacame|sacar|quita|quitame|cancela|cancelame|cancelar|limpia|deja sin)(?: todos| todas)?(?: los| las| el| la| mis| mi| ese| esa| esos| esas)?(?: todos| todas)? (?:recordatorios?|alertas?|avisos?|recordatorio de|recordatorio que)\\b.*$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "borra los recordatorios"
+        }
+      ],
+      "v58": true
     }
   ],
   "motor": ""
