@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 96" role="img" aria-label="Auto ecológico de Pepe">
+  <!-- (2026-11-25, pedido del dueño) Ícono "auto ecológico": auto verde con una hoja en el techo. -->
+  <!-- Hoja sobre el techo -->
+  <g transform="translate(64 24) rotate(-28)">
+    <path d="M0 -22 C 15 -18, 17 -2, 0 10 C -17 -2, -15 -18, 0 -22 Z" fill="#43c463"/>
+    <path d="M0 -18 L0 9" stroke="#1f7a3a" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M0 -8 L6 -13 M0 -1 L7 -6 M0 -8 L-6 -13 M0 -1 L-7 -6" stroke="#1f7a3a" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+  <!-- Tallito que une la hoja con el techo -->
+  <path d="M60 34 Q 61 38 62 40" stroke="#1f7a3a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <!-- Carrocería -->
+  <path d="M14 66 L18 54 Q 22 46 32 45 L40 44 L50 36 Q 56 32 64 32 L80 32 Q 88 32 94 38 L102 45 L110 47 Q 118 49 118 57 L118 66 Q 118 70 114 70 L18 70 Q 14 70 14 66 Z" fill="#2ecc71"/>
+  <!-- Ventanas -->
+  <path d="M46 44 L54 38 Q 58 36 63 36 L63 44 Z" fill="#d9f7e4"/>
+  <path d="M67 36 L79 36 Q 85 36 89 40 L94 44 L67 44 Z" fill="#d9f7e4"/>
+  <!-- Línea y faros -->
+  <path d="M22 56 L112 56" stroke="#239a54" stroke-width="2" opacity="0.6"/>
+  <rect x="108" y="54" width="8" height="4" rx="2" fill="#fff7c2"/>
+  <rect x="15" y="57" width="6" height="4" rx="2" fill="#ffd0c2"/>
+  <!-- Ruedas -->
+  <circle cx="38" cy="70" r="11" fill="#1b2a22"/><circle cx="38" cy="70" r="5" fill="#9fe3b6"/>
+  <circle cx="96" cy="70" r="11" fill="#1b2a22"/><circle cx="96" cy="70" r="5" fill="#9fe3b6"/>
+</svg>

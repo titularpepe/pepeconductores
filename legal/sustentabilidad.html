@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compromiso de sustentabilidad — Pepe Conductores</title>
+<meta name="description" content="Compromiso de sustentabilidad de Pepe Conductores y Pepe Pasajeros: cómo fomentamos el uso de vehículos eléctricos e híbridos en Salta (Decreto N° 0262, art. 7 inc. i).">
+<style>
+  :root{
+    --bg:#0e1013;
+    --panel:#15181c;
+    --text:#e9ebee;
+    --muted:#9aa1ab;
+    --accent:#3ddc84;
+    --accent-dim:#16351f;
+    --line:#262a30;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+  }
+  a{color:var(--accent)}
+  header.top{
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    background:rgba(14,16,19,0.92);
+    backdrop-filter:blur(6px);
+    z-index:10;
+  }
+  header.top .brand{
+    font-weight:700;
+    letter-spacing:0.02em;
+    font-size:15px;
+  }
+  header.top .brand span{color:var(--accent)}
+  header.top a.back{
+    font-size:14px;
+    color:var(--muted);
+    text-decoration:none;
+    border:1px solid var(--line);
+    padding:6px 12px;
+    border-radius:100px;
+  }
+  header.top a.back:hover{border-color:var(--accent);color:var(--accent)}
+
+  .hero{
+    padding:64px 24px 32px;
+    max-width:760px;
+    margin:0 auto;
+  }
+  .hero .eyebrow{
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-size:clamp(30px,5vw,44px);
+    line-height:1.1;
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  .hero .meta{
+    color:var(--muted);
+    font-size:14px;
+  }
+
+  .layout{
+    max-width:960px;
+    margin:0 auto;
+    padding:0 24px 100px;
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr}
+  }
+
+  nav.toc{
+    position:sticky;
+    top:88px;
+    font-size:13.5px;
+  }
+  nav.toc .toc-title{
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-size:11px;
+    margin-bottom:12px;
+    font-weight:700;
+  }
+  nav.toc ol{
+    list-style:none;
+    margin:0;
+    padding:0;
+    border-left:1px solid var(--line);
+  }
+  nav.toc li a{
+    display:block;
+    padding:6px 0 6px 14px;
+    color:var(--muted);
+    text-decoration:none;
+    border-left:2px solid transparent;
+    margin-left:-1px;
+  }
+  nav.toc li a:hover{color:var(--text);border-left-color:var(--accent)}
+  @media (max-width:820px){
+    nav.toc{position:static; margin-bottom:24px}
+  }
+
+  main.doc section{
+    padding-top:36px;
+    border-top:1px solid var(--line);
+    margin-top:36px;
+    scroll-margin-top:88px;
+  }
+  main.doc section:first-child{
+    border-top:none;
+    margin-top:0;
+    padding-top:0;
+  }
+  main.doc h2{
+    font-family:var(--serif);
+    font-size:22px;
+    margin:0 0 6px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  main.doc h2 .num{
+    color:var(--accent);
+    font-family:var(--sans);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.04em;
+  }
+  main.doc h3{
+    font-size:15px;
+    margin:22px 0 8px;
+    color:var(--text);
+  }
+  main.doc p{
+    color:#c7cbd1;
+    margin:10px 0;
+    font-size:15.5px;
+  }
+  main.doc ul{
+    margin:10px 0;
+    padding-left:20px;
+    color:#c7cbd1;
+    font-size:15.5px;
+  }
+  main.doc li{margin:5px 0}
+  main.doc strong{color:var(--text)}
+
+  table.permtable{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+    font-size:14.5px;
+  }
+  table.permtable th, table.permtable td{
+    border:1px solid var(--line);
+    padding:10px 12px;
+    text-align:left;
+    vertical-align:top;
+  }
+  table.permtable th{
+    background:var(--panel);
+    color:var(--accent);
+    font-weight:700;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  table.permtable td{color:#c7cbd1}
+
+  .callout{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    padding:16px 18px;
+    border-radius:6px;
+    margin:16px 0;
+    font-size:14.5px;
+    color:#c7cbd1;
+  }
+  .callout a{font-weight:600}
+
+  footer.pagefoot{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+    color:var(--muted);
+    font-size:13px;
+    border-top:1px solid var(--line);
+    margin-top:20px;
+  }
+  footer.pagefoot .wa{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+    margin-top:8px;
+  }
+</style>
+<style>
+  .sello{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);color:var(--accent);border:1px solid #2b6b40;
+    padding:6px 14px;border-radius:100px;font-weight:700;font-size:14px;margin:6px 0}
+  .tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:18px 0}
+  .tarjeta{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .tarjeta .ico{font-size:28px}
+  .tarjeta b{display:block;margin:6px 0 4px;color:var(--text)}
+  .tarjeta span{color:var(--muted);font-size:14px}
+  .firma{margin-top:28px;padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">PEPE <span>CONDUCTORES</span></div>
+  <a class="back" href="/">← Volver al inicio</a>
+</header>
+
+<div class="hero">
+  <img src="/assets/auto-ecologico.svg" alt="Auto ecológico de Pepe" width="120" height="90" style="display:block;margin-bottom:10px">
+  <div class="eyebrow">Sustentabilidad</div>
+  <h1>Compromiso de sustentabilidad</h1>
+  <div class="meta">Pepe Conductores y Pepe Pasajeros · Salta, Argentina · Vigente desde noviembre de 2026<br>
+  Conforme a la Ordenanza N° 16.377 y al Decreto N° 0262/2025, Anexo, art. 7 inciso i).</div>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-title">Contenido</div>
+    <ol>
+      <li><a href="#s1">1. Nuestro compromiso</a></li>
+      <li><a href="#s2">2. Cómo lo hacemos</a></li>
+      <li><a href="#s3">3. Para los conductores</a></li>
+      <li><a href="#s4">4. Para los pasajeros</a></li>
+      <li><a href="#s5">5. Lo que viene</a></li>
+    </ol>
+  </nav>
+  <main class="doc">
+    <section id="s1">
+      <h2><span class="num">01</span>Nuestro compromiso</h2>
+      <p>Pepe es una plataforma salteña de movilidad. Nos comprometemos a <strong>fomentar el uso de vehículos eléctricos e
+      híbridos</strong> entre los conductores que trabajan con nosotros, para cuidar el aire de nuestra ciudad y reducir el
+      ruido y el consumo de combustible.</p>
+      <p>Lo hacemos <strong>sin cobrarle nada extra a nadie</strong>: el beneficio es que estos conductores se destacan ante
+      los pasajeros dentro de la aplicación.</p>
+    </section>
+    <section id="s2">
+      <h2><span class="num">02</span>Cómo lo hacemos</h2>
+      <div class="tarjetas">
+        <div class="tarjeta"><div class="ico">🚗</div><b>Registramos el motor</b><span>Cada vehículo indica si es nafta, GNC, diésel, eléctrico o híbrido.</span></div>
+        <div class="tarjeta"><div class="ico">🌱</div><b>Los destacamos</b><span>Los eléctricos e híbridos llevan el sello "Conductor ecológico".</span></div>
+        <div class="tarjeta"><div class="ico">📣</div><b>Se lo contamos al pasajero</b><span>El pasajero sabe cuando viaja en un auto ecológico.</span></div>
+      </div>
+    </section>
+    <section id="s3">
+      <h2><span class="num">03</span>Para los conductores</h2>
+      <p>Al cargar su vehículo, el conductor indica el tipo de motor. Si es <strong>eléctrico o híbrido</strong>:</p>
+      <ul>
+        <li>Su perfil y su tarjeta muestran el sello <span class="sello"><img src="/assets/auto-ecologico.svg" alt="" width="26" height="20"> Conductor ecológico</span></li>
+        <li>Sus solicitudes de viaje se ven con un diseño especial en verde.</li>
+        <li>Los pasajeros lo reconocen como un conductor que cuida el ambiente.</li>
+      </ul>
+      <p>El tipo de motor queda registrado en el padrón de conductores y vehículos que Pepe mantiene a disposición de la
+      Secretaría de Tránsito y Seguridad Vial.</p>
+    </section>
+    <section id="s4">
+      <h2><span class="num">04</span>Para los pasajeros</h2>
+      <p>Cuando un conductor ecológico acepta tu viaje, la aplicación te lo muestra: <em>"🌱 ¡Tu Pepe es ecológico! Viajás
+      en un auto eléctrico/híbrido"</em>. En tu historial, ese viaje queda marcado como <strong>viaje ecológico</strong>.</p>
+    </section>
+    <section id="s5">
+      <h2><span class="num">05</span>Lo que viene</h2>
+      <p>A medida que crezca la cantidad de vehículos eléctricos e híbridos en Salta, Pepe va a sumar nuevos beneficios para
+      estos conductores y lo va a informar en esta página.</p>
+      <div class="firma">Titular de las plataformas Pepe Conductores y Pepe Pasajeros · titular@pepeconductores.com ·
+      Barrio Pereyra Rozas, Manzana 615, Casa 2, Salta.</div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
