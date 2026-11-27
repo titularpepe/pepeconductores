@@ -1,5 +1,5 @@
 {
-  "version": 60,
+  "version": 61,
   "habilidades": [
     {
       "nombre": "Precio del bitcoin",
@@ -4095,6 +4095,17 @@
         }
       ],
       "v60": true
+    },
+    {
+      "nombre": "Lee lo de Claude (variantes de voz, v61)",
+      "regex": "^(?!lo de claude$)(?:pepe )?(?:lee|leeme|leer|lei|decime|deci|que dijo|que me dijo|que escribio|que me escribio|lo que dijo|contame)?\\s*(?:lo|el|la)?\\s*(?:ultimo|ultima|mensaje|respuesta)?\\s*(?:de|del)?\\s*(?:claude|claudio|clau|claud|clode|clod|clot|cloud|clow|klaus|klau|cloe|clouds|claus|glod|clu)\\b.*$",
+      "acciones": [
+        {
+          "tipo": "orden",
+          "texto": "lo de claude"
+        }
+      ],
+      "v61": true
     }
   ],
   "motor": ""
